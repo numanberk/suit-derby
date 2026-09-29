@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Suit Derby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- MENU -->
+  <section class="screen" id="s-menu" aria-label="Menu">
+    <div class="menu-hero">
+      <h1>Suit Derby</h1>
+      <p class="lede">Four suits race through one deck. Rig the deck, win the run.</p>
+    </div>
+    <div class="lineup" id="lineup" aria-hidden="true"></div>
+    <nav class="menu-list" aria-label="Main menu">
+      <button type="button" class="mrow primary" data-go="setup"><span class="mt">Play</span><span class="md">Start a 5 or 10 lap run</span></button>
+      <button type="button" class="mrow" data-go="stable"><span class="mt">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
+      <button type="button" class="mrow" data-go="rules"><span class="mt">Rules</span><span class="md">How a run works</span></button>
+    </nav>
+    <p class="mstats mono" id="menu-stats"></p>
+  </section>
+
+  <!-- SETUP -->
+  <section class="screen" id="s-setup" hidden aria-label="New run">
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>New run</h2></header>
+    <h3 class="lbl pickhead">Choose your horse</h3>
+    <div class="picks" role="radiogroup" aria-label="Horse" id="picks"></div>
+    <h3 class="lbl">Length</h3>
+    <div class="pills" role="radiogroup" aria-label="Number of laps" id="lapPills"></div>
+    <p class="note" id="setup-perks"></p>
+    <div class="actions"><button type="button" class="btn primary" id="startRun">Start run</button></div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="s-game" hidden aria-label="Race">
+    <div class="gbar">
+      <button type="button" class="btn ghost" id="quit">Quit</button>
+      <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gclock mono" id="gclock">0:00.0</span></div>
+      <div class="gcash" id="gcash" title="Run cash. Lost when the run ends.">$0</div>
+    </div>
+    <div class="track">
+      <div class="lanes" id="lanes"></div>
+      <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
+      <div class="overlay" id="overlay" hidden><div class="big" id="ovtxt"></div></div>
+    </div>
+    <div class="hud">
+      <div class="card" aria-hidden="true"><div class="cardin" id="cardin"><div class="face" id="face"></div><div class="back"></div></div></div>
+      <div class="hinfo">
+        <div class="dname" id="dname">Shuffling</div>
+        <div class="dline" id="dline">First card comes out soon.</div>
+        <div class="hist" id="hist" aria-label="Recent cards"></div>
+      </div>
+      <button type="button" class="btn spur" id="spur" hidden>Spur <b id="spurn">2</b></button>
+    </div>
+    <div class="scout" id="scout" hidden></div>
+    <div class="deckbar" id="deckbar" aria-label="Cards left in the deck"></div>
+    <div class="deckleg mono" id="deckleg"></div>
+    <div class="calls mono" id="calls" hidden></div>
+    <div class="glow">
+      <div class="pts mono" id="pts" aria-label="Championship points"></div>
+      <div class="ctrls">
+        <button type="button" data-sp="1" aria-pressed="true">1&times;</button>
+        <button type="button" data-sp="2" aria-pressed="false">2&times;</button>
+        <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
+        <button type="button" id="pause">Pause</button>
+        <button type="button" id="skip" disabled>Skip</button>
+      </div>
+    </div>
+    <div class="ticker" id="ticker"></div>
+  </section>
+
+  <!-- PIT STOP -->
+  <section class="screen" id="s-pit" hidden aria-label="Pit stop">
+    <header class="bar">
+      <h2 id="pit-title">Lap 1 complete</h2>
+      <div class="cashwrap"><div class="cashchip" id="pit-cash">$0</div><div class="cashsub mono" id="pit-cash-sub"></div></div>
+    </header>
+    <div class="pit-top">
+      <div class="pit-res">
+        <div class="bigplace" id="pit-place">1st</div>
+        <div class="stmt" id="pit-stmt"></div>
+      </div>
+      <div class="pit-stand">
+        <h3 class="lbl" id="pit-stand-h">Championship</h3>
+        <table class="tbl"><thead><tr><th>Pos</th><th>Horse</th><th class="num">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
+        <div class="deckbar sm" id="pit-deckbar"></div>
+        <div class="deckleg mono" id="pit-deckleg"></div>
+      </div>
+    </div>
+    <div class="rivals" id="rivals"></div>
+
+    <div class="sect">
+      <div class="shophead"><h3 class="lbl">Call the order</h3><span class="hint mono" id="board-hint">Odds lock when the lap starts</span></div>
+      <div class="board" id="board"></div>
+      <p class="boardfoot" id="boardfoot"></p>
+    </div>
+
+    <div class="sect" id="shopsect">
+      <div class="shophead"><h3 class="lbl">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
+      <div class="tiers mono" id="tiers"></div>
+      <div class="offers" id="offers"></div>
+      <p class="note" id="shopclosed" hidden>The shop opens after lap 1. Every horse starts level: 26 cards per suit and no upgrades.</p>
+    </div>
+
+    <div class="sect">
+      <div class="shophead"><h3 class="lbl">Card table</h3><span class="hint mono" id="table-hint"></span></div>
+      <div class="table" id="table"></div>
+    </div>
+
+    <div class="kit" id="kit"></div>
+    <div class="pitbar"><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
+  </section>
+
+  <!-- RUN OVER -->
+  <section class="screen" id="s-over" hidden aria-label="Run complete">
+    <header class="bar"><h2>Run complete</h2></header>
+    <div class="over-top">
+      <div class="bigplace" id="over-rank">Champion</div>
+      <p class="lede" id="over-sub"></p>
+    </div>
+    <div class="pit-top">
+      <div>
+        <h3 class="lbl">Final standings</h3>
+        <table class="tbl"><thead><tr><th>Pos</th><th>Horse</th><th class="num">Pts</th></tr></thead><tbody id="over-standings"></tbody></table>
+      </div>
+      <div>
+        <h3 class="lbl">Stable Points</h3>
+        <div class="stmt" id="over-stmt"></div>
+        <p class="forfeit" id="over-forfeit"></p>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn primary" data-go="setup">Play again</button>
+      <button type="button" class="btn" data-go="stable">The Stable</button>
+      <button type="button" class="btn ghost" data-go="menu">Menu</button>
+    </div>
+  </section>
+
+  <!-- STABLE -->
+  <section class="screen" id="s-stable" hidden aria-label="The Stable">
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
+    <p class="lede sm">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
+    <div class="perks" id="perks"></div>
+    <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
+  </section>
+
+  <!-- RULES -->
+  <section class="screen" id="s-rules" hidden aria-label="Rules">
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>Rules</h2></header>
+    <div class="rules" id="rules"></div>
+  </section>
+
+</div>
+<script src="meta.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
