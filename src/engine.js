@@ -4,26 +4,29 @@
 const Engine = (() => {
   const CFG = {
     lapLen: 150,        // distance of one lap (one full race)
-    drawEvery: 2,       // seconds between cards
-    firstDraw: 1,
+    drawEvery: 2.4,     // seconds between cards
+    firstDraw: 1.2,
     base: 1.6,          // cruising speed
     decay: 0.5,         // how fast a surge fades
-    par: 34,            // race seconds that earn no speed bonus
+    par: 64,            // race seconds that earn no speed bonus
     sub: 0.05,
     prizes: [140, 90, 50, 20],
     points: [4, 3, 2, 1],
-    bonusPerSec: 4,
-    divPerValue: 3,
-    copies: 2,          // standard decks in the run deck (26 cards per suit)
-    minSuit: 10,        // burning can never thin a suit below this
+    bonusPerSec: 2.5,
+    divPerValue: 4.5,
+    copies: 1,          // copies of each rank in the run deck
+    minRank: 5,         // ranks minRank..Ace: 10 cards per suit, 40 in all (a small deck runs dry fast)
+    surgeBase: 1.0,     // a card's surge is surgeBase + rank * surgeVal
+    surgeVal: 0.29,
+    minSuit: 6,         // burning can never thin a suit below this
     shopSlots: 4,
     rerollBase: 15,
     rerollStep: 10,
-    spurBoost: 7,
+    spurBoost: 3.5,
     sabotage: 0.6,
     headStart: 25,
-    aiChance: 0.9,      // chance per stop that each rival gets a free upgrade
-    aiExtra: 0.3,       // chance of a second one
+    aiChance: 0.8,      // chance per stop that each rival gets a free upgrade
+    aiExtra: 0.2,       // chance of a second one
     lapChoices: [5, 10],
     // tiers: every upgrade of a tier costs the same
     tierPrice: { common: 50, rare: 110, epic: 210, legendary: 380 },
@@ -35,8 +38,8 @@ const Engine = (() => {
     combo: [1, 1, 1.1, 1.25, 1.5],       // multiplier on total winnings by number of correct calls
     comboSlam: [1, 1, 1.3, 1.8, 3],
     // luck
-    horseshoe: 0.11, horseshoeBoost: 7, jackpot: 0.02, jackpotCash: 150,
-    chaosBoost: 14, chaosCash: 25, coinHeads: 3.5, coinTails: -1.5,
+    horseshoe: 0.10, horseshoeBoost: 2.2, jackpot: 0.02, jackpotCash: 150,
+    chaosBoost: 5, chaosCash: 25, coinHeads: 1.2, coinTails: -0.8,
     // higher-or-lower table
     tableLimit: 3, tableEdge: 0.92
   };
@@ -60,7 +63,7 @@ const Engine = (() => {
   }
   const val = c => (c.joker ? 17 : c.r);
   const label = c => (c.chaos ? '?' : c.joker ? '★' : ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' })[c.r] || String(c.r));
-  const boostOf = (c, h) => (3 + val(c) * 0.85) * h.mult * h.temp;
+  const boostOf = (c, h) => (CFG.surgeBase + val(c) * CFG.surgeVal) * h.mult * h.temp;
 
   function shuffle(a, rng) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -105,56 +108,56 @@ const Engine = (() => {
   const U = (id, tier, kind, ai, name, max, blurb, apply) => ({ id, tier, kind, ai, name, max, blurb, apply: apply || (() => '') });
   const UPGRADES = [
     // ---- common
-    U('stack', 'common', 'deck', true, 'Stacked Deck', 5, 'Shuffle 4 extra cards of your suit into the deck.',
-      (run, h) => { add(run, 4, () => ({ s: h.i, r: rnd(run, 2, 14) })); return 'added 4 cards to ' + G(h.i); }),
-    U('wind', 'common', 'horse', true, 'Second Wind', 5, 'Cruising speed +0.3 for the rest of the run.',
-      (run, h) => { h.base += 0.3; return 'cruises faster'; }),
+    U('stack', 'common', 'deck', true, 'Stacked Deck', 5, 'Shuffle 2 extra cards of your suit into the deck.',
+      (run, h) => { add(run, 2, () => ({ s: h.i, r: rnd(run, CFG.minRank, 14) })); return 'added 2 cards to ' + G(h.i); }),
+    U('wind', 'common', 'horse', true, 'Second Wind', 5, 'Cruising speed +0.1 for the rest of the run.',
+      (run, h) => { h.base += 0.1; return 'cruises faster'; }),
     U('spare', 'common', 'gear', false, 'Spare Spur', 3, 'One more Spur charge every lap. Tap Spur (or press Space) for an instant surge.'),
     U('penny', 'common', 'cash', false, 'Lucky Penny', 5, 'Earn an extra $20 at the end of every lap.'),
     U('lens', 'common', 'gear', false, 'Scout Lens', 3, 'See the next 2 cards of the deck during every lap.'),
-    U('sand', 'common', 'deck', true, 'Sand Trap', 4, 'Remove 10 cards of the points leader from the deck.',
-      (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 10); return 'burned ' + out.length + ' ' + G(t.i); }),
-    U('retread', 'common', 'deck', true, 'Retread', 3, 'Swap your 6 lowest cards for fresh cards of rank 8 to Queen.',
-      (run, h) => { const d = lowest(run, h.i, 6); d.forEach(c => run.cards.splice(run.cards.indexOf(c), 1)); d.forEach(() => run.cards.push({ s: h.i, r: rnd(run, 8, 12) })); return 'retreaded six low ' + G(h.i); }),
+    U('sand', 'common', 'deck', true, 'Sand Trap', 4, 'Remove 4 cards of the points leader from the deck.',
+      (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 4); return 'burned ' + out.length + ' ' + G(t.i); }),
+    U('retread', 'common', 'deck', true, 'Retread', 3, 'Swap your 4 lowest cards for fresh cards of rank 8 to Queen.',
+      (run, h) => { const d = lowest(run, h.i, 4); d.forEach(c => run.cards.splice(run.cards.indexOf(c), 1)); d.forEach(() => run.cards.push({ s: h.i, r: rnd(run, 8, 12) })); return 'retreaded four low ' + G(h.i); }),
     U('bookie', 'common', 'bet', false, 'Bookie’s Friend', 4, 'Every bet you win pays 5% more.'),
     // ---- rare
-    U('aces', 'rare', 'deck', true, 'Aces High', 4, 'Add six of your Aces, the biggest normal surge.',
-      (run, h) => { add(run, 6, () => ({ s: h.i, r: 14 })); return 'added six Aces to ' + G(h.i); }),
+    U('aces', 'rare', 'deck', true, 'Aces High', 4, 'Add two of your Aces, the biggest normal surge.',
+      (run, h) => { add(run, 2, () => ({ s: h.i, r: 14 })); return 'added two Aces to ' + G(h.i); }),
     U('stride', 'rare', 'horse', true, 'Long Stride', 4, 'Surges fade 20% slower, so speed carries further.',
       (run, h) => { h.k *= 0.8; return 'holds surges longer'; }),
-    U('court', 'rare', 'deck', true, 'Court Cards', 3, 'Add two each of your Jacks, Queens and Kings.',
-      (run, h) => { [11, 12, 13, 11, 12, 13].forEach(r => run.cards.push({ s: h.i, r })); return 'added six court cards to ' + G(h.i); }),
-    U('draft', 'rare', 'horse', true, 'Slipstream', 3, 'Whenever a rival’s card is drawn, you get a small surge of +0.9.',
-      (run, h) => { h.draft += 0.9; return 'draws speed from rivals'; }),
-    U('marked', 'rare', 'deck', true, 'Marked Cards', 3, 'Your 12 lowest cards each gain 6 ranks, up to Ace.',
-      (run, h) => { lowest(run, h.i, 12).forEach(c => { c.r = Math.min(14, c.r + 6); }); return 'raised twelve low ' + G(h.i); }),
-    U('horseshoe', 'rare', 'luck', false, 'Lucky Horseshoe', 3, 'Every card drawn has an 11% chance to also surge your horse by +7, whatever its suit.'),
+    U('court', 'rare', 'deck', true, 'Court Cards', 3, 'Add a Queen and a King of your suit.',
+      (run, h) => { [12, 13].forEach(r => run.cards.push({ s: h.i, r })); return 'added a Queen and a King to ' + G(h.i); }),
+    U('draft', 'rare', 'horse', true, 'Slipstream', 3, 'Whenever a rival’s card is drawn, you get a small surge of +0.3.',
+      (run, h) => { h.draft += 0.3; return 'draws speed from rivals'; }),
+    U('marked', 'rare', 'deck', true, 'Marked Cards', 3, 'Your 6 lowest cards each gain 6 ranks, up to Ace.',
+      (run, h) => { lowest(run, h.i, 6).forEach(c => { c.r = Math.min(14, c.r + 6); }); return 'raised six low ' + G(h.i); }),
+    U('horseshoe', 'rare', 'luck', false, 'Lucky Horseshoe', 3, 'Every card drawn has a 10% chance to also surge your horse by +2.2, whatever its suit.'),
     U('insure', 'rare', 'bet', false, 'Insurance Policy', 3, 'Get 25% of every lost stake back.'),
     U('haggler', 'rare', 'cash', false, 'Haggler', 3, 'Every shop price is 10% lower.'),
     // ---- epic
-    U('fake', 'epic', 'deck', true, 'Counterfeit', 3, 'Turn 10 cards of the points leader into your suit.',
-      (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 10); out.forEach(c => run.cards.push({ ...c, s: h.i })); return 'turned ' + out.length + ' ' + G(t.i) + ' into ' + G(h.i); }),
-    U('joker', 'epic', 'deck', true, 'Wild Joker', 3, 'Add six Jokers in your colours. Each surges harder than an Ace.',
-      (run, h) => { add(run, 6, () => ({ s: h.i, r: 15, joker: true })); return 'added six Jokers to ' + G(h.i); }),
-    U('dice', 'epic', 'luck', false, 'Loaded Dice', 2, 'At the start of every lap roll two dice: that many cards of rank 9 to Ace join your suit for the lap.'),
-    U('chaos', 'epic', 'luck', false, 'Chaos Cards', 3, 'Shuffle in 4 Chaos cards. Drawn, one they surge a random horse by +14 and pay you $25.',
-      (run, h) => { add(run, 4, () => ({ s: h.i, r: 2, chaos: true })); return 'shuffled in 4 Chaos cards'; }),
-    U('sling', 'epic', 'horse', true, 'Slingshot', 3, 'Whenever a rival surges you gain 12% of that surge.',
-      (run, h) => { h.sling += 0.12; return 'slingshots off rival surges'; }),
+    U('fake', 'epic', 'deck', true, 'Counterfeit', 3, 'Turn 3 cards of the points leader into your suit.',
+      (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 3); out.forEach(c => run.cards.push({ ...c, s: h.i })); return 'turned ' + out.length + ' ' + G(t.i) + ' into ' + G(h.i); }),
+    U('joker', 'epic', 'deck', true, 'Wild Joker', 3, 'Add two Jokers in your colours. Each surges harder than an Ace.',
+      (run, h) => { add(run, 2, () => ({ s: h.i, r: 15, joker: true })); return 'added two Jokers to ' + G(h.i); }),
+    U('dice', 'epic', 'luck', false, 'Loaded Dice', 2, 'At the start of every lap roll a four-sided die: that many cards of rank 9 to Ace join your suit for the lap.'),
+    U('chaos', 'epic', 'luck', false, 'Chaos Cards', 3, 'Shuffle in 2 Chaos cards. When drawn, one surges a random horse by +5 and pays you $25.',
+      (run, h) => { add(run, 2, () => ({ s: h.i, r: 2, chaos: true })); return 'shuffled in 2 Chaos cards'; }),
+    U('sling', 'epic', 'horse', true, 'Slingshot', 3, 'Whenever a rival surges you gain 10% of that surge.',
+      (run, h) => { h.sling += 0.10; return 'slingshots off rival surges'; }),
     U('roller', 'epic', 'bet', false, 'High Roller', 2, 'Correct 2nd, 3rd and 4th calls pay 40% more.'),
     U('rich', 'epic', 'cash', false, 'Deep Vault', 3, 'All cash you win from races is 25% higher.'),
     U('interest', 'epic', 'cash', false, 'Interest', 3, 'Unspent cash earns 8% at the end of every lap.'),
     // ---- legendary
-    U('flush', 'legendary', 'deck', true, 'Royal Flush', 2, 'Add 10, Jack, Queen, King and Ace of your suit, three of each.',
-      (run, h) => { [10, 11, 12, 13, 14, 10, 11, 12, 13, 14, 10, 11, 12, 13, 14].forEach(r => run.cards.push({ s: h.i, r })); return 'added a triple royal flush to ' + G(h.i); }),
-    U('coin', 'legendary', 'luck', false, 'Coin of Fate', 1, 'Flip a coin at the start of every lap: heads +3.5 cruising speed, tails −1.5.'),
+    U('flush', 'legendary', 'deck', true, 'Royal Flush', 2, 'Add a 10, Jack, Queen, King and Ace of your suit.',
+      (run, h) => { [10, 11, 12, 13, 14].forEach(r => run.cards.push({ s: h.i, r })); return 'added a royal flush to ' + G(h.i); }),
+    U('coin', 'legendary', 'luck', false, 'Coin of Fate', 1, 'Flip a coin at the start of every lap: heads +1.2 cruising speed, tails −0.8.'),
     U('ticket', 'legendary', 'cash', false, 'Golden Ticket', 1, 'Your speed bonus and dividends are doubled.'),
     U('jackpot', 'legendary', 'luck', false, 'Jackpot Deck', 2, 'Every card drawn has a 2% chance to pay you $150.'),
-    U('takeover', 'legendary', 'deck', true, 'Hostile Takeover', 2, 'Turn 12 cards of the points leader into your suit.',
-      (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 12); out.forEach(c => run.cards.push({ ...c, s: h.i })); return 'seized ' + out.length + ' ' + G(t.i); }),
+    U('takeover', 'legendary', 'deck', true, 'Hostile Takeover', 2, 'Turn 5 cards of the points leader into your suit.',
+      (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 5); out.forEach(c => run.cards.push({ ...c, s: h.i })); return 'seized ' + out.length + ' ' + G(t.i); }),
     U('slam', 'legendary', 'bet', false, 'Grand Slam', 1, 'Combo bonuses on correct calls grow: 2 right ×1.3, 3 right ×1.8, 4 right ×3.'),
     // ---- next lap only
-    U('cut', 'common', 'lap', false, 'Cut the Deck', 2, 'Your 5 best cards start on top of the deck next lap.'),
+    U('cut', 'common', 'lap', false, 'Cut the Deck', 2, 'Your 3 best cards start on top of the deck next lap.'),
     U('headstart', 'rare', 'lap', false, 'Head Start', 2, 'Begin next lap 25 units down the track.'),
     U('double', 'rare', 'lap', false, 'Double Dividend', 1, 'Dividends are doubled next lap.'),
     U('sabotage', 'epic', 'lap', false, 'Sabotage', 1, 'The points leader surges 40% less next lap.'),
@@ -180,8 +183,8 @@ const Engine = (() => {
       lap: null, events: [], rivalLog: [], history: [],
       cashEarned: 0, correct: 0, result: null
     };
-    // every suit starts level: 26 cards each, identical horses
-    for (let c = 0; c < CFG.copies; c++) for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) run.cards.push({ s, r });
+    // every suit starts level: 10 cards each, identical horses
+    for (let c = 0; c < CFG.copies; c++) for (let s = 0; s < 4; s++) for (let r = CFG.minRank; r <= 14; r++) run.cards.push({ s, r });
     for (let i = 0; i < 4; i++) {
       run.horses.push({ i, pos: 0, ex: 0, base: CFG.base, k: CFG.decay, mult: 1, temp: 1, tb: 0, draft: 0, sling: 0, up: {},
         fin: false, finT: null, place: null, points: 0, totalT: 0, drawn: 0 });
@@ -240,7 +243,7 @@ const Engine = (() => {
       spurs: 0, scout: 0, divMult: 1, sabotaged: null, sim: !live, windfall: 0, calls: [], coin: null, dice: 0 };
     if (live) {
       for (let k = 0; k < cnt(me, 'dice'); k++) {
-        const n = rnd(run, 1, 6) + rnd(run, 1, 6);
+        const n = rnd(run, 1, 4);
         L.dice += n;
         for (let j = 0; j < n; j++) cards.push({ s: me.i, r: rnd(run, 9, 14), temp: true });
       }
@@ -258,7 +261,7 @@ const Engine = (() => {
     const deck = shuffle(cards, run.rng);
     if (live && q.cut) {
       const mineIdx = deck.map((c, i) => i).filter(i => deck[i].s === run.me && !deck[i].chaos);
-      const best = mineIdx.sort((a, b) => val(deck[b]) - val(deck[a])).slice(0, 5 * q.cut).sort((a, b) => b - a);
+      const best = mineIdx.sort((a, b) => val(deck[b]) - val(deck[a])).slice(0, 3 * q.cut).sort((a, b) => b - a);
       const picked = best.map(i => deck.splice(i, 1)[0]);
       picked.sort((a, b) => val(a) - val(b));
       picked.forEach(c => deck.push(c));

@@ -4,7 +4,7 @@ const Meta = (() => {
   const ITEMS = [
     { id: 'deep', name: 'Deep Pockets', blurb: 'Start every run with +$40 more cash.', costs: [10, 18, 28, 40, 55] },
     { id: 'winnings', name: 'Bigger Winnings', blurb: 'All cash you win in a lap is 6% higher.', costs: [15, 25, 38, 55, 75] },
-    { id: 'loaded', name: 'Loaded Deck', blurb: 'Start every run with 2 extra cards of your suit in the deck.', costs: [12, 20, 30, 44, 60] },
+    { id: 'loaded', name: 'Loaded Deck', blurb: 'Start every run with 1 extra card of your suit in the deck.', costs: [12, 20, 30, 44, 60] },
     { id: 'training', name: 'Paddock Training', blurb: 'Your horse cruises 0.1 faster in every run.', costs: [15, 25, 40, 60, 85] },
     { id: 'shrewd', name: 'Shrewd Buyer', blurb: 'Every shop price is 5% lower.', costs: [12, 20, 30, 42, 56] },
     { id: 'slots', name: 'Wider Shop', blurb: 'One more upgrade on offer at every pit stop.', costs: [30, 60] },
@@ -36,7 +36,7 @@ const Meta = (() => {
     return {
       startCash: 90 + 40 * L('deep'),
       cashMult: 1 + 0.06 * L('winnings'),
-      loaded: 2 * L('loaded'),
+      loaded: L('loaded'),
       baseSpeed: 0.1 * L('training'),
       discount: 0.05 * L('shrewd'),
       slots: L('slots'),

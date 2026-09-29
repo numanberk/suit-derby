@@ -74,7 +74,7 @@
         '<span class="g">' + s.glyph + '</span><span class="n">' + s.name + '</span><span class="you">You</span></label>';
     }).join('');
     $('#lapPills').innerHTML = CFG.lapChoices.map(function (n) {
-      return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + n + ' laps</b><span>about ' + Math.round(n * 0.85) + ' minutes</span></label>';
+      return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + n + ' laps</b><span>about ' + Math.round(n * 1.3) + ' minutes</span></label>';
     }).join('');
     $('#picks').addEventListener('change', function (e) { S.me = +e.target.value; });
     $('#lapPills').addEventListener('change', function (e) { S.laps = +e.target.value; });
@@ -91,7 +91,7 @@
     if (fx.owners) bits.push('a free starting upgrade');
     if (fx.luck) bits.push('better shop rarity');
     if (fx.sharp) bits.push('+' + Math.round(fx.sharp * 100) + '% bet payouts');
-    $('#setup-perks').textContent = 'Every run starts level: 26 cards per suit, identical horses, no rival upgrades before lap 1. ' +
+    $('#setup-perks').textContent = 'Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1. ' +
       (bits.length ? 'Your Stable perks: ' + bits.join(', ') + '.' : 'No Stable perks yet. Finish a run to earn Stable Points.');
   };
   $('#startRun').addEventListener('click', function () {
@@ -330,7 +330,7 @@
     var pl = $('#pit-place'), stmt = $('#pit-stmt');
     if (prep) {
       pl.textContent = 'Level start'; pl.style.color = 'var(--ink)';
-      stmt.innerHTML = '<p class="note" style="margin:0">Every suit has the same 26 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.</p>';
+      stmt.innerHTML = '<p class="note" style="margin:0">Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.</p>';
     } else {
       pl.textContent = ord(res.place) + ' this lap'; pl.style.color = res.place === 1 ? 'var(--gold)' : 'var(--ink)';
       var rows = [['Prize', res.prize], [res.secs > 0 ? 'Speed bonus, ' + res.secs.toFixed(1) + 's under par' : 'Speed bonus, ' + Math.abs(res.secs).toFixed(1) + 's over par', res.bonus],
@@ -539,10 +539,10 @@
   function buildRules() {
     var C = CFG, tp = C.tierPrice;
     $('#rules').innerHTML =
-      '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 26 cards per suit, identical horses, and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
-      '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder. Horses that have finished ignore surges.</p>' +
+      '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 10 cards per suit, identical horses, and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
+      '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder, but each card is a small push, so races run over a minute. Horses that have finished ignore surges.</p>' +
       '<div class="vals"><span>2–10 pips</span><span>J 11</span><span>Q 12</span><span>K 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
-      '<section><h3>The deck</h3><p>The deck is <b>' + (C.copies * 52) + ' cards</b>. Upgrades change it for the <b>whole run</b>: add your cards, raise them, or burn and steal a rival’s (never below ' + C.minSuit + ' cards per suit). At the start of every lap all cards are gathered and <b>reshuffled</b>.</p><p>After every lap the rivals collect free upgrades too, and you can see which ones at the pit stop.</p></section>' +
+      '<section><h3>The deck</h3><p>The deck is small: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' cards</b>, ' + (C.copies * (15 - C.minRank)) + ' per suit, ranks ' + C.minRank + ' to Ace. Cards are drawn without being put back, so a suit that has come up a lot runs low and the horses that have been unlucky become more likely to get the next cards. Leaders fade and losers get their chance. Upgrades change it for the <b>whole run</b>: add your cards, raise them, or burn and steal a rival’s (never below ' + C.minSuit + ' cards per suit). At the start of every lap all cards are gathered and <b>reshuffled</b>.</p><p>After every lap the rivals collect free upgrades too, and you can see which ones at the pit stop.</p></section>' +
       '<section><h3>Calling the order</h3><p>Before every lap you call which horse finishes <b>1st, 2nd, 3rd and 4th</b>, and put a stake on each call. Your own horse is <b>locked in for 1st</b>: you always back yourself to win, and you can only change that stake. The other three places are yours to pick or skip. The bookie simulates the lap hundreds of times and shows odds for every horse in every place, so a longshot pays more. Odds move when you buy upgrades and <b>lock when the lap starts</b>.</p><p>A correct call pays stake × odds. A wrong call loses the stake. Get several right and the whole payout is multiplied by a <b>combo</b> (' + C.combo[2] + '× for two, ' + C.combo[3] + '× for three, ' + C.combo[4] + '× for all four). Every correct call also adds <b>1 Stable Point</b> to your run. The bookie does not price in your one-lap items, Spurs or luck upgrades, which is where an edge comes from.</p></section>' +
       '<section><h3>Money</h3><p>You earn <b>run cash</b> after every lap: a prize for your finishing place (' + C.prizes.map(function (p) { return '$' + p; }).join(', ') + '), a speed bonus of $' + C.bonusPerSec + ' for every second under ' + C.par + ' seconds, and <b>dividends</b>: once your horse has crossed the line, every card of your suit still drawn pays ' + C.divPerValue + '× its value. Bets are paid on top.</p><p>Spend cash on upgrades, rerolls, bets and the card table. <b>Whatever is left when the run ends is lost.</b></p></section>' +
       '<section><h3>Pit shop and tiers</h3><p>The shop opens after lap 1 and offers ' + C.shopSlots + ' upgrades. Every upgrade belongs to a tier and <b>every upgrade of a tier costs the same</b>: Common $' + tp.common + ', Rare $' + tp.rare + ', Epic $' + tp.epic + ', Legendary $' + tp.legendary + '. The shop shows the chance of each rarity, and rarer upgrades show up more often as the run goes on. You can reroll for a fee.</p><p>Upgrade types: Deck, Horse, Money, Betting, Gear (like Spare Spur: tap <b>Spur</b> or press <b>Space</b> for an instant surge), Luck (random surges, cash windfalls, dice, a coin flip), and Next lap items that are used once.</p></section>' +

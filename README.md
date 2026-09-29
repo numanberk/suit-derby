@@ -5,6 +5,11 @@ Every lap is a full race; you earn run cash, spend it on upgrades in a pit shop 
 and lose whatever is left when the run ends. Stable Points earned at the end of a run buy
 permanent perks in The Stable.
 
+### v4: longer races, small deck
+- The deck is 40 cards (10 per suit, ranks 5 to Ace) and cards are drawn without being put back, so a suit that has come up a lot runs dry and trailing horses get the next cards.
+- Each card is a small push (`surgeBase` + rank x `surgeVal`), draws come every 2.4 s, and a lap takes about a minute.
+- Every upgrade was re-tuned for the small deck (card counts roughly halved) and checked with `node sim.js iso`.
+
 ### What v3 adds
 - **Level start.** Every horse begins with 26 cards and no upgrades. The shop opens after lap 1.
 - **Call the order.** Before every lap, pick a horse for 1st, 2nd, 3rd and 4th with a stake each.
@@ -16,9 +21,7 @@ permanent perks in The Stable.
 - **Rival AI** buys upgrades too, and you see what they took.
 
 ## Play
-Online: https://numanberk.github.io/suit-derby/
-
-Or open `index.html` (same file as `dist/suit-derby.html`) in a browser. It is one self-contained file
+Open `dist/suit-derby.html` in a browser. It is one self-contained file
 (it only asks Google Fonts for typefaces; it works without them).
 
 ## Layout
@@ -39,4 +42,3 @@ a no-purchase, a random-buyer and a greedy-buyer player.
 
 ## Build
     python3 build.py
-    cp dist/suit-derby.html index.html   # index.html is what GitHub Pages serves
