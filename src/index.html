@@ -14,7 +14,7 @@
 
   <!-- MENU -->
   <section class="screen" id="s-menu" aria-label="Menu">
-    <div class="langrow"><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
+    <div class="langrow"><button type="button" class="sndbtn" id="sndMenu"></button><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
     <div class="menu-hero">
       <h1>Suit Derby</h1>
       <p class="lede" data-i18n="Four suits race through one deck. Rig the deck, win the run.">Four suits race through one deck. Rig the deck, win the run.</p>
@@ -92,6 +92,7 @@
         <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
         <button type="button" id="pause">Pause</button>
         <button type="button" id="skip" disabled data-i18n="Skip">Skip</button>
+        <button type="button" id="snd" class="sndbtn"></button>
       </div>
     </div>
     <div class="ticker" id="ticker"></div>
@@ -183,6 +184,7 @@
 <div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t" data-i18n="BIG WIN">BIG WIN</div><div class="bw-a mono"></div></div>
 <script src="i18n.js"></script>
 <script src="lang_tr.js"></script>
+<script src="audio.js"></script>
 <script src="meta.js"></script>
 <script src="engine.js"></script>
 <script src="fx.js"></script>

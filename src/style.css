@@ -52,6 +52,11 @@ h1, h2, h3, p { margin: 0; }
 .cashchip.sp { color: var(--ink); }
 
 /* menu */
+.sndbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: var(--track); color: var(--ink); }
+.sndbtn[aria-pressed="false"] { color: var(--ink-dim); }
+.sndbtn:hover { border-color: var(--ink-dim); }
+.ctrls .sndbtn { width: auto; height: auto; border-radius: 8px; padding: 6px 10px; background: var(--raise); }
+.langrow .sndbtn { margin-right: auto; }
 .langrow { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
 .langlbl { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
 .langsw { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--track); }

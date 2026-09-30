@@ -62,6 +62,11 @@ h1, h2, h3, p { margin: 0; }
 .cashchip.sp { color: var(--ink); }
 
 /* menu */
+.sndbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: var(--track); color: var(--ink); }
+.sndbtn[aria-pressed="false"] { color: var(--ink-dim); }
+.sndbtn:hover { border-color: var(--ink-dim); }
+.ctrls .sndbtn { width: auto; height: auto; border-radius: 8px; padding: 6px 10px; background: var(--raise); }
+.langrow .sndbtn { margin-right: auto; }
 .langrow { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
 .langlbl { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
 .langsw { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--track); }
@@ -424,7 +429,7 @@ h1, h2, h3, p { margin: 0; }
 
   <!-- MENU -->
   <section class="screen" id="s-menu" aria-label="Menu">
-    <div class="langrow"><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
+    <div class="langrow"><button type="button" class="sndbtn" id="sndMenu"></button><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
     <div class="menu-hero">
       <h1>Suit Derby</h1>
       <p class="lede" data-i18n="Four suits race through one deck. Rig the deck, win the run.">Four suits race through one deck. Rig the deck, win the run.</p>
@@ -502,6 +507,7 @@ h1, h2, h3, p { margin: 0; }
         <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
         <button type="button" id="pause">Pause</button>
         <button type="button" id="skip" disabled data-i18n="Skip">Skip</button>
+        <button type="button" id="snd" class="sndbtn"></button>
       </div>
     </div>
     <div class="ticker" id="ticker"></div>
@@ -669,6 +675,8 @@ if (typeof module !== 'undefined') module.exports = I18n;
     'Rules': 'Kurallar',
     'How a run works': 'Bir koşu nasıl işler',
     'Language': 'Dil',
+    'Sound on': 'Ses açık',
+    'Sound off': 'Ses kapalı',
     'New run': 'Yeni koşu',
     'Choose your horse': 'Atını seç',
     'Length': 'Uzunluk',
@@ -971,6 +979,300 @@ if (typeof module !== 'undefined') module.exports = I18n;
       '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Bunları Ahır’da kalıcı geliştirmelere harca: başlangıç parası, ekstra kartlar, daha hızlı seyir, daha ucuz dükkanlar, daha iyi nadirlik şansı ve daha iyi bahis ödemeleri. İlerleme bu tarayıcıda saklanır.</p></section>';
   };
 })();
+
+</script>
+<script>
+/* Suit Derby sound. Everything is synthesized with WebAudio (no files to load).
+   Design rules that make it feel good:
+   - every card is a soft mallet note on a pentatonic scale, so the race plays a little tune;
+   - a hit streak climbs the scale, so winning streaks literally rise in pitch;
+   - wins scale up: coin ping, coin shower, brass fanfare, jackpot siren;
+   - misses are a soft low blip, never a harsh buzz;
+   - a quiet crowd and a galloping hoofbeat sit under the race and swell when something happens.
+   Sound starts after the first tap (browser rule), is saved as on/off, and can never break the game. */
+const Sfx = (() => {
+  const KEY = 'suitderby.snd';
+  const SC = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98, 1760];   // C major pentatonic
+  const SUIT_NOTE = [0, 2, 3, 4];          // hearts C, diamonds E, clubs G, spades A
+  let ctx = null, bus = null, comp = null, master = null, noiseBuf = null, on = true, offline = false;
+  const listeners = [];
+  try { on = localStorage.getItem(KEY) !== '0'; } catch (e) {}
+
+  function init() {
+    comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.2;
+    master = ctx.createGain(); master.gain.value = on ? 0.9 : 0;
+    bus = ctx.createGain(); bus.gain.value = 1.5;
+    bus.connect(comp); comp.connect(master); master.connect(ctx.destination);
+    const len = Math.floor(ctx.sampleRate * 2);
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  }
+  function go() {
+    if (!on) return null;
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      try { ctx = new AC(); init(); } catch (e) { ctx = null; return null; }
+    }
+    if (!offline && ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+    return ctx;
+  }
+  /* wraps a sound so a failure in audio never reaches the game */
+  const S = fn => function () { if (!go()) return; try { fn.apply(null, arguments); } catch (e) {} };
+
+  /* ---------- building blocks ---------- */
+  function tone(o) {
+    const t0 = ctx.currentTime + (o.at || 0), dur = o.dur || 0.2, vol = o.vol || 0.15, atk = o.atk || 0.004;
+    const os = ctx.createOscillator(), g = ctx.createGain();
+    os.type = o.type || 'sine';
+    os.frequency.setValueAtTime(o.f, t0);
+    if (o.to) os.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+    if (o.det) os.detune.value = o.det;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + atk);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; os.connect(f); f.connect(g); } else os.connect(g);
+    g.connect(o.dest || bus);
+    os.start(t0); os.stop(t0 + dur + 0.05);
+  }
+  function noise(o) {
+    const t0 = ctx.currentTime + (o.at || 0), dur = o.dur || 0.1, vol = o.vol || 0.1;
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = o.type || 'bandpass';
+    f.frequency.setValueAtTime(o.f || 1000, t0);
+    if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+    f.Q.value = o.q || 1;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + (o.atk || 0.004));
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(o.dest || bus);
+    s.start(t0, Math.random() * 1.5); s.stop(t0 + dur + 0.05);
+  }
+  /* a mallet / coin ping: a sine plus a short bright overtone */
+  function ping(f, vol, at, dur) {
+    dur = dur || 0.35;
+    tone({ f, dur, vol, at, atk: 0.003 });
+    tone({ f: f * 2.76, dur: dur * 0.35, vol: vol * 0.3, at, atk: 0.002 });
+  }
+  function brass(f, at, dur, vol) {
+    tone({ f, at, dur, vol: vol * 0.55, type: 'sawtooth', lp: 1700, atk: 0.03 });
+    tone({ f: f * 1.006, at, dur, vol: vol * 0.45, type: 'sawtooth', lp: 1500, atk: 0.035 });
+    tone({ f: f / 2, at, dur, vol: vol * 0.5, type: 'triangle', atk: 0.03 });
+  }
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  /* ---------- interface ---------- */
+  const click = S(() => { tone({ f: 900, to: 620, dur: 0.045, type: 'triangle', vol: 0.11 }); });
+  const pick = S(() => { ping(SC[4], 0.12, 0, 0.14); });
+  const chip = S(() => {
+    noise({ type: 'bandpass', f: 5200, q: 2, dur: 0.025, vol: 0.12 });
+    tone({ f: 2500, dur: 0.03, vol: 0.05 });
+    noise({ type: 'bandpass', f: 4600, q: 2, dur: 0.025, vol: 0.1, at: 0.04 });
+    tone({ f: 2100, dur: 0.03, vol: 0.045, at: 0.04 });
+  });
+  const shuffle = S(() => { for (let i = 0; i < 7; i++) noise({ type: 'bandpass', f: rnd(2200, 4200), q: 1.2, dur: 0.045, vol: 0.09, at: i * 0.045 }); });
+  const flip = S(() => { noise({ type: 'bandpass', f: 2600, to: 4200, q: 0.8, dur: 0.06, vol: 0.1 }); tone({ f: 180, to: 120, dur: 0.05, vol: 0.06 }); });
+  const buy = S(() => {          // cha-ching
+    noise({ type: 'highpass', f: 6000, dur: 0.05, vol: 0.1 });
+    tone({ f: 210, to: 120, dur: 0.09, vol: 0.12 });
+    ping(SC[7], 0.13, 0.03, 0.45);
+    ping(SC[9], 0.11, 0.11, 0.55);
+  });
+  const deny = S(() => { tone({ f: 200, to: 150, dur: 0.1, type: 'triangle', vol: 0.11 }); });
+
+  /* ---------- the race ---------- */
+  const count = S(n => {
+    if (n === 'GO') {
+      [0, 2, 4].forEach((k, i) => ping(SC[k] * 2, 0.12, i * 0.02, 0.5));
+      tone({ f: 130, to: 65, dur: 0.3, vol: 0.2 });
+      noise({ type: 'bandpass', f: 700, to: 3000, q: 0.7, dur: 0.35, vol: 0.09 });
+    } else { tone({ f: 660, dur: 0.16, vol: 0.12, type: 'triangle' }); ping(SC[0], 0.06, 0, 0.2); }
+  });
+  /* every card is a note; your own suit is louder and higher cards ring a little more */
+  const draw = S((suit, mine, rank) => {
+    flip();
+    const f = SC[SUIT_NOTE[suit] || 0] * (mine ? 1 : 0.5);
+    ping(f, (mine ? 0.12 : 0.055) * (0.75 + (rank || 8) / 14 * 0.5), 0.02, mine ? 0.45 : 0.3);
+  });
+  const chaos = S(() => {
+    tone({ f: 180, to: 900, dur: 0.35, type: 'square', vol: 0.05, lp: 1800 });
+    for (let i = 0; i < 6; i++) ping(rnd(900, 2200), 0.05, 0.05 + i * 0.05, 0.25);
+  });
+  const surge = S(() => { noise({ type: 'bandpass', f: 400, to: 1700, q: 0.8, dur: 0.22, vol: 0.16 }); });
+  const spur = S((pct, mine) => {
+    const p = Math.max(0.15, Math.min(1, pct / 100)), v = mine ? 1 : 0.35;
+    noise({ type: 'bandpass', f: 300, to: 2400 + 2400 * p, q: 0.7, dur: 0.3 + 0.3 * p, vol: (0.09 + 0.1 * p) * v });
+    tone({ f: 120, to: 420 + 700 * p, dur: 0.35 + 0.15 * p, type: 'sawtooth', lp: 1300, vol: 0.05 * v });
+    tone({ f: 75, to: 38, dur: 0.3, vol: (0.12 + 0.2 * p) * v });
+    if (mine && p > 0.97) [4, 5, 7, 9].forEach((k, i) => ping(SC[k], 0.07, 0.12 + i * 0.05, 0.3));
+  });
+  const warn = S(() => { tone({ f: 740, dur: 0.08, type: 'triangle', vol: 0.11 }); tone({ f: 740, dur: 0.08, type: 'triangle', vol: 0.11, at: 0.11 }); });
+  const perfect = S(() => {
+    ping(SC[5], 0.14, 0, 0.4); ping(SC[7], 0.13, 0.06, 0.5); ping(SC[9], 0.1, 0.12, 0.6);
+    noise({ type: 'highpass', f: 7000, dur: 0.25, vol: 0.06, at: 0.05 });
+  });
+  const clear = S(() => { tone({ f: 480, to: 760, dur: 0.11, vol: 0.11, type: 'triangle' }); noise({ type: 'bandpass', f: 1500, q: 0.6, dur: 0.12, vol: 0.08 }); });
+  const stumble = S(mine => {
+    const v = mine ? 1 : 0.4;
+    tone({ f: 230, to: 70, dur: 0.45, type: 'sawtooth', lp: 650, vol: 0.12 * v });
+    tone({ f: 340, to: 165, dur: 0.4, type: 'triangle', vol: 0.08 * v, at: 0.04 });
+    noise({ type: 'lowpass', f: 420, dur: 0.16, vol: 0.18 * v });
+  });
+  const lucky = S(() => { [6, 8, 9].forEach((k, i) => ping(SC[k], 0.09, i * 0.06, 0.4)); });
+  const coinFlip = S(() => { ping(2100, 0.08, 0, 0.5); ping(2600, 0.05, 0.12, 0.4); });
+  const dice = S(() => { for (let i = 0; i < 5; i++) noise({ type: 'bandpass', f: rnd(900, 1800), q: 3, dur: 0.03, vol: 0.15, at: i * 0.05 + rnd(0, 0.02) }); });
+
+  /* ---------- betting on the next card ---------- */
+  /* a streak climbs the scale: three notes ending one step higher every time */
+  const hit = S(streak => {
+    const k = Math.min(SC.length - 1, streak + 1);
+    for (let i = 0; i < 3; i++) ping(SC[Math.max(0, k - 2 + i)], 0.13, i * 0.06, 0.45);
+    if (streak >= 3) ping(SC[Math.min(SC.length - 1, k)] * 2, 0.07, 0.22, 0.6);
+    noise({ type: 'highpass', f: 6500, dur: 0.12, vol: 0.05, at: 0.12 });
+  });
+  const miss = S(() => { tone({ f: 330, to: 215, dur: 0.17, type: 'triangle', vol: 0.1 }); });
+  const refund = S(() => { ping(SC[2], 0.07, 0, 0.3); ping(SC[2], 0.05, 0.09, 0.3); });
+
+  /* ---------- wins ---------- */
+  function coins(n, span, vol) {
+    for (let i = 0; i < n; i++) {
+      const at = Math.pow(Math.random(), 0.8) * span;
+      ping(rnd(1700, 3300), (vol || 0.05) * rnd(0.6, 1), at, 0.28);
+      if (i % 3 === 0) noise({ type: 'bandpass', f: rnd(5000, 8000), q: 3, dur: 0.02, vol: 0.04, at });
+    }
+  }
+  const win = S(tier => {
+    if (tier === 'nice') { coins(6, 0.4, 0.045); [0, 2, 4].forEach((k, i) => ping(SC[k + 2], 0.08, i * 0.05, 0.4)); }
+    else if (tier === 'big') {
+      coins(14, 0.9, 0.05); [0, 2, 3, 5, 7].forEach((k, i) => ping(SC[k], 0.1, i * 0.055, 0.5));
+      [0, 2, 4].forEach(k => brass(SC[k] / 2, 0.25, 0.45, 0.08));
+    } else if (tier === 'mega') {
+      coins(26, 1.5, 0.05);
+      [[0, 0], [2, 0.12], [4, 0.24], [5, 0.38]].forEach(([k, at]) => brass(SC[k], at, k === 5 ? 0.9 : 0.2, 0.1));
+      tone({ f: 70, to: 45, dur: 0.6, vol: 0.25 });
+    } else {          // jackpot
+      tone({ f: 300, to: 1800, dur: 0.6, type: 'sawtooth', lp: 2500, vol: 0.06 });
+      coins(44, 2.4, 0.05);
+      [[0, 0.3], [2, 0.42], [4, 0.54], [5, 0.66], [7, 0.78]].forEach(([k, at]) => brass(SC[k], at, k === 7 ? 1.3 : 0.2, 0.11));
+      [5, 7, 9, 7, 9].forEach((k, i) => ping(SC[k], 0.08, 0.9 + i * 0.1, 0.5));
+      tone({ f: 70, to: 40, dur: 0.8, vol: 0.28, at: 0.3 });
+    }
+  });
+  /* the lap payout counting up: ticks that rise in pitch, a chime if it ends in profit */
+  const tally = S((dur, positive) => {
+    const k = Math.max(4, Math.min(16, Math.round(dur * 13)));
+    for (let i = 0; i < k; i++) tone({ f: 900 + i * 55, dur: 0.03, vol: 0.05, at: (i / k) * dur, type: 'triangle' });
+    if (positive) { ping(SC[5], 0.12, dur, 0.5); ping(SC[7], 0.1, dur + 0.07, 0.6); }
+  });
+  const finish = S((place, mine) => {
+    if (!mine) { if (place === 1) { tone({ f: 500, dur: 0.06, vol: 0.04, type: 'triangle' }); } return; }
+    if (place === 1) { [0, 2, 4, 5].forEach((k, i) => brass(SC[k], i * 0.1, i === 3 ? 0.7 : 0.16, 0.1)); coins(8, 0.6, 0.04); }
+    else if (place === 2) { [2, 4, 5].forEach((k, i) => ping(SC[k], 0.1, i * 0.08, 0.5)); }
+    else { ping(SC[3], 0.08, 0, 0.35); ping(SC[2], 0.07, 0.11, 0.4); }
+  });
+  const champion = S(() => {
+    [[0, 0], [0, 0.14], [0, 0.28], [2, 0.42], [4, 0.62]].forEach(([k, at], i) => brass(SC[k], at, i === 4 ? 1.2 : 0.12, 0.11));
+    [0, 2, 4, 5].forEach(k => brass(SC[k] / 2, 0.62, 1.2, 0.05));
+    coins(30, 2, 0.05);
+    tone({ f: 70, to: 42, dur: 0.6, vol: 0.25, at: 0.62 });
+  });
+  const podium = S(() => { [0, 2, 4, 5].forEach((k, i) => ping(SC[k], 0.1, i * 0.09, 0.55)); });
+  const settle = S(() => { ping(SC[4], 0.08, 0, 0.5); ping(SC[2], 0.07, 0.14, 0.6); });   // a gentle, not sad, end
+  const pit = S(() => { ping(SC[2], 0.07, 0, 0.35); ping(SC[4], 0.07, 0.08, 0.4); });
+
+  /* ---------- the crowd and the hoofbeats under the race ---------- */
+  let crowdSrc = null, crowdGain = null, hoof = null, hv = 0, nextBeat = 0, step = 0;
+  const CROWD = 0.034;
+  function crowd(run) {
+    if (!run && !crowdSrc) return;
+    if (!go()) { if (!on && crowdSrc) crowdOff(); return; }
+    try {
+      if (run && !crowdSrc) {
+        crowdSrc = ctx.createBufferSource(); crowdSrc.buffer = noiseBuf; crowdSrc.loop = true;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = 0.35;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
+        crowdGain = ctx.createGain(); crowdGain.gain.value = 0.0001;
+        const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.35; lg.gain.value = 0.008;
+        lfo.connect(lg); lg.connect(crowdGain.gain);
+        crowdSrc.connect(bp); bp.connect(lp); lp.connect(crowdGain); crowdGain.connect(bus);
+        crowdSrc.start(); lfo.start(); crowdSrc._lfo = lfo;
+        crowdGain.gain.setTargetAtTime(CROWD, ctx.currentTime, 0.4);
+      } else if (!run && crowdSrc) crowdOff();
+    } catch (e) {}
+  }
+  function crowdOff() {
+    try {
+      const s = crowdSrc, g = crowdGain; crowdSrc = null; crowdGain = null;
+      g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.15);
+      setTimeout(() => { try { s.stop(); s._lfo.stop(); } catch (e) {} }, 700);
+    } catch (e) {}
+  }
+  /* the crowd swells when something happens */
+  function cheer(a) {
+    if (!crowdGain || !ctx) return;
+    try {
+      const t = ctx.currentTime;
+      crowdGain.gain.cancelScheduledValues(t);
+      crowdGain.gain.setTargetAtTime(CROWD + 0.05 * Math.min(1.5, a), t, 0.05);
+      crowdGain.gain.setTargetAtTime(CROWD, t + 0.45, 0.35);
+    } catch (e) {}
+  }
+  function thump(at, a) {
+    tone({ f: 105, to: 52, dur: 0.1, vol: 0.05 * a, at });
+    noise({ type: 'lowpass', f: 380, dur: 0.06, vol: 0.04 * a, at });
+  }
+  function sched() {
+    if (!ctx || !on || hv <= 0) return;
+    const beat = Math.max(0.11, 0.26 - Math.min(hv, 9) * 0.015);
+    try {
+      while (nextBeat < ctx.currentTime + 0.14) {
+        const a = [1, 0.65, 0.85, 0][step % 4];
+        if (a) thump(Math.max(0, nextBeat - ctx.currentTime), a);
+        step++; nextBeat += beat;
+      }
+    } catch (e) {}
+  }
+  /* v = how fast your horse is going (0 = silent) */
+  function hooves(v) {
+    hv = v;
+    if (v > 0 && !hoof) { if (!go()) return; nextBeat = ctx.currentTime + 0.05; hoof = setInterval(sched, 40); }
+    else if (v <= 0 && hoof) { clearInterval(hoof); hoof = null; }
+  }
+
+  /* ---------- on / off ---------- */
+  function set(v) {
+    on = !!v;
+    try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {}
+    if (ctx && master) master.gain.setTargetAtTime(on ? 0.9 : 0, ctx.currentTime, 0.02);
+    if (!on) { hooves(0); if (crowdSrc) crowdOff(); }
+    listeners.forEach(f => f(on));
+    if (on) { go(); click(); }
+  }
+  const unlock = () => { if (on) go(); };
+
+  /* test hook: render a sound offline and report its level (used by the build checks) */
+  async function render(name, args, secs) {
+    const oc = new OfflineAudioContext(1, Math.floor(44100 * secs), 44100);
+    const keep = { ctx, bus, comp, master, noiseBuf, offline, on };
+    ctx = oc; offline = true; on = true; init();
+    try { api[name].apply(null, args || []); const buf = await oc.startRendering(); return buf.getChannelData(0); }
+    finally { ({ ctx, bus, comp, master, noiseBuf, offline, on } = keep); }
+  }
+
+  const api = {
+    click, pick, chip, shuffle, flip, buy, deny, count, draw, chaos, surge, spur, warn, perfect, clear, stumble,
+    lucky, coinFlip, dice, hit, miss, refund, win, tally, finish, champion, podium, settle, pit,
+    crowd, cheer, hooves, set, unlock, render,
+    toggle: () => set(!on),
+    get on() { return on; },
+    onChange: f => { listeners.push(f); }
+  };
+  return api;
+})();
+if (typeof module !== 'undefined') module.exports = Sfx;
 
 </script>
 <script>
@@ -1959,6 +2261,7 @@ const FX = (() => {
     if (amount <= 0) return;
     if (x == null) { x = W / 2; y = H * 0.45; }
     const tier = amount >= 150 ? 'jackpot' : amount >= 90 ? 'mega' : amount >= 40 ? 'big' : 'nice';
+    Sfx.win(tier);
     coins(x, y, tier === 'nice' ? 10 : tier === 'big' ? 26 : tier === 'mega' ? 44 : 70);
     sparks(x, y, tier === 'nice' ? 10 : 24);
     ring(x, y, tier === 'nice' ? '#ffe07a' : '#ffd95a');
@@ -2426,6 +2729,27 @@ const Scene = (() => {
     var b = e.target.closest('[data-go]');
     if (b) go(b.dataset.go);
   });
+  /* sound: starts on the first tap, a soft tick on buttons that have no sound of their own, M mutes */
+  document.addEventListener('pointerdown', function () { Sfx.unlock(); }, { passive: true });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b && !b.matches('#spur,#brace,[data-bet],[data-buy],#reroll,[data-deal],[data-tg],[data-perk],#snd,#sndMenu,[data-cell],[data-chip]')) Sfx.click();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'KeyM' && !e.repeat && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) Sfx.toggle();
+  });
+  var ICON_ON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  var ICON_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg>';
+  function renderSnd() {
+    $$('.sndbtn').forEach(function (b) {
+      b.innerHTML = Sfx.on ? ICON_ON : ICON_OFF;
+      b.setAttribute('aria-pressed', String(Sfx.on));
+      b.setAttribute('aria-label', T(Sfx.on ? 'Sound on' : 'Sound off'));
+      b.title = T(Sfx.on ? 'Sound on' : 'Sound off') + ' (M)';
+    });
+  }
+  $$('.sndbtn').forEach(function (b) { b.addEventListener('click', function () { Sfx.toggle(); }); });
+  Sfx.onChange(renderSnd);
 
   /* ---------- menu ---------- */
   $('#lineup').innerHTML = SUITS.map(function (s, i) { return '<div class="lu s' + i + '">' + horseSVG(i) + '</div>'; }).join('');
@@ -2434,7 +2758,7 @@ const Scene = (() => {
     $('#menu-stats').textContent = S.meta.runs
       ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
       : T('No runs yet.');
-    renderLang();
+    renderLang(); renderSnd();
   };
   /* language switch: the choice is saved, and every screen is rebuilt in the new language */
   function renderLang() {
@@ -2447,7 +2771,7 @@ const Scene = (() => {
     I.set(b.dataset.lang);
   });
   I.onChange(function () {
-    buildSetup(); buildRules(); onEnter.menu();
+    buildSetup(); buildRules(); onEnter.menu(); renderSnd();
     $('#quit').textContent = T('Quit'); $('#pause').textContent = T('Pause');
     if (S.screen === 'stable') renderStable();
   });
@@ -2581,11 +2905,11 @@ const Scene = (() => {
     if (S.screen !== 'game' || !R) return false;
     if (S.gphase !== 'countdown' && S.gphase !== 'racing') return false;
     if (S.paused) return false;
-    if (E.placeBet(R, suit, S.cstake)) { S.roundBets.push([suit, S.cstake]); renderBets(); syncHud(); return true; }
+    if (E.placeBet(R, suit, S.cstake)) { S.roundBets.push([suit, S.cstake]); Sfx.chip(); renderBets(); syncHud(); return true; }
     return false;
   }
   $('#bets').addEventListener('click', function (e) { var b = e.target.closest('[data-bet]'); if (b) placeBet(+b.dataset.bet); });
-  $('#chips').addEventListener('click', function (e) { var b = e.target.closest('[data-chip]'); if (b) { S.cstake = +b.dataset.chip; renderBets(); } });
+  $('#chips').addEventListener('click', function (e) { var b = e.target.closest('[data-chip]'); if (b) { S.cstake = +b.dataset.chip; Sfx.pick(); renderBets(); } });
   $('#rebet').addEventListener('click', function () {
     (S.lastBets || []).forEach(function (x) { S.cstake = x[1]; placeBet(x[0]); });
   });
@@ -2653,23 +2977,26 @@ const Scene = (() => {
       if (ev.type === 'draw') {
         if (k === lastCard) showCard(ev);
         surge(ev.horse); scene.cheer(0.06 + ev.boost * 0.012);
+        if (!quiet) { Sfx.draw(ev.horse, ev.horse === R.me, ev.card.r || 14); Sfx.cheer(ev.boost * 0.07); }
         if (ev.div > 0) floatMoney(ev.horse, money(ev.div, true));
         redraw = true;
       } else if (ev.type === 'chaos') {
         if (k === lastCard) showCard(ev);
         surge(ev.horse);
+        if (!quiet) Sfx.chaos();
         floatMoney(R.me, money(ev.cash, true));
         S.ticker.push({ i: -1, text: ev.horse >= 0 ? T('Chaos card: {s} surges, you collect {m}', { s: sn(ev.horse), m: money(ev.cash) }) : T('Chaos card, you collect {m}', { m: money(ev.cash) }) });
         redraw = true;
       } else if (ev.type === 'bet') {
         S.lastBets = S.roundBets.length ? S.roundBets : S.lastBets; S.roundBets = [];
         redraw = true;
-        if (ev.void) { S.ticker.push({ i: -1, text: T('Chaos card: your next-card bets are refunded') }); return; }
+        if (ev.void) { if (!quiet) Sfx.refund(); S.ticker.push({ i: -1, text: T('Chaos card: your next-card bets are refunded') }); return; }
         var pos = suitBtn(ev.suit);
         S.flash = { s: ev.suit, hit: ev.hit };
         if (ev.hit) {
           S.ticker.push({ i: ev.suit, text: T('Next-card hit {o} · {m}', { o: odds(ev.odds), m: money(ev.net, true) }) + (ev.streak > 1 ? T(' · streak ×{n}', { n: ev.streak }) : '') });
           if (!quiet) {
+            Sfx.hit(ev.streak);
             var tier = FX.win(ev.pay, pos.x, pos.y);
             if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner(T('HOT STREAK ×{n}', { n: ev.streak }), null, 'big'); }
             var a = scene.anchor(R.me, R);
@@ -2678,20 +3005,26 @@ const Scene = (() => {
             $('#gcash').classList.remove('bump'); void $('#gcash').offsetWidth; $('#gcash').classList.add('bump');
           }
         } else {
+          if (!quiet) Sfx.miss();
           S.ticker.push({ i: ev.suit, text: T('Next card was {s} · {m}', { s: sn(ev.suit), m: money(ev.net) }) });
         }
       } else if (ev.type === 'spur') {
         scene.spur(ev.horse);
+        if (!quiet && (ev.horse === R.me || ev.pct >= 85)) Sfx.spur(ev.pct, ev.horse === R.me);
         if (ev.horse === R.me) { scene.say(R.me, T('SPUR +{v}', { v: f1(ev.power) }), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: T('Spur at {p}% stamina: surge +{v}', { p: Math.round(ev.pct), v: f1(ev.power) }) }); }
         else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: T('unleashes a full-charge Spur') });
+      } else if (ev.type === 'hz_open') {
+        if (!quiet && ev.horse === R.me) Sfx.warn();
       } else if (ev.type === 'hz') {
         var me = ev.horse === R.me;
+        if (!quiet) { if (ev.res === 'stumble') { if (me || Math.random() < 0.3) Sfx.stumble(me); } else if (me) Sfx[ev.res === 'perfect' ? 'perfect' : 'clear'](); }
         if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: T('stumbles over the hazard') }); }
         else if (ev.res === 'perfect') {
           scene.say(ev.horse, me ? T('PERFECT +{m}', { m: money(CFG.perfectCash) }) : T('PERFECT'), '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
           if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: T('perfect jump {m}', { m: money(CFG.perfectCash, true) }) }); }
         } else if (me) scene.say(R.me, T('CLEAR'), '#9ba593');
       } else if (ev.type === 'luck') {
+        var lk = { horseshoe: 'lucky', coin: 'coinFlip', dice: 'dice' }[ev.kind]; if (lk && !quiet) Sfx[lk]();
         if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, T('HORSESHOE'), '#ffe07a'); S.ticker.push({ i: R.me, text: T('Lucky Horseshoe: bonus surge') }); }
         else if (ev.kind === 'jackpot') {
           surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: T('JACKPOT {m}', { m: money(ev.cash, true) }) });
@@ -2703,6 +3036,7 @@ const Scene = (() => {
         S.ticker.push({ i: ev.horse, text: T('is sabotaged and surges 40% less this lap') });
       } else if (ev.type === 'finish') {
         S.ticker.push({ i: ev.horse, text: T(ev.horse === R.me ? 'you finish {o}' : 'finishes {o}', { o: ord(ev.place) }) });
+        if (!quiet) { Sfx.finish(ev.place, ev.horse === R.me); Sfx.cheer(ev.place === 1 ? 1.2 : 0.6); }
         scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
         if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
         if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner(T('WINNER'), null, 'big'); FX.shake(1); }
@@ -2890,7 +3224,7 @@ const Scene = (() => {
     var R = S.run, b = e.target.closest('button'); if (!b) return;
     if (b.dataset.cell) {
       var p = b.dataset.cell.split(',');
-      E.setCall(R, +p[0], +p[1]);
+      if (E.setCall(R, +p[0], +p[1])) Sfx.pick(); else Sfx.deny();
     } else if (b.dataset.stake) E.cycleStake(R, +b.dataset.stake);
     renderPitState();
   });
@@ -2920,9 +3254,9 @@ const Scene = (() => {
   }
   $('#offers').addEventListener('click', function (e) {
     var b = e.target.closest('[data-buy]'); if (!b) return;
-    if (E.buy(S.run, +b.dataset.buy)) renderPitState();
+    if (E.buy(S.run, +b.dataset.buy)) { Sfx.buy(); renderPitState(); } else Sfx.deny();
   });
-  $('#reroll').addEventListener('click', function () { if (E.reroll(S.run)) renderPitState(); });
+  $('#reroll').addEventListener('click', function () { if (E.reroll(S.run)) { Sfx.shuffle(); renderPitState(); } else Sfx.deny(); });
   $('#nextLap').addEventListener('click', beginLap);
 
   /* --- card table: higher or lower --- */
@@ -2959,8 +3293,8 @@ const Scene = (() => {
     if (b.hasAttribute('data-tstake')) {
       var opts = TSTAKES.filter(function (s) { return s <= E.spendable(R); });
       S.tstake = opts[(opts.indexOf(S.tstake) + 1) % opts.length];
-    } else if (b.hasAttribute('data-deal')) E.tableDeal(R, S.tstake);
-    else if (b.dataset.tg) E.tableGuess(R, b.dataset.tg);
+    } else if (b.hasAttribute('data-deal')) { if (E.tableDeal(R, S.tstake)) Sfx.flip(); }
+    else if (b.dataset.tg) { var tg = E.tableGuess(R, b.dataset.tg); if (tg) { Sfx.flip(); if (tg.win) Sfx.hit(2); else Sfx.miss(); } }
     renderPitState();
   });
 
@@ -2968,7 +3302,7 @@ const Scene = (() => {
   function celebrate(res) {
     if (!res) return;
     var net = res.net || 0, w = innerWidth, h = innerHeight;
-    var nb = $('#netb'); if (nb) FX.countUp(nb, net, 1100, '$', true);
+    var nb = $('#netb'); if (nb) { FX.countUp(nb, net, 1100, '$', true); Sfx.tally(1.1, net > 0); }
     if (res.place === 1) { FX.confetti(w / 2, h * 0.28, 90); FX.shake(1); }
     if (res.hits > 0) FX.coins(w * 0.3, h * 0.45, 8 + res.hits * 8);
     if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? T('WINNER') : T('NICE LAP'));
@@ -2976,8 +3310,8 @@ const Scene = (() => {
   }
   function celebrateOver() {
     var r = S.run.result;
-    if (r.champion) { FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
-    else if (r.rank === 2) FX.confetti(innerWidth / 2, innerHeight * 0.3, 50);
+    if (r.champion) { Sfx.champion(); FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
+    else if (r.rank === 2) { Sfx.podium(); FX.confetti(innerWidth / 2, innerHeight * 0.3, 50); } else Sfx.settle();
   }
 
   /* ---------- run over ---------- */
@@ -3017,7 +3351,7 @@ const Scene = (() => {
   onEnter.stable = renderStable;
   $('#perks').addEventListener('click', function (e) {
     var b = e.target.closest('[data-perk]'); if (!b) return;
-    if (M.buy(S.meta, b.dataset.perk)) { M.save(S.meta); renderStable(); }
+    if (M.buy(S.meta, b.dataset.perk)) { M.save(S.meta); Sfx.buy(); renderStable(); }
   });
   $('#resetMeta').addEventListener('click', function () {
     if (!S.resetArm) { S.resetArm = 1; renderStable(); setTimeout(function () { S.resetArm = 0; if (S.screen === 'stable') renderStable(); }, 4000); return; }
@@ -3053,7 +3387,7 @@ const Scene = (() => {
       if (S.gphase === 'countdown') {
         S.cd -= dt;
         var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : T('GO');
-        if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; }
+        if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; Sfx.count(S.cd > 0 ? txt : 'GO'); }
         if (S.cd <= 0) { setGamePhase('racing'); S.goT = 0.6; }
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {
         if (S.goT > 0) { S.goT -= dt; if (S.goT <= 0 && !S.paused) $('#overlay').hidden = true; }
@@ -3070,6 +3404,10 @@ const Scene = (() => {
       }
       if (S.screen === 'game') { renderScene(dt); syncHud(); }
     }
+    var live = S.screen === 'game' && S.run && S.run.lap && !S.paused;
+    var mh = live && S.gphase === 'racing' ? S.run.horses[S.run.me] : null;
+    Sfx.crowd(!!(live && (S.gphase === 'racing' || S.gphase === 'ending')));
+    Sfx.hooves(mh && !mh.fin ? (mh.base + mh.tb + mh.ex) * (mh.slowT > 0 ? 0.4 : 1) * (openHazard() ? 0.5 : 1) * (1 + (S.speed - 1) * 0.3) : 0);
     requestAnimationFrame(frame);
   }
 

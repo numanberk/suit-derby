@@ -61,6 +61,27 @@
     var b = e.target.closest('[data-go]');
     if (b) go(b.dataset.go);
   });
+  /* sound: starts on the first tap, a soft tick on buttons that have no sound of their own, M mutes */
+  document.addEventListener('pointerdown', function () { Sfx.unlock(); }, { passive: true });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b && !b.matches('#spur,#brace,[data-bet],[data-buy],#reroll,[data-deal],[data-tg],[data-perk],#snd,#sndMenu,[data-cell],[data-chip]')) Sfx.click();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'KeyM' && !e.repeat && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) Sfx.toggle();
+  });
+  var ICON_ON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  var ICON_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg>';
+  function renderSnd() {
+    $$('.sndbtn').forEach(function (b) {
+      b.innerHTML = Sfx.on ? ICON_ON : ICON_OFF;
+      b.setAttribute('aria-pressed', String(Sfx.on));
+      b.setAttribute('aria-label', T(Sfx.on ? 'Sound on' : 'Sound off'));
+      b.title = T(Sfx.on ? 'Sound on' : 'Sound off') + ' (M)';
+    });
+  }
+  $$('.sndbtn').forEach(function (b) { b.addEventListener('click', function () { Sfx.toggle(); }); });
+  Sfx.onChange(renderSnd);
 
   /* ---------- menu ---------- */
   $('#lineup').innerHTML = SUITS.map(function (s, i) { return '<div class="lu s' + i + '">' + horseSVG(i) + '</div>'; }).join('');
@@ -69,7 +90,7 @@
     $('#menu-stats').textContent = S.meta.runs
       ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
       : T('No runs yet.');
-    renderLang();
+    renderLang(); renderSnd();
   };
   /* language switch: the choice is saved, and every screen is rebuilt in the new language */
   function renderLang() {
@@ -82,7 +103,7 @@
     I.set(b.dataset.lang);
   });
   I.onChange(function () {
-    buildSetup(); buildRules(); onEnter.menu();
+    buildSetup(); buildRules(); onEnter.menu(); renderSnd();
     $('#quit').textContent = T('Quit'); $('#pause').textContent = T('Pause');
     if (S.screen === 'stable') renderStable();
   });
@@ -216,11 +237,11 @@
     if (S.screen !== 'game' || !R) return false;
     if (S.gphase !== 'countdown' && S.gphase !== 'racing') return false;
     if (S.paused) return false;
-    if (E.placeBet(R, suit, S.cstake)) { S.roundBets.push([suit, S.cstake]); renderBets(); syncHud(); return true; }
+    if (E.placeBet(R, suit, S.cstake)) { S.roundBets.push([suit, S.cstake]); Sfx.chip(); renderBets(); syncHud(); return true; }
     return false;
   }
   $('#bets').addEventListener('click', function (e) { var b = e.target.closest('[data-bet]'); if (b) placeBet(+b.dataset.bet); });
-  $('#chips').addEventListener('click', function (e) { var b = e.target.closest('[data-chip]'); if (b) { S.cstake = +b.dataset.chip; renderBets(); } });
+  $('#chips').addEventListener('click', function (e) { var b = e.target.closest('[data-chip]'); if (b) { S.cstake = +b.dataset.chip; Sfx.pick(); renderBets(); } });
   $('#rebet').addEventListener('click', function () {
     (S.lastBets || []).forEach(function (x) { S.cstake = x[1]; placeBet(x[0]); });
   });
@@ -288,23 +309,26 @@
       if (ev.type === 'draw') {
         if (k === lastCard) showCard(ev);
         surge(ev.horse); scene.cheer(0.06 + ev.boost * 0.012);
+        if (!quiet) { Sfx.draw(ev.horse, ev.horse === R.me, ev.card.r || 14); Sfx.cheer(ev.boost * 0.07); }
         if (ev.div > 0) floatMoney(ev.horse, money(ev.div, true));
         redraw = true;
       } else if (ev.type === 'chaos') {
         if (k === lastCard) showCard(ev);
         surge(ev.horse);
+        if (!quiet) Sfx.chaos();
         floatMoney(R.me, money(ev.cash, true));
         S.ticker.push({ i: -1, text: ev.horse >= 0 ? T('Chaos card: {s} surges, you collect {m}', { s: sn(ev.horse), m: money(ev.cash) }) : T('Chaos card, you collect {m}', { m: money(ev.cash) }) });
         redraw = true;
       } else if (ev.type === 'bet') {
         S.lastBets = S.roundBets.length ? S.roundBets : S.lastBets; S.roundBets = [];
         redraw = true;
-        if (ev.void) { S.ticker.push({ i: -1, text: T('Chaos card: your next-card bets are refunded') }); return; }
+        if (ev.void) { if (!quiet) Sfx.refund(); S.ticker.push({ i: -1, text: T('Chaos card: your next-card bets are refunded') }); return; }
         var pos = suitBtn(ev.suit);
         S.flash = { s: ev.suit, hit: ev.hit };
         if (ev.hit) {
           S.ticker.push({ i: ev.suit, text: T('Next-card hit {o} · {m}', { o: odds(ev.odds), m: money(ev.net, true) }) + (ev.streak > 1 ? T(' · streak ×{n}', { n: ev.streak }) : '') });
           if (!quiet) {
+            Sfx.hit(ev.streak);
             var tier = FX.win(ev.pay, pos.x, pos.y);
             if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner(T('HOT STREAK ×{n}', { n: ev.streak }), null, 'big'); }
             var a = scene.anchor(R.me, R);
@@ -313,20 +337,26 @@
             $('#gcash').classList.remove('bump'); void $('#gcash').offsetWidth; $('#gcash').classList.add('bump');
           }
         } else {
+          if (!quiet) Sfx.miss();
           S.ticker.push({ i: ev.suit, text: T('Next card was {s} · {m}', { s: sn(ev.suit), m: money(ev.net) }) });
         }
       } else if (ev.type === 'spur') {
         scene.spur(ev.horse);
+        if (!quiet && (ev.horse === R.me || ev.pct >= 85)) Sfx.spur(ev.pct, ev.horse === R.me);
         if (ev.horse === R.me) { scene.say(R.me, T('SPUR +{v}', { v: f1(ev.power) }), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: T('Spur at {p}% stamina: surge +{v}', { p: Math.round(ev.pct), v: f1(ev.power) }) }); }
         else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: T('unleashes a full-charge Spur') });
+      } else if (ev.type === 'hz_open') {
+        if (!quiet && ev.horse === R.me) Sfx.warn();
       } else if (ev.type === 'hz') {
         var me = ev.horse === R.me;
+        if (!quiet) { if (ev.res === 'stumble') { if (me || Math.random() < 0.3) Sfx.stumble(me); } else if (me) Sfx[ev.res === 'perfect' ? 'perfect' : 'clear'](); }
         if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: T('stumbles over the hazard') }); }
         else if (ev.res === 'perfect') {
           scene.say(ev.horse, me ? T('PERFECT +{m}', { m: money(CFG.perfectCash) }) : T('PERFECT'), '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
           if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: T('perfect jump {m}', { m: money(CFG.perfectCash, true) }) }); }
         } else if (me) scene.say(R.me, T('CLEAR'), '#9ba593');
       } else if (ev.type === 'luck') {
+        var lk = { horseshoe: 'lucky', coin: 'coinFlip', dice: 'dice' }[ev.kind]; if (lk && !quiet) Sfx[lk]();
         if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, T('HORSESHOE'), '#ffe07a'); S.ticker.push({ i: R.me, text: T('Lucky Horseshoe: bonus surge') }); }
         else if (ev.kind === 'jackpot') {
           surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: T('JACKPOT {m}', { m: money(ev.cash, true) }) });
@@ -338,6 +368,7 @@
         S.ticker.push({ i: ev.horse, text: T('is sabotaged and surges 40% less this lap') });
       } else if (ev.type === 'finish') {
         S.ticker.push({ i: ev.horse, text: T(ev.horse === R.me ? 'you finish {o}' : 'finishes {o}', { o: ord(ev.place) }) });
+        if (!quiet) { Sfx.finish(ev.place, ev.horse === R.me); Sfx.cheer(ev.place === 1 ? 1.2 : 0.6); }
         scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
         if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
         if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner(T('WINNER'), null, 'big'); FX.shake(1); }
@@ -525,7 +556,7 @@
     var R = S.run, b = e.target.closest('button'); if (!b) return;
     if (b.dataset.cell) {
       var p = b.dataset.cell.split(',');
-      E.setCall(R, +p[0], +p[1]);
+      if (E.setCall(R, +p[0], +p[1])) Sfx.pick(); else Sfx.deny();
     } else if (b.dataset.stake) E.cycleStake(R, +b.dataset.stake);
     renderPitState();
   });
@@ -555,9 +586,9 @@
   }
   $('#offers').addEventListener('click', function (e) {
     var b = e.target.closest('[data-buy]'); if (!b) return;
-    if (E.buy(S.run, +b.dataset.buy)) renderPitState();
+    if (E.buy(S.run, +b.dataset.buy)) { Sfx.buy(); renderPitState(); } else Sfx.deny();
   });
-  $('#reroll').addEventListener('click', function () { if (E.reroll(S.run)) renderPitState(); });
+  $('#reroll').addEventListener('click', function () { if (E.reroll(S.run)) { Sfx.shuffle(); renderPitState(); } else Sfx.deny(); });
   $('#nextLap').addEventListener('click', beginLap);
 
   /* --- card table: higher or lower --- */
@@ -594,8 +625,8 @@
     if (b.hasAttribute('data-tstake')) {
       var opts = TSTAKES.filter(function (s) { return s <= E.spendable(R); });
       S.tstake = opts[(opts.indexOf(S.tstake) + 1) % opts.length];
-    } else if (b.hasAttribute('data-deal')) E.tableDeal(R, S.tstake);
-    else if (b.dataset.tg) E.tableGuess(R, b.dataset.tg);
+    } else if (b.hasAttribute('data-deal')) { if (E.tableDeal(R, S.tstake)) Sfx.flip(); }
+    else if (b.dataset.tg) { var tg = E.tableGuess(R, b.dataset.tg); if (tg) { Sfx.flip(); if (tg.win) Sfx.hit(2); else Sfx.miss(); } }
     renderPitState();
   });
 
@@ -603,7 +634,7 @@
   function celebrate(res) {
     if (!res) return;
     var net = res.net || 0, w = innerWidth, h = innerHeight;
-    var nb = $('#netb'); if (nb) FX.countUp(nb, net, 1100, '$', true);
+    var nb = $('#netb'); if (nb) { FX.countUp(nb, net, 1100, '$', true); Sfx.tally(1.1, net > 0); }
     if (res.place === 1) { FX.confetti(w / 2, h * 0.28, 90); FX.shake(1); }
     if (res.hits > 0) FX.coins(w * 0.3, h * 0.45, 8 + res.hits * 8);
     if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? T('WINNER') : T('NICE LAP'));
@@ -611,8 +642,8 @@
   }
   function celebrateOver() {
     var r = S.run.result;
-    if (r.champion) { FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
-    else if (r.rank === 2) FX.confetti(innerWidth / 2, innerHeight * 0.3, 50);
+    if (r.champion) { Sfx.champion(); FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
+    else if (r.rank === 2) { Sfx.podium(); FX.confetti(innerWidth / 2, innerHeight * 0.3, 50); } else Sfx.settle();
   }
 
   /* ---------- run over ---------- */
@@ -652,7 +683,7 @@
   onEnter.stable = renderStable;
   $('#perks').addEventListener('click', function (e) {
     var b = e.target.closest('[data-perk]'); if (!b) return;
-    if (M.buy(S.meta, b.dataset.perk)) { M.save(S.meta); renderStable(); }
+    if (M.buy(S.meta, b.dataset.perk)) { M.save(S.meta); Sfx.buy(); renderStable(); }
   });
   $('#resetMeta').addEventListener('click', function () {
     if (!S.resetArm) { S.resetArm = 1; renderStable(); setTimeout(function () { S.resetArm = 0; if (S.screen === 'stable') renderStable(); }, 4000); return; }
@@ -688,7 +719,7 @@
       if (S.gphase === 'countdown') {
         S.cd -= dt;
         var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : T('GO');
-        if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; }
+        if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; Sfx.count(S.cd > 0 ? txt : 'GO'); }
         if (S.cd <= 0) { setGamePhase('racing'); S.goT = 0.6; }
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {
         if (S.goT > 0) { S.goT -= dt; if (S.goT <= 0 && !S.paused) $('#overlay').hidden = true; }
@@ -705,6 +736,10 @@
       }
       if (S.screen === 'game') { renderScene(dt); syncHud(); }
     }
+    var live = S.screen === 'game' && S.run && S.run.lap && !S.paused;
+    var mh = live && S.gphase === 'racing' ? S.run.horses[S.run.me] : null;
+    Sfx.crowd(!!(live && (S.gphase === 'racing' || S.gphase === 'ending')));
+    Sfx.hooves(mh && !mh.fin ? (mh.base + mh.tb + mh.ex) * (mh.slowT > 0 ? 0.4 : 1) * (openHazard() ? 0.5 : 1) * (1 + (S.speed - 1) * 0.3) : 0);
     requestAnimationFrame(frame);
   }
 

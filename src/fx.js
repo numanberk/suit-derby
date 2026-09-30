@@ -133,6 +133,7 @@ const FX = (() => {
     if (amount <= 0) return;
     if (x == null) { x = W / 2; y = H * 0.45; }
     const tier = amount >= 150 ? 'jackpot' : amount >= 90 ? 'mega' : amount >= 40 ? 'big' : 'nice';
+    Sfx.win(tier);
     coins(x, y, tier === 'nice' ? 10 : tier === 'big' ? 26 : tier === 'mega' ? 44 : 70);
     sparks(x, y, tier === 'nice' ? 10 : 24);
     ring(x, y, tier === 'nice' ? '#ffe07a' : '#ffd95a');

@@ -14,6 +14,8 @@
     'Rules': 'Kurallar',
     'How a run works': 'Bir koşu nasıl işler',
     'Language': 'Dil',
+    'Sound on': 'Ses açık',
+    'Sound off': 'Ses kapalı',
     'New run': 'Yeni koşu',
     'Choose your horse': 'Atını seç',
     'Length': 'Uzunluk',

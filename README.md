@@ -5,6 +5,14 @@ Every lap is a full race; you earn run cash, spend it on upgrades in a pit shop 
 and lose whatever is left when the run ends. Stable Points earned at the end of a run buy
 permanent perks in The Stable.
 
+### v7: sound
+All sound is synthesized live with WebAudio (no audio files). Every card drawn is a soft mallet note on a
+pentatonic scale, so the race plays a little tune; a next-card hit streak climbs the scale; wins escalate
+from a coin ping to a coin shower, a brass fanfare and a jackpot siren; misses are a soft low blip. A quiet
+crowd and a galloping hoofbeat sit under the race and swell when something happens. Buttons tick, chips click,
+buying goes cha-ching, and the lap payout counts up with rising ticks. Sound starts after your first tap,
+the speaker button (menu and race screen) or the **M** key mutes it, and the choice is saved.
+
 ### v6: Turkish language
 Pick **English** or **Türkçe** with the switch at the top of the menu. The choice is remembered in this
 browser (and defaults to Turkish on Turkish-language browsers). Every screen, upgrade, perk, the rules
@@ -41,6 +49,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/index.html   page structure: menu, setup, game, pit stop, run over, Stable, rules
     src/style.css    all styling
     src/engine.js    game rules: deck, laps, upgrades, cash, shop (no DOM, runs in Node)
+    src/audio.js     WebAudio sound engine (Sfx): every effect, crowd, hoofbeats, mute
     src/i18n.js      translator: t('English text', {params}), language switch, saved choice
     src/lang_tr.js   Turkish dictionary and Turkish rules page
     src/meta.js      Stable perks and saved progress (localStorage)
