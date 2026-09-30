@@ -22,6 +22,7 @@
     <div class="lineup" id="lineup" aria-hidden="true"></div>
     <nav class="menu-list" data-i18n-label="Main menu" aria-label="Main menu">
       <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
+      <button type="button" class="mrow daily" id="dailyBtn"><span class="mt" data-i18n="Daily Derby">Daily Derby</span><span class="md" id="daily-sub"></span></button>
       <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
       <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a run works">How a run works</span></button>
     </nav>
@@ -35,6 +36,8 @@
     <div class="picks" role="radiogroup" data-i18n-label="Horse" aria-label="Horse" id="picks"></div>
     <h3 class="lbl" data-i18n="Length">Length</h3>
     <div class="pills" role="radiogroup" data-i18n-label="Number of laps" aria-label="Number of laps" id="lapPills"></div>
+    <div id="stakeBox"><h3 class="lbl" data-i18n="Stakes">Stakes</h3>
+    <div class="pills" role="radiogroup" data-i18n-label="Stakes" aria-label="Stakes" id="stakePills"></div></div>
     <p class="note" id="setup-perks"></p>
     <div class="actions"><button type="button" class="btn primary" id="startRun" data-i18n="Start run">Start run</button></div>
   </section>
@@ -43,7 +46,7 @@
   <section class="screen" id="s-game" hidden aria-label="Race">
     <div class="gbar">
       <button type="button" class="btn ghost" id="quit">Quit</button>
-      <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gclock mono" id="gclock">0:00.0</span></div>
+      <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gmod mono" id="gmod" hidden></span><span class="gclock mono" id="gclock">0:00.0</span></div>
       <div class="gcash" id="gcash" data-i18n-title="Run cash. Lost when the run ends." title="Run cash. Lost when the run ends.">$0</div>
     </div>
     <div class="stage" id="stagebox">
@@ -56,8 +59,10 @@
       </div>
     </div>
     <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
+    <div class="statrow mono" id="statrow"><span class="gritpill" id="gritpill" hidden></span></div>
     <div class="actrow">
       <button type="button" class="btn act brace" id="brace" disabled><span class="a-t" data-i18n="Brace">Brace</span><span class="a-s mono" id="bracesub" data-i18n="no hazard near">no hazard near</span></button>
+      <button type="button" class="btn act trap" id="trap" disabled><span class="a-t" data-i18n="Trap">Trap</span><span class="a-s mono" id="trapsub">none</span></button>
       <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t" data-i18n="Spur">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
     </div>
     <div class="cockpit">
@@ -76,6 +81,11 @@
       <div class="cp-bets">
         <div class="betshead"><h3 class="lbl" data-i18n="Next card: pick a suit">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
         <div class="bets" id="bets"></div>
+        <div class="peekrow" id="peekrow">
+          <button type="button" class="btn small" id="peek"></button>
+          <span class="peeked mono" id="peeked"></span>
+          <button type="button" class="btn small" id="burn"></button>
+        </div>
         <div class="betctl">
           <div class="chips" id="chips" role="radiogroup" data-i18n-label="Stake" aria-label="Stake"></div>
           <button type="button" class="btn small" id="rebet" data-i18n="Rebet">Rebet</button>
@@ -118,6 +128,8 @@
       </div>
     </div>
     <div class="rivals" id="rivals"></div>
+    <div class="intel" id="intel"></div>
+    <div class="recap" id="recap" hidden></div>
 
     <div class="sect">
       <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
@@ -137,6 +149,7 @@
       <div class="table" id="table"></div>
     </div>
 
+    <div class="sets" id="sets"></div>
     <div class="kit" id="kit"></div>
     <div class="pitbar"><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
   </section>
@@ -159,6 +172,13 @@
         <p class="forfeit" id="over-forfeit"></p>
       </div>
     </div>
+    <div class="sect" id="over-new" hidden></div>
+    <div class="sect"><h3 class="lbl" data-i18n="Run stats">Run stats</h3><div class="rstats" id="over-stats"></div></div>
+    <div class="sect share" id="over-share" hidden>
+      <h3 class="lbl" data-i18n="Daily result">Daily result</h3>
+      <pre class="sharebox mono" id="sharetxt"></pre>
+      <button type="button" class="btn small" id="shareBtn" data-i18n="Copy result">Copy result</button>
+    </div>
     <div class="actions">
       <button type="button" class="btn primary" data-go="setup" data-i18n="Play again">Play again</button>
       <button type="button" class="btn" data-go="stable" data-i18n="The Stable">The Stable</button>
@@ -171,15 +191,26 @@
     <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="The Stable">The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
     <p class="lede sm" data-i18n="Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
     <div class="perks" id="perks"></div>
+    <h3 class="lbl sect-h" data-i18n="Trophies">Trophies</h3>
+    <p class="lede sm" id="trophy-sub"></p>
+    <div class="trophies" id="trophies"></div>
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 
   <!-- RULES -->
   <section class="screen" id="s-rules" hidden aria-label="Rules">
     <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="Rules">Rules</h2></header>
+    <div class="actions top"><button type="button" class="btn small" id="openGuide" data-i18n="How to play">How to play</button></div>
     <div class="rules" id="rules"></div>
   </section>
 
+</div>
+<div class="modal" id="guide" hidden role="dialog" aria-modal="true" data-i18n-label="How to play" aria-label="How to play">
+  <div class="mcard">
+    <div class="mdots" id="gdots" aria-hidden="true"></div>
+    <div id="gbody"></div>
+    <div class="mnav"><button type="button" class="btn ghost small" id="gskip" data-i18n="Skip">Skip</button><button type="button" class="btn primary small" id="gnext" data-i18n="Next">Next</button></div>
+  </div>
 </div>
 <div id="flashfx" aria-hidden="true"></div>
 <div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t" data-i18n="BIG WIN">BIG WIN</div><div class="bw-a mono"></div></div>

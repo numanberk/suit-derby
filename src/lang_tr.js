@@ -89,7 +89,7 @@
     'a free starting upgrade': 'başlangıçta bedava bir geliştirme',
     'better shop rarity': 'daha iyi dükkan nadirliği',
     '+{p}% bet payouts': 'bahis ödemeleri +%{p}',
-    'Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1.': 'Her koşu eşit başlar: renk başına 10 kart, aynı atlar ve 1. turdan önce rakiplerde geliştirme yok.',
+    'Every run starts level: 10 cards per suit and no rival upgrades before lap 1. Each horse has its own trait.': 'Her koşu eşit başlar: renk başına 10 kart ve 1. turdan önce rakiplerde geliştirme yok. Her atın kendine özgü bir özelliği var.',
     'Your Stable perks: {list}.': 'Ahır avantajların: {list}.',
     'No Stable perks yet. Finish a run to earn Stable Points.': 'Henüz Ahır avantajın yok. Ahır Puanı kazanmak için bir koşuyu bitir.',
 
@@ -163,7 +163,7 @@
     'On the line': 'Startta',
     'Championship': 'Şampiyona',
     'Level start': 'Eşit başlangıç',
-    'Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.': 'Her rengin aynı 10 kartı ve aynı atı var. Kimsenin henüz geliştirmesi yok, bu yüzden aşağıdaki oranlar eşit. Sıralamayı tahmin et, ilk bahislerini yap, sonra turu başlat.',
+    'Every suit has the same 10 cards and nobody has an upgrade yet, so the odds below are close to even. Call the order and place your first bets, then start the lap.': 'Her rengin aynı 10 kartı var ve kimsenin henüz geliştirmesi yok, bu yüzden aşağıdaki oranlar neredeyse eşit. Sıralamayı tahmin et, ilk bahislerini yap, sonra turu başlat.',
     '{o} this lap': 'Bu tur {o} sıra',
     'Prize': 'Ödül',
     'Speed bonus, {s}s under par': 'Hız bonusu, baremin {s}sn altında',
@@ -302,11 +302,118 @@
   };
   Object.assign(I18n.dict.tr, tr);
 
+  Object.assign(I18n.dict.tr, {
+    // --- new upgrades
+    'Underdog Sponsor': 'Zayıfın Sponsoru', 'Finishing a lap 3rd or 4th pays you $40 from a sponsor.': 'Bir turu 3. ya da 4. bitirmek sana sponsordan $40 kazandırır.',
+    'Grit Amplifier': 'Azim Yükselteci', 'Your Grit, the stamina bonus for trailing the leader, is 60% stronger.': 'Azmin, yani liderin gerisinde kalmanın dayanıklılık bonusu, %60 daha güçlü.',
+    'Trap Master': 'Tuzak Ustası', 'Start every lap with a free trap, and traps trip their target 95% of the time.': 'Her tura bedava bir tuzakla başla; tuzaklar hedefini %95 oranında tökezletir.',
+    'Echo Chamber': 'Yankı Odası', 'When a card of your suit is drawn, there is a 30% chance the same card comes out again next.': 'Rengindeki bir kart çekildiğinde, aynı kartın hemen ardından tekrar çıkma şansı %30.',
+    'Phoenix': 'Anka', 'Once per lap, if you are dead last past halfway: a huge surge and full stamina.': 'Turda bir kez, yarıyı geçince son sıradaysan: dev bir atılım ve dolu dayanıklılık.',
+    // --- lap modifiers
+    'Mud Run': 'Çamur Koşusu', 'Four hazards per horse, and stumbles last 60% longer.': 'At başına dört engel ve tökezlemeler %60 daha uzun sürer.',
+    'Quickdraw': 'Hızlı Çekiliş', 'A card every 1.8 seconds: more surges, faster bets.': 'Her 1,8 saniyede bir kart: daha çok atılım, daha hızlı bahis.',
+    'Headwind': 'Karşı Rüzgâr', 'Cruising speed −0.3 for everyone: a longer lap where cards matter more.': 'Herkes için seyir hızı −0,3: kartların daha çok önem kazandığı uzun bir tur.',
+    'Clear Track': 'Açık Pist', 'No hazards and cruising speed +0.4: a short, fast lap.': 'Engel yok ve seyir hızı +0,4: kısa, hızlı bir tur.',
+    'Golden Lap': 'Altın Tur', 'All race prizes are 1.5× bigger.': 'Tüm yarış ödülleri 1,5 kat büyük.',
+    'Chaos Night': 'Kaos Gecesi', '4 Chaos cards are shuffled in. Each pays $25 and surges a random horse.': 'Desteye 4 Kaos kartı karıştırılır. Her biri $25 öder ve rastgele bir ata atılım yaptırır.',
+    'Derby Day': 'Derbi Günü', 'The final lap: every place is worth double points.': 'Son tur: her sıra çift puan değerinde.',
+    // --- horse traits
+    'Sprinter': 'Sprinter', 'Stamina refills 20% faster.': 'Dayanıklılık %20 daha hızlı dolar.',
+    'Stayer': 'Uzun Soluklu', 'Surges fade 5% slower.': 'Atılımlar %5 daha yavaş söner.',
+    'Steady': 'Dengeli', 'Stumbles last half as long, and +0.03 cruising speed.': 'Tökezlemeler yarı kadar sürer ve seyir hızı +0,03.',
+    'Closer': 'Finişçi', '+0.12 cruising speed in the last 40% of a lap.': 'Turun son %40’ında seyir hızı +0,12.',
+    // --- set bonuses
+    'Card Shark I: your cards surge 6% harder': 'Kart Ustası I: kartların %6 daha sert atılım yaptırır',
+    'Card Shark II: your cards surge 14% harder': 'Kart Ustası II: kartların %14 daha sert atılım yaptırır',
+    'Thoroughbred I: +0.06 cruising speed': 'Safkan I: seyir hızı +0,06',
+    'Thoroughbred II: +0.15 cruising speed': 'Safkan II: seyir hızı +0,15',
+    'Tycoon I: race cash +8%': 'Patron I: yarış parası +%8',
+    'Tycoon II: race cash +16%': 'Patron II: yarış parası +%16',
+    'Sharp I: bet payouts +8%': 'Keskin I: bahis ödemeleri +%8',
+    'Sharp II: bet payouts +16%': 'Keskin II: bahis ödemeleri +%16',
+    'Fortune I: one more free reroll at every stop': 'Talih I: her molada bir bedava yenileme daha',
+    'Fortune II: start every lap with +15 stamina': 'Talih II: her tura +15 dayanıklılıkla başla',
+    'Kit: start every lap with +12 stamina': 'Takım: her tura +12 dayanıklılıkla başla',
+    'Next ({n}): ': 'Sıradaki ({n}): ',
+    // --- badges (trophies)
+    'Hot Hand': 'Sıcak El', 'Hit 3 next-card bets in a row in one lap.': 'Bir turda üst üste 3 sıradaki kart bahsini tut.',
+    'Saboteur': 'Sabotajcı', 'Trip rivals with 3 traps in one run.': 'Bir koşuda 3 tuzakla rakipleri tökezlet.',
+    'Comeback Kid': 'Geri Dönüş Ustası', 'Win a lap right after finishing last.': 'Son bitirdiğin turun hemen ardından bir tur kazan.',
+    'Perfectionist': 'Mükemmeliyetçi', 'Land 6 perfect jumps in one run.': 'Bir koşuda 6 kusursuz atlayış yap.',
+    'Win a run.': 'Bir koşu kazan.',
+    'Underdog': 'Yenilen Taraf', 'Win a run after being last at a pit stop.': 'Bir molada sonuncuyken koşuyu kazan.',
+    'Take $300 or more in a single lap.': 'Tek bir turda $300 ya da daha fazla kazan.',
+    'Marathon': 'Maraton', 'Finish a 10 lap run.': '10 turluk bir koşuyu bitir.',
+    'Clairvoyant': 'Kâhin', 'Call all four places right in one lap.': 'Bir turda dört sıranın hepsini doğru tahmin et.',
+    'Daily Rider': 'Günün Jokeyi', 'Finish a Daily Derby.': 'Bir Günlük Derbi’yi bitir.',
+    // --- guide
+    'The race': 'Yarış', 'Your hands': 'Senin hamlelerin', 'Never out of it': 'Hiç bitmez',
+    'Four horses, one per suit. Every few seconds a card is drawn and the horse of that suit surges. You ride one suit and always back it to win.': 'Dört at, her renkten bir tane. Birkaç saniyede bir kart çekilir ve o rengin atı atılım yapar. Bir renge binersin ve her zaman onun kazanacağına oynarsın.',
+    'Every lap is a race. Points for the place: 4, 3, 2, 1. Most points after the last lap wins the run.': 'Her tur bir yarıştır. Sıraya göre puan: 4, 3, 2, 1. Son turdan sonra en çok puanı olan koşuyu kazanır.',
+    '<b>Spur</b> (S) spends stamina for a surge: a full bar is worth much more than a half bar.': '<b>Mahmuz</b> (S) dayanıklılığı bir atılım için harcar: dolu çubuk, yarım çubuktan çok daha değerlidir.',
+    '<b>Brace</b> (Space) when a hazard lights up: tap in the gold zone for a perfect jump.': 'Bir engel yandığında <b>Atla</b> (Boşluk): kusursuz atlayış için altın bölgeye dokun.',
+    '<b>Trap</b> (X) drops a trap in front of the leading rival. You earn tokens by finishing 3rd or 4th.': '<b>Tuzak</b> (X) önde giden rakibin önüne tuzak bırakır. 3. ya da 4. bitirerek jeton kazanırsın.',
+    'You win cash for your place, for cards of your suit after you finish, and for bets. Spend it on upgrades at the pit stop. <b>Cash left at the end of the run is lost.</b>': 'Sıran, bitirdikten sonra çekilen renk kartların ve bahisler için para kazanırsın. Molada geliştirmelere harca. <b>Koşu sonunda kalan para kaybolur.</b>',
+    'Bet on the next card. <b>Peek</b> shows it first, <b>Burn</b> throws it away.': 'Sıradaki karta bahis oyna. <b>Bak</b> önce gösterir, <b>Yak</b> onu çöpe atar.',
+    'Trailing charges your <b>Grit</b>: stamina refills faster the further you are behind. Last in the standings? The shop gets bigger.': 'Geride kalmak <b>Azmini</b> doldurur: ne kadar gerideysen dayanıklılığın o kadar hızlı dolar. Puan tablosunda sonuncu musun? Dükkan büyür.',
+    'The final lap is <b>Derby Day</b>: every place is worth double points, so nothing is settled until the end.': 'Son tur <b>Derbi Günü</b>: her sıra çift puan değerinde, yani son ana kadar hiçbir şey belli olmaz.',
+    'Standard': 'Standart', 'Tough': 'Zor', 'Hard': 'Çok Zor', 'Brutal': 'Acımasız', 'Legend': 'Efsane',
+    // --- menu, setup
+    'Daily Derby': 'Günlük Derbi', 'Stakes': 'Zorluk', 'How to play': 'Nasıl oynanır',
+    'Today: {o} overall, {p} pts. Ride again?': 'Bugün: genelde {o}, {p} puan. Tekrar binmek ister misin?',
+    'Same deck for everyone today · you ride {s} · 5 laps': 'Bugün herkes için aynı deste · sen {s} ile yarışıyorsun · 5 tur',
+    'Win a run on {s} to unlock': '{s} seviyesinde bir koşu kazanınca açılır',
+    'rivals buy more · prizes −{p}% · SP +{s}%': 'rakipler daha çok alır · ödüller −%{p} · AP +%{s}',
+    'the normal rules': 'normal kurallar',
+    // --- race
+    'Trap': 'Tuzak', 'none': 'yok', '{n} token': '{n} jeton', '{n} tokens': '{n} jeton',
+    'GRIT +{p}% stamina refill': 'AZİM: dayanıklılık dolumu +%{p}',
+    'Peek {m}': 'Bak {m}', 'Burn {m}': 'Yak {m}', 'Next card:': 'Sıradaki kart:', 'See the next card first': 'Önce sıradaki kartı gör',
+    'You know the next card. Bets are closed until it is drawn.': 'Sıradaki kartı biliyorsun. Kart çekilene kadar bahisler kapalı.',
+    'FINAL LAP · ×2 pts': 'SON TUR · ×2 puan',
+    'TRIPPED!': 'TÖKEZLEDİ!', 'stumbles in your own trap': 'kendi tuzağında tökezler', 'trips over your trap!': 'tuzağına takılıp tökezler!',
+    'DODGED': 'KAÇTI', 'dodges the trap': 'tuzaktan kaçar', 'TRAP!': 'TUZAK!', 'a trap lies ahead of {s}': '{s} için önde bir tuzak var',
+    'ECHO': 'YANKI', 'Echo Chamber: your card goes back in the deck': 'Yankı Odası: kartın desteye geri döner',
+    'Peek: the next card is {c}': 'Bak: sıradaki kart {c}', 'Burned the {c}. Peek again to see the new top card.': '{c} yakıldı. Yeni üst kartı görmek için tekrar bak.',
+    'PHOENIX': 'ANKA', 'rises like a Phoenix: surge and full stamina': 'Anka gibi yeniden doğar: atılım ve dolu dayanıklılık',
+    'DERBY DAY': 'DERBİ GÜNÜ',
+    // --- pit stop
+    'Sponsor': 'Sponsor', 'Start the final lap · ×2 points': 'Son turu başlat · ×2 puan',
+    'Next: the final lap': 'Sıradaki: son tur', 'Next lap modifier': 'Sonraki tur kuralı',
+    'Underdog draft': 'Zayıflara seçme hakkı', 'You are {o} in the standings, so this stop gives you {list}.': 'Puan tablosunda {o} sıradasın, bu yüzden bu mola sana şunları verir: {list}.',
+    '{n} extra shop slot': '{n} ekstra dükkan yeri', '{n} extra shop slots': '{n} ekstra dükkan yeri',
+    'Trap tokens': 'Tuzak jetonları', 'You earned {n} for finishing {o}. ': '{o} bitirdiğin için {n} kazandın. ',
+    '{n} ready: press Trap (X) in the next lap to drop one in front of the leading rival.': '{n} hazır: sonraki turda Tuzak (X) tuşuyla önde giden rakibin önüne bir tane bırak.',
+    'How you won': 'Nasıl kazandın', 'Why {o}?': 'Neden {o}?',
+    'Cards: your suit came up <b>{n}</b> times (about {e} expected). The deck was kind.': 'Kartlar: rengin <b>{n}</b> kez çıktı (yaklaşık {e} beklenirdi). Deste sana nazik davrandı.',
+    'Cards: your suit came up only <b>{n}</b> times (about {e} expected). A cold deck.': 'Kartlar: rengin yalnızca <b>{n}</b> kez çıktı (yaklaşık {e} beklenirdi). Soğuk bir deste.',
+    'Cards: your suit came up <b>{n}</b> times, about what the deck promised.': 'Kartlar: rengin <b>{n}</b> kez çıktı, destenin vaat ettiği kadar.',
+    'Hazards: <b>{n}</b> stumble, and each one costs seconds.': 'Engeller: <b>{n}</b> tökezleme ve her biri saniyelere mal olur.',
+    'Hazards: <b>{n}</b> stumbles, and each one costs seconds.': 'Engeller: <b>{n}</b> tökezleme ve her biri saniyelere mal olur.',
+    'Hazards: <b>{n}</b> perfect jumps, clean riding.': 'Engeller: <b>{n}</b> kusursuz atlayış, temiz sürüş.',
+    'Spur: you never used it, so the stamina went to waste.': 'Mahmuz: hiç kullanmadın, dayanıklılık boşa gitti.',
+    'Spur: {n} uses at {p}% charge on average. Waiting for more charge pays off.': 'Mahmuz: {n} kullanım, ortalama %{p} doluluk. Daha fazla dolmasını beklemek karşılığını verir.',
+    'Spur: {n} uses at {p}% charge on average. Good timing.': 'Mahmuz: {n} kullanım, ortalama %{p} doluluk. İyi zamanlama.',
+    'Traps: <b>{h}</b> of {n} tripped a rival.': 'Tuzaklar: {n} tuzaktan <b>{h}</b> tanesi bir rakibi tökezletti.',
+    '{s} took the lap with <b>{n}</b> cards of its suit drawn.': '{s} turu, kendi renginden <b>{n}</b> kart çekilerek aldı.',
+    // --- run over, Stable
+    'Laps won': 'Kazanılan tur', 'Best lap': 'En iyi tur', 'Cash earned': 'Kazanılan para', 'Perfect jumps': 'Kusursuz atlayış',
+    'Stumbles': 'Tökezleme', 'Spurs': 'Mahmuz', 'Traps tripped': 'Tuzağa düşen', 'Peeks / burns': 'Bakış / yakış', 'Best streak': 'En iyi seri',
+    'Trophy': 'Rozet', 'Unlocked in the shop: {u}.': 'Dükkanda açıldı: {u}.',
+    'Stakes unlocked': 'Zorluk açıldı', 'A harder run that pays more Stable Points.': 'Daha çok Ahır Puanı veren daha zor bir koşu.',
+    'Run stats': 'Koşu istatistikleri', 'Daily result': 'Günlük sonuç',
+    'Copy result': 'Sonucu kopyala', 'Selected: copy it now': 'Seçildi: şimdi kopyala', 'Copied': 'Kopyalandı',
+    'Trophies': 'Rozetler',
+    'Trophies are earned once and kept. Some unlock new upgrades in the shop. Highest stakes open: {s}.': 'Rozetler bir kez kazanılır ve saklanır. Bazıları dükkanda yeni geliştirmelerin kilidini açar. Açık en yüksek zorluk: {s}.',
+    'Unlocked: {u}': 'Açıldı: {u}', 'Unlocks: {u}': 'Açar: {u}',
+    'Got it': 'Anladım', 'Next': 'İleri'
+  });
+
   /* the rules page, written out in Turkish so the grammar stays natural */
   I18n.rules.tr = function (C) {
     const n = I18n.n, tp = C.tierPrice, m = x => '$' + x;
     return '' +
-      '<section><h3>Bir koşu</h3><p>Bir renk ve bir uzunluk seç: <b>5 veya 10 tur</b>. Her tur, her renkten bir at olmak üzere dört at arasında pist boyunca tam bir yarıştır. 1., 2., 3. veya 4. bitirmek sırasıyla <b>' + C.points.join(', ') + ' puan</b> kazandırır. Son turdan sonra en çok puanı olan şampiyon olur.</p><p>Her koşu <b>eşit</b> başlar: renk başına 10 kart, aynı atlar ve 1. turdan önce rakiplerde geliştirme yok. Tek avantajın Ahır geliştirmeleridir.</p></section>' +
+      '<section><h3>Bir koşu</h3><p>Bir renk ve bir uzunluk seç: <b>5 veya 10 tur</b>. Her tur, her renkten bir at olmak üzere dört at arasında pist boyunca tam bir yarıştır. 1., 2., 3. veya 4. bitirmek sırasıyla <b>' + C.points.join(', ') + ' puan</b> kazandırır. Son turdan sonra en çok puanı olan şampiyon olur.</p><p>Her koşu <b>eşit</b> başlar: renk başına 10 kart ve 1. turdan önce rakiplerde geliştirme yok. Tek avantajın Ahır geliştirmeleridir.</p></section>' +
       '<section><h3>Çekiliş</h3><p>Her ' + n(C.drawEvery) + ' saniyede bir kart çekilir. O renkteki at, birkaç saniyede sönen bir <b>atılım</b> alır. Yüksek kartlar daha sert atılım yaptırır, ama her kart küçük bir itiştir; bu yüzden yarışlar yaklaşık bir dakika sürer. Bitiren atlar atılımları yok sayar.</p>' +
       '<div class="vals"><span>2–10 sayı</span><span>V 11</span><span>K 12</span><span>P 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
       '<section><h3>Deste</h3><p>Deste küçüktür: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' kart</b>, renk başına ' + (C.copies * (15 - C.minRank)) + ', dereceler ' + C.minRank + ' ile As arası. Kartlar geri konmadan çekilir; bu yüzden çok çıkan bir renk azalır ve şanssız kalan atların sıradaki kartları alma ihtimali artar. Liderler söner, geride kalanlar şansını bulur. Geliştirmeler bunu <b>tüm koşu</b> için değiştirir: kendi kartlarını ekle, yükselt ya da bir rakibinkini yak ve çal (renk başına asla ' + C.minSuit + ' kartın altına inmez). Her turun başında tüm kartlar toplanır ve <b>yeniden karıştırılır</b>.</p><p><b>Zayıflara destek fonu:</b> her molada, destenin %' + Math.round(C.underdog * 100) + '’inden azına sahip bir renk, bu çizgiyi aşana kadar bedava kart alır (en fazla ' + C.underdogMax + '), böylece hiçbir at koşudan silinmez.</p><p>Her turdan sonra rakipler de bedava geliştirme alır; hangilerini aldıklarını molada görebilirsin.</p></section>' +
@@ -317,6 +424,11 @@
       '<section><h3>Para</h3><p>Her turdan sonra <b>koşu parası</b> kazanırsın: bitirdiğin sıraya göre bir ödül (' + C.prizes.map(m).join(', ') + '), ' + C.par + ' saniyenin altındaki her saniye için $' + n(C.bonusPerSec) + ' hız bonusu ve <b>temettüler</b>: atın çizgiyi geçtikten sonra çekilen, rengindeki her kart değerinin ' + n(C.divPerValue) + ' katını öder. Bahisler bunların üstüne ödenir.</p><p>Parayı geliştirmelere, yenilemelere, bahislere ve kart masasına harca. <b>Koşu bittiğinde kalan her şey kaybolur.</b></p></section>' +
       '<section><h3>Mola dükkanı ve nadirlikler</h3><p>Dükkan 1. turdan sonra açılır ve ' + C.shopSlots + ' geliştirme sunar. Her geliştirme bir nadirliğe aittir ve <b>bir nadirlikteki tüm geliştirmeler aynı fiyattır</b>: Yaygın $' + tp.common + ', Nadir $' + tp.rare + ', Epik $' + tp.epic + ', Efsanevi $' + tp.legendary + '. Dükkan her nadirliğin şansını gösterir ve koşu ilerledikçe daha nadir geliştirmeler daha sık çıkar. Ücret karşılığında yenileyebilirsin.</p><p>Geliştirme türleri: Deste, At, Para, Bahis, Ekipman (Gözcü Merceği ve Engelci gibi), Şans (rastgele atılımlar, nakit getirileri, zarlar, yazı tura) ve bir kez kullanılan Sonraki tur eşyaları.</p></section>' +
       '<section><h3>Kart masası</h3><p>Her molada en fazla ' + C.tableLimit + ' el <b>daha yüksek mi daha düşük mü</b> oynayabilirsin. Bir kart açılır, sıradakinin daha yüksek mi daha düşük mü geleceğini tahmin edersin; beraberlik kaybeder. Ödeme, küçük bir kasa payıyla gerçek şansı izler.</p></section>' +
+      '<section><h3>Yetişme araçları</h3><p>Hiç kimse 3. turda koşudan kopmamalı. <b>Azim:</b> atın bir turda liderin ne kadar gerisindeyse dayanıklılığı o kadar hızlı dolar (en fazla +%' + Math.round(C.gritMax * 100) + '), yani geride kalan at büyük bir Mahmuz biriktirebilir. <b>Tuzaklar:</b> 3. bitirirsen 1, 4. bitirirsen 2 jeton kazanır ve sonraki tur için saklarsın (en fazla ' + C.trapCap + '). Önde giden rakibin önüne bir tane bırakmak için <b>Tuzak</b> (X) tuşuna bas: rakibi yaklaşık %' + Math.round(C.trapHit * 100) + ' oranında tökezletir. <b>Zayıflara seçme hakkı:</b> molada puan tablosunda sonuncuysan fazladan bir dükkan yeri ve bir bedava yenileme alırsın, 3. isen bir bedava yenileme. <b>Derbi Günü:</b> son tur <b>çift puan</b> değerindedir.</p></section>' +
+      '<section><h3>Tur kuralları</h3><p>İlk turdan sonraki turların çoğu, molada duyurulan bir kuralla gelir ve bahisçi bunu fiyatlar: Çamur Koşusu (4 engel, daha uzun tökezleme), Hızlı Çekiliş (1,8 saniyede bir kart), Karşı Rüzgâr (daha yavaş seyir), Açık Pist (engel yok, daha hızlı seyir), Altın Tur (ödüller ×1,5) ve Kaos Gecesi (destede 4 Kaos kartı).</p></section>' +
+      '<section><h3>Bak ve yak</h3><p>Bir tur sırasında $' + C.peekCost + ' ödeyip destenin en üstündeki kartı görmek için <b>Bak</b>’a basabilirsin. Çekiliş tepki verebilmen için biraz bekler ve kart çekilene kadar sıradaki kart bahisleri kapalıdır. Yalnızca açık bir sıradaki kart bahsin yokken bakabilirsin. Baktıktan sonra kartı $' + C.burnCost + ' karşılığında <b>Yakabilir</b> (tur başına en fazla ' + C.burnMax + ' kez) ve tekrar bakabilirsin.</p></section>' +
+      '<section><h3>At özellikleri ve takımlar</h3><p>Her rengin atının kendine özgü bir özelliği vardır: ♥ Sprinter (dayanıklılık %20 daha hızlı dolar), ♦ Uzun Soluklu (atılımlar %5 daha yavaş söner), ♣ Dengeli (tökezlemeler yarı kadar sürer, seyir hızı +0,03), ♠ Finişçi (turun son %40’ında seyir hızı +0,12). Geliştirmeler ayrıca <b>takımlar</b> oluşturur: aynı türden (Deste, At, Para, Bahis, Şans, Ekipman) farklı geliştirmeler edin, takım bir bonus öder ve bu molada görünür.</p></section>' +
+      '<section><h3>Rozetler, zorluk ve Günlük Derbi</h3><p><b>Rozetler</b>, üst üste üç kart bahsi tutmak, üç rakibi tuzağa düşürmek ya da geri dönüp kazanmak gibi başarılar için bir kez verilir ve bazıları yeni geliştirmelerin (Yankı Odası, Tuzak Ustası, Anka, Azim Yükselteci) kilidini açar. Bir sonraki <b>zorluk</b> seviyesini açmak için bir koşu kazan: rakipler daha çok geliştirme alır ve ödüller küçülür, ama Ahır Puanı seviye başına %' + Math.round(C.diffSp * 100) + ' artar. <b>Günlük Derbi</b>, o gün herkes için aynı tohum ve aynı atla, Ahır geliştirmesiz beş turluk bir koşudur ve kopyalayıp paylaşabileceğin bir sonuç verir.</p></section>' +
       '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Bunları Ahır’da kalıcı geliştirmelere harca: başlangıç parası, ekstra kartlar, daha hızlı seyir, daha ucuz dükkanlar, daha iyi nadirlik şansı ve daha iyi bahis ödemeleri. İlerleme bu tarayıcıda saklanır.</p></section>';
   };
 })();

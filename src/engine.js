@@ -10,7 +10,7 @@ const Engine = (() => {
     decay: 0.5,         // how fast a surge fades
     par: 64,            // race seconds that earn no speed bonus
     sub: 0.05,
-    prizes: [140, 90, 50, 20],
+    prizes: [130, 95, 65, 40],
     points: [4, 3, 2, 1],
     bonusPerSec: 2.5,
     divPerValue: 4.5,
@@ -49,7 +49,15 @@ const Engine = (() => {
     horseshoe: 0.08, horseshoeBoost: 1.6, jackpot: 0.02, jackpotCash: 150,
     chaosBoost: 5, chaosCash: 25, coinHeads: 2, coinTails: -0.8,
     // higher-or-lower table
-    tableLimit: 3, tableEdge: 0.92
+    tableLimit: 3, tableEdge: 0.92,
+    // catching up and keeping it interesting
+    finalMult: 2,                        // points on the last lap
+    gritK: 3, gritMax: 0.9,              // stamina refills faster the further a horse trails the leader
+    trapCap: 3, trapDist: 24, trapHit: 0.7, trapHitPro: 0.95, trapEarn: [0, 0, 1, 2],   // trap tokens earned by lap place
+    peekCost: 10, burnCost: 25, burnMax: 2, peekHold: 1.2,
+    modChance: 0.6,                      // chance that a lap has a modifier
+    echo: 0.3, phoenixBoost: 9,
+    diffAi: 0.18, diffPrize: 0.07, diffSp: 0.3, maxDiff: 4   // stakes levels
   };
   const SUITS = [
     { id: 'H', glyph: '♥︎', name: 'Hearts' },
@@ -60,6 +68,36 @@ const Engine = (() => {
   const TIERS = ['common', 'rare', 'epic', 'legendary'];
   const TIER_NAME = { common: 'Common', rare: 'Rare', epic: 'Epic', legendary: 'Legendary' };
   const KIND_LABEL = { deck: 'Deck', horse: 'Horse', cash: 'Money', luck: 'Luck', bet: 'Betting', gear: 'Gear', lap: 'Next lap' };
+  /* every suit's horse has its own trait */
+  const TRAITS = [
+    { id: 'sprinter', name: 'Sprinter', blurb: 'Stamina refills 20% faster.', apply: h => { h.staRate *= 1.2; } },
+    { id: 'stayer', name: 'Stayer', blurb: 'Surges fade 5% slower.', apply: h => { h.k *= 0.95; } },
+    { id: 'steady', name: 'Steady', blurb: 'Stumbles last half as long, and +0.03 cruising speed.', apply: h => { h.stumbleMult = 0.5; h.base += 0.03; } },
+    { id: 'closer', name: 'Closer', blurb: '+0.12 cruising speed in the last 40% of a lap.', apply: h => { h.closer = 0.12; } }
+  ];
+  /* lap modifiers: announced at the pit stop, so the bookie and you can plan for them */
+  const NOMOD = {};
+  const MODS = {
+    mud: { name: 'Mud Run', blurb: 'Four hazards per horse, and stumbles last 60% longer.', hazards: 4, stumbleMul: 1.6 },
+    quick: { name: 'Quickdraw', blurb: 'A card every 1.8 seconds: more surges, faster bets.', drawEvery: 1.8 },
+    headwind: { name: 'Headwind', blurb: 'Cruising speed −0.3 for everyone: a longer lap where cards matter more.', baseAdd: -0.3 },
+    sprint: { name: 'Clear Track', blurb: 'No hazards and cruising speed +0.4: a short, fast lap.', hazards: 0, baseAdd: 0.4 },
+    golden: { name: 'Golden Lap', blurb: 'All race prizes are 1.5× bigger.', prizeMult: 1.5 },
+    chaosnight: { name: 'Chaos Night', blurb: '4 Chaos cards are shuffled in. Each pays $25 and surges a random horse.', chaosCards: 4 },
+    derby: { name: 'Derby Day', blurb: 'The final lap: every place is worth double points.', pointsMult: 2, final: true }
+  };
+  const REGULAR_MODS = ['mud', 'quick', 'headwind', 'sprint', 'golden', 'chaosnight'];
+  /* set bonuses: own several different upgrades of one kind and the set pays off */
+  const SETS = {
+    deck: [[2, 0.06, 'Card Shark I: your cards surge 6% harder'], [4, 0.14, 'Card Shark II: your cards surge 14% harder']],
+    horse: [[2, 0.06, 'Thoroughbred I: +0.06 cruising speed'], [4, 0.15, 'Thoroughbred II: +0.15 cruising speed']],
+    cash: [[2, 0.08, 'Tycoon I: race cash +8%'], [3, 0.16, 'Tycoon II: race cash +16%']],
+    bet: [[2, 0.08, 'Sharp I: bet payouts +8%'], [3, 0.16, 'Sharp II: bet payouts +16%']],
+    luck: [[2, 1, 'Fortune I: one more free reroll at every stop'], [3, 15, 'Fortune II: start every lap with +15 stamina']],
+    gear: [[2, 12, 'Kit: start every lap with +12 stamina']]
+  };
+  /* upgrades that stay out of the shop until a trophy is earned (see meta.js) */
+  const UNLOCK = { echo: 'streak', trapper: 'saboteur', phoenix: 'comeback', grit: 'perfectionist' };
 
   function mulberry32(a) {
     return function () {
@@ -71,7 +109,7 @@ const Engine = (() => {
   }
   const val = c => (c.joker ? 17 : c.r);
   const label = c => (c.chaos ? '?' : c.joker ? '★' : ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' })[c.r] || String(c.r));
-  const boostOf = (c, h) => (CFG.surgeBase + val(c) * CFG.surgeVal) * h.mult * h.temp;
+  const boostOf = (c, h) => (CFG.surgeBase + val(c) * CFG.surgeVal) * h.mult * h.temp * (1 + setBonus(h, 'deck'));
 
   function shuffle(a, rng) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -84,6 +122,18 @@ const Engine = (() => {
   const round5 = n => Math.max(5, Math.round(n / 5) * 5);
   const cnt = (h, id) => h.up[id] || 0;
   const meOf = run => run.horses[run.me];
+  const modOf = run => MODS[run.mod] || NOMOD;
+  function setLevel(h, kind) { let n = 0; UPGRADES.forEach(u => { if (u.kind === kind && h.up[u.id] > 0) n++; }); return n; }
+  function setTier(h, kind) { const t = SETS[kind]; if (!t) return 0; const n = setLevel(h, kind); let k = 0; t.forEach(x => { if (n >= x[0]) k++; }); return k; }
+  function setBonus(h, kind) { const k = setTier(h, kind); return k ? SETS[kind][k - 1][1] : 0; }
+  const startSta = (run, h) => (h.i === run.me ? (setTier(h, 'gear') >= 1 ? 12 : 0) + (setTier(h, 'luck') >= 2 ? 15 : 0) : 0);
+  const isUnlocked = (run, id) => !UNLOCK[id] || (run.fx.unlocked || []).includes(id);
+  function pickMod(run) {
+    if (run.lapNo + 1 === run.laps) return 'derby';
+    if (run.rng() > CFG.modChance) return null;
+    const ids = REGULAR_MODS.filter(id => id !== run.mod);
+    return ids[Math.floor(run.rng() * ids.length)];
+  }
 
   /* ---------- deck operations (on the run deck, so they last the whole run) ---------- */
   function suitCount(run, s) { return run.cards.filter(c => c.s === s && !c.chaos).length; }
@@ -170,6 +220,14 @@ const Engine = (() => {
     U('takeover', 'legendary', 'deck', true, 'Hostile Takeover', 2, 'Turn 5 cards of the points leader into your suit.',
       (run, h) => { const t = pointsLeader(run, h); const out = takeSuit(run, t.i, 5); out.forEach(c => run.cards.push({ ...c, s: h.i })); return 'seized ' + out.length + ' ' + G(t.i); }),
     U('slam', 'legendary', 'bet', false, 'Grand Slam', 1, 'Combo bonuses on correct calls grow: 2 right ×1.3, 3 right ×1.8, 4 right ×3.'),
+    // ---- comeback and trophy upgrades
+    U('sponsor', 'rare', 'cash', false, 'Underdog Sponsor', 2, 'Finishing a lap 3rd or 4th pays you $40 from a sponsor.'),
+    U('grit', 'rare', 'horse', false, 'Grit Amplifier', 2, 'Your Grit, the stamina bonus for trailing the leader, is 60% stronger.',
+      (run, h) => { h.gritMul += 0.6; return 'grits harder'; }),
+    U('trapper', 'epic', 'gear', false, 'Trap Master', 2, 'Start every lap with a free trap, and traps trip their target 95% of the time.'),
+    U('echo', 'legendary', 'luck', false, 'Echo Chamber', 2, 'When a card of your suit is drawn, there is a 30% chance the same card comes out again next.'),
+    U('phoenix', 'legendary', 'horse', false, 'Phoenix', 1, 'Once per lap, if you are dead last past halfway: a huge surge and full stamina.',
+      (run, h) => { h.phoenix = 1; return 'rises from the ashes'; }),
     // ---- next lap only
     U('cut', 'common', 'lap', false, 'Cut the Deck', 2, 'Your 3 best cards start on top of the deck next lap.'),
     U('headstart', 'rare', 'lap', false, 'Head Start', 2, 'Begin next lap 25 units down the track.'),
@@ -182,9 +240,9 @@ const Engine = (() => {
   const QUEUE = () => ({ cut: 0, headstart: 0, double: 0, sabotage: 0, slip: 0, allin: 0 });
 
   /* ---------- run ---------- */
-  function newRun({ me = 0, laps = 5, meta = {}, seed } = {}) {
+  function newRun({ me = 0, laps = 5, meta = {}, seed, diff = 0 } = {}) {
     const rng = seed == null ? Math.random : mulberry32(seed);
-    const fx = Object.assign({ startCash: 90, cashMult: 1, loaded: 0, baseSpeed: 0, discount: 0, slots: 0, freeRerolls: 0, owners: 0, spMult: 1, luck: 0, sharp: 0 }, meta);
+    const fx = Object.assign({ startCash: 90, cashMult: 1, loaded: 0, baseSpeed: 0, discount: 0, slots: 0, freeRerolls: 0, owners: 0, spMult: 1, luck: 0, sharp: 0, unlocked: [] }, meta);
     const run = {
       rng, me, laps, fx,
       lapNo: 0, phase: 'prep',
@@ -195,15 +253,18 @@ const Engine = (() => {
       table: { hands: 0, cur: null, last: null },
       shop: null, shopStop: { rerolls: 0, paid: 0 }, quote: null,
       lap: null, events: [], rivalLog: [], history: [],
-      cashEarned: 0, correct: 0, result: null
+      cashEarned: 0, correct: 0, result: null,
+      traps: 0, mod: null, nextMod: laps === 1 ? 'derby' : null, draft: { slots: 0, rerolls: 0 }, diff, prevPlace: 0,
+      stats: { bestStreak: 0, perfects: 0, stumbles: 0, spurs: 0, traps: 0, trapHits: 0, peeks: 0, burns: 0, bestLap: 0, lapsWon: 0, comeback: false, calls4: false }
     };
     // every suit starts level: 10 cards each, identical horses
     for (let c = 0; c < CFG.copies; c++) for (let s = 0; s < 4; s++) for (let r = CFG.minRank; r <= 14; r++) run.cards.push({ s, r });
     for (let i = 0; i < 4; i++) {
       run.horses.push({ i, pos: 0, ex: 0, base: CFG.base, k: CFG.decay, mult: 1, temp: 1, tb: 0, draft: 0, sling: 0, up: {},
-        sta: CFG.staStart, staRate: CFG.staRate, keep: 0, stumbleMult: 1, slowT: 0, hzi: 0, spurThr: 75,
+        sta: CFG.staStart, staRate: CFG.staRate, keep: 0, stumbleMult: 1, slowT: 0, hzi: 0, spurThr: 75, gritMul: 1, grit: 0, closer: 0, phoenix: 0, phUsed: false,
         fin: false, finT: null, place: null, points: 0, totalT: 0, drawn: 0 });
     }
+    run.horses.forEach(h => TRAITS[h.i].apply(h));
     const mine = meOf(run);
     mine.base += fx.baseSpeed;
     for (let k = 0; k < fx.loaded; k++) run.cards.push({ s: me, r: rnd(run, 6, 12) });
@@ -287,7 +348,7 @@ const Engine = (() => {
     const tot = w.reduce((a, b) => a + b, 0) + chaos * fC;
     return w.map((x, s) => {
       const p = tot > 0 ? x / tot : 0;
-      return { s, p, n: cnts[s], out: L.elim.includes(s), open: p > 0 && !L.done && L.deck.length > 0,
+      return { s, p, n: cnts[s], out: L.elim.includes(s), open: p > 0 && !L.done && L.deck.length > 0 && !L.peeked,
         odds: p > 0 ? Math.min(20, Math.round(CFG.cardEdge / p * 100) / 100) : 0 };
     });
   }
@@ -310,7 +371,7 @@ const Engine = (() => {
       return;
     }
     const stake = L.bets[c.s];
-    const m = 1 + 0.05 * cnt(me, 'bookie') + run.fx.sharp;
+    const m = 1 + 0.05 * cnt(me, 'bookie') + run.fx.sharp + setBonus(me, 'bet');
     const pay = stake ? Math.round(stake * bo[c.s].odds * m) : 0;
     L.g.n++;
     if (pay) {
@@ -324,10 +385,11 @@ const Engine = (() => {
 
   /* ---------- hazards and the stamina Spur ---------- */
   function makeHazards(run, L) {
+    const M = modOf(run), nH = M.hazards != null ? M.hazards : CFG.hazards;
     L.hz = run.horses.map(() => {
       const arr = [];
-      for (let k = 0; k < CFG.hazards; k++) {
-        const base = (k + 1) / (CFG.hazards + 1);
+      for (let k = 0; k < nH; k++) {
+        const base = (k + 1) / (nH + 1);
         arr.push({ x: CFG.lapLen * (base + (run.rng() - 0.5) * 0.10), type: run.rng() < 0.5 ? 'hurdle' : 'puddle', state: 'ahead' });
       }
       return arr;
@@ -336,13 +398,14 @@ const Engine = (() => {
   function resolveHz(run, h, nx, res, auto) {
     const L = run.lap, isMe = h.i === run.me;
     nx.state = res;
-    if (res === 'stumble') h.slowT = CFG.stumbleT * h.stumbleMult;
+    if (!L.sim) { if (res === 'stumble') L.stats.stumbles[h.i]++; if (nx.trap && res === 'stumble') L.stats.trapHits++; }
+    if (res === 'stumble') h.slowT = CFG.stumbleT * h.stumbleMult * (modOf(run).stumbleMul || 1);
     if (res === 'perfect') h.ex += CFG.hzBoost * h.mult * h.temp;
     if (isMe && !L.sim) {
       L.hzStats[res]++;
       if (res === 'perfect') { run.cash += CFG.perfectCash; L.windfall += CFG.perfectCash; }
     }
-    run.events.push({ type: 'hz', horse: h.i, res, auto: !!auto, kind: nx.type });
+    run.events.push({ type: 'hz', horse: h.i, res, auto: !!auto, kind: nx.type, trap: !!nx.trap });
   }
   function hazardStep(run, h, manual) {
     const L = run.lap, nx = L.hz[h.i][h.hzi];
@@ -356,7 +419,8 @@ const Engine = (() => {
       if (h.pos >= nx.x) { resolveHz(run, h, nx, 'stumble'); h.hzi++; }
     } else if (h.pos >= nx.x) {
       let res;
-      if (isMe && L.hurdles > 0) { L.hurdles--; res = 'perfect'; }
+      if (nx.trap) res = run.rng() < (nx.sure ? CFG.trapHitPro : CFG.trapHit) ? 'stumble' : 'clear';
+      else if (isMe && L.hurdles > 0) { L.hurdles--; res = 'perfect'; }
       else {
         const r = run.rng();
         const pp = isMe ? CFG.autoPerfect : CFG.aiPerfect, pc = isMe ? CFG.autoClear : CFG.aiClear;
@@ -376,11 +440,46 @@ const Engine = (() => {
     h.hzi++;
     return res;
   }
+  /* traps: a hazard dropped in the leading rival's lane. Tokens are earned by finishing a lap 3rd or 4th. */
+  function trap(run) {
+    const L = run.lap;
+    if (!L || L.done || L.sim || L.traps < 1) return null;
+    const cands = run.horses.filter(o => o.i !== run.me && !o.fin && o.pos < CFG.lapLen - 20 && !L.hz[o.i].some(z => z.trap && z.state === 'ahead')).sort((a, b) => b.pos - a.pos);
+    if (!cands.length) return null;
+    const t = cands[0], x = Math.min(CFG.lapLen - 8, t.pos + CFG.trapDist);
+    const arr = L.hz[t.i], tail = arr.splice(t.hzi);
+    tail.push({ x, type: 'trap', state: 'ahead', trap: true, sure: cnt(meOf(run), 'trapper') > 0 });
+    tail.sort((a, b) => a.x - b.x);
+    tail.forEach(z => arr.push(z));
+    L.traps--; L.stats.traps++;
+    run.events.push({ type: 'trap', horse: t.i, x });
+    return t.i;
+  }
+  /* peek: pay to see the next card (bets on it close, the deal waits a moment). burn: pay to throw it away. */
+  function peek(run) {
+    const L = run.lap;
+    if (!L || L.done || L.sim || L.peeked || !L.deck.length || run.cash < CFG.peekCost || betTotal(L) > 0) return null;
+    run.cash -= CFG.peekCost; L.peeked = true; L.hold = CFG.peekHold; L.stats.peeks++;
+    const c = L.deck[L.deck.length - 1];
+    run.events.push({ type: 'peek', card: { ...c } });
+    return c;
+  }
+  function burn(run) {
+    const L = run.lap;
+    if (!L || L.done || L.sim || !L.peeked || L.burns >= CFG.burnMax || run.cash < CFG.burnCost || !L.deck.length) return null;
+    run.cash -= CFG.burnCost;
+    const c = L.deck.pop(); L.discard.push(c);
+    L.peeked = false; L.burns++; L.stats.burns++; L.hold = CFG.peekHold * 0.6;
+    updateHint(run);
+    run.events.push({ type: 'burn', card: { ...c } });
+    return c;
+  }
   const spurPower = h => CFG.spurBoost * Math.pow(h.sta / 100, CFG.spurCurve) * h.mult * h.temp;
   function doSpur(run, h) {
     const power = spurPower(h), pct = h.sta;
     h.ex += power;
     h.sta = h.sta * h.keep;
+    if (!run.lap.sim) { run.lap.stats.spurs[h.i]++; if (h.i === run.me) run.lap.stats.spurPct.push(pct); }
     run.events.push({ type: 'spur', horse: h.i, power, pct });
   }
 
@@ -388,10 +487,12 @@ const Engine = (() => {
   function buildLap(run, live) {
     const me = meOf(run);
     run.horses.forEach(h => { h.pos = 0; h.ex = 0; h.fin = false; h.finT = null; h.place = null; h.temp = 1; h.tb = 0; h.drawn = 0;
-      h.sta = CFG.staStart; h.slowT = 0; h.hzi = 0; h.spurThr = 55 + run.rng() * 40; });
+      h.sta = CFG.staStart + startSta(run, h); h.slowT = 0; h.hzi = 0; h.phUsed = false; h.grit = 0; h.spurThr = 55 + run.rng() * 40; });
     const q = run.queue;
     let cards = run.cards.map(c => ({ ...c }));
-    const L = { t: 0, drawTimer: CFG.drawEvery - CFG.firstDraw, deck: null, discard: [], divs: [], placeCount: 0, done: false, drawCount: 0,
+    const M = modOf(run), de = M.drawEvery || CFG.drawEvery;
+    const L = { t: 0, drawEvery: de, drawTimer: de - CFG.firstDraw, traps: 0, peeked: false, hold: 0, burns: 0,
+      stats: { drawn: [0, 0, 0, 0], surge: [0, 0, 0, 0], stumbles: [0, 0, 0, 0], spurs: [0, 0, 0, 0], spurPct: [], startCounts: [0, 0, 0, 0], traps: 0, trapHits: 0, peeks: 0, burns: 0 }, deck: null, discard: [], divs: [], placeCount: 0, done: false, drawCount: 0,
       elimN: 0, elim: [], hurdles: cnt(me, 'hurdler'), bets: [0, 0, 0, 0], g: { staked: 0, ret: 0, n: 0, hits: 0, best: 0 }, streak: 0,
       hzStats: { perfect: 0, clear: 0, stumble: 0 }, divMult: 1, sabotaged: null, sim: !live, windfall: 0, calls: [], coin: null, dice: 0 };
     if (live) {
@@ -410,6 +511,8 @@ const Engine = (() => {
     } else {
       cards = cards.filter(c => !c.chaos);
     }
+    run.horses.forEach(h => { h.tb += (M.baseAdd || 0) + setBonus(h, 'horse'); });
+    if (live) for (let k = 0; k < (M.chaosCards || 0); k++) cards.push({ s: me.i, r: 2, chaos: true });
     const deck = shuffle(cards, run.rng);
     if (live && q.cut) {
       const mineIdx = deck.map((c, i) => i).filter(i => deck[i].s === run.me && !deck[i].chaos);
@@ -419,6 +522,7 @@ const Engine = (() => {
       picked.forEach(c => deck.push(c));
     }
     L.deck = deck;
+    deck.forEach(c => { if (!c.chaos) L.stats.startCounts[c.s]++; });
     makeHazards(run, L);
     if (live) {
       if (q.sabotage) { const t = pointsLeader(run, me); t.temp = CFG.sabotage; L.sabotaged = t.i; }
@@ -434,7 +538,9 @@ const Engine = (() => {
     run.lapNo++;
     if (!run.quote) run.quote = quote(run);
     const quoted = run.quote;
+    run.mod = run.nextMod; run.nextMod = null;
     const L = buildLap(run, true);
+    L.traps = run.traps + cnt(meOf(run), 'trapper'); run.traps = 0;
     // lock the calls at the odds the bookie quoted, and put the stakes on the table
     run.calls.forEach((c, pl) => {
       if (!c) return;
@@ -444,6 +550,7 @@ const Engine = (() => {
     if (run.calls[0]) run.selfStake = run.calls[0].stake;
     run.calls = [null, null, null, null];
     run.quote = null;
+    if (run.mod) run.events.push({ type: 'mod', id: run.mod });
     if (L.sabotaged != null) run.events.push({ type: 'sabotage', horse: L.sabotaged });
     if (L.coin) run.events.push({ type: 'luck', kind: 'coin', text: L.coin });
     if (L.dice) run.events.push({ type: 'luck', kind: 'dice', n: L.dice });
@@ -462,7 +569,7 @@ const Engine = (() => {
     const cards = run.cards.filter(c => !c.chaos);
     for (let s = 0; s < n; s++) {
       const c = { rng, me: run.me, fx: run.fx, lapNo: run.lapNo + 1, cards: cards.map(x => ({ ...x })),
-        horses: run.horses.map(h => ({ ...h, up: { ...h.up } })), queue: QUEUE(), events: [], rivalLog: [], auto: true };
+        horses: run.horses.map(h => ({ ...h, up: { ...h.up } })), queue: QUEUE(), events: [], rivalLog: [], auto: true, mod: run.nextMod, diff: run.diff };
       buildLap(c, false);
       stepLap(c, 1e6);
       c.horses.forEach(h => { counts[h.i][h.place - 1]++; });
@@ -474,12 +581,13 @@ const Engine = (() => {
   }
 
   /* ---------- drawing cards ---------- */
-  const fxCash = run => run.fx.cashMult * (1 + 0.25 * cnt(meOf(run), 'rich'));
+  const fxCash = run => run.fx.cashMult * (1 + 0.25 * cnt(meOf(run), 'rich')) * (1 + setBonus(meOf(run), 'cash'));
   function drawCard(run) {
     const L = run.lap, me = meOf(run);
     if (!L.deck.length) { L.deck = shuffle(L.discard.splice(0), run.rng); run.events.push({ type: 'reshuffle' }); }
     const bo = L.sim ? null : betOdds(run);
     const c = L.deck.pop();
+    L.peeked = false;
     L.discard.push(c);
     L.drawCount++;
     if (!L.sim) resolveBets(run, c, bo);
@@ -492,10 +600,12 @@ const Engine = (() => {
       return;
     }
     const h = run.horses[c.s];
+    if (!L.sim) L.stats.drawn[c.s]++;
     let boost = 0, div = 0;
     if (!h.fin) {
       boost = boostOf(c, h);
       h.ex += boost; h.drawn++;
+      if (!L.sim) L.stats.surge[c.s] += boost;
       run.horses.forEach(o => {
         if (o === h || o.fin) return;
         if (o.draft) o.ex += o.draft;
@@ -506,6 +616,8 @@ const Engine = (() => {
       L.divs.push({ c, div });
     }
     run.events.push({ type: 'draw', card: c, boost, div, fin: h.fin, horse: c.s });
+    const ec = cnt(me, 'echo');
+    if (ec && c.s === me.i && run.rng() < CFG.echo * ec) { L.deck.push({ ...c }); if (!L.sim) run.events.push({ type: 'luck', kind: 'echo' }); }
     if (!L.sim) {
       const hs = cnt(me, 'horseshoe');
       if (hs && !me.fin && run.rng() < CFG.horseshoe * hs) { me.ex += CFG.horseshoeBoost * me.mult; run.events.push({ type: 'luck', kind: 'horseshoe' }); }
@@ -530,15 +642,23 @@ const Engine = (() => {
       const t0 = L.t;
       L.t += d;
       const finishers = [];
+      let lead = 0;
+      for (const o of run.horses) if (!o.fin && o.pos > lead) lead = o.pos;
       for (const h of run.horses) {
         if (h.fin) continue;
         const before = h.pos;
         const manual = h.i === run.me && !L.sim && !run.auto;
-        h.sta = Math.min(100, h.sta + h.staRate * d);
+        const grit = Math.min(CFG.gritMax * h.gritMul, Math.max(0, lead - h.pos) / CFG.lapLen * CFG.gritK * h.gritMul);
+        h.grit = grit;
+        h.sta = Math.min(100, h.sta + h.staRate * d * (1 + grit));
         if (!manual && (h.sta >= h.spurThr || (h.pos > CFG.lapLen * 0.8 && h.sta >= 35))) doSpur(run, h);
         hazardStep(run, h, manual);
+        if (h.phoenix && !h.phUsed && h.pos > CFG.lapLen * 0.5 && run.horses.every(o => o === h || o.fin || o.pos > h.pos)) {
+          h.phUsed = true; h.ex += CFG.phoenixBoost * h.mult * h.temp; h.sta = 100;
+          if (!L.sim) run.events.push({ type: 'phoenix', horse: h.i });
+        }
         const e = Math.exp(-h.k * d);
-        const cruise = h.base + h.tb;
+        const cruise = h.base + h.tb + (h.closer && h.pos > CFG.lapLen * 0.6 ? h.closer : 0);
         const f = h.slowT > 0 ? CFG.stumbleF : 1;
         if (h.slowT > 0) h.slowT = Math.max(0, h.slowT - d);
         h.pos += f * (cruise * d + h.ex * (1 - e) / h.k);
@@ -555,8 +675,8 @@ const Engine = (() => {
         h.place = ++L.placeCount;
         run.events.push({ type: 'finish', horse: h.i, place: h.place, time: h.finT });
       }
-      L.drawTimer += d;
-      while (L.drawTimer >= CFG.drawEvery - 1e-9) { L.drawTimer -= CFG.drawEvery; drawCard(run); if (!L.sim) updateHint(run); }
+      if (L.hold > 0) L.hold = Math.max(0, L.hold - d); else L.drawTimer += d;
+      while (L.drawTimer >= L.drawEvery - 1e-9) { L.drawTimer -= L.drawEvery; drawCard(run); if (!L.sim) updateHint(run); }
       if (L.placeCount >= 4) L.done = true;
     }
     if (L.sim) run.events.length = 0;
@@ -618,7 +738,7 @@ const Engine = (() => {
   function comboOf(run, hits) { return (cnt(meOf(run), 'slam') ? CFG.comboSlam : CFG.combo)[Math.min(4, hits)]; }
   function callPayout(run, c, allin) {
     const me = meOf(run);
-    let m = 1 + 0.05 * cnt(me, 'bookie') + run.fx.sharp + (c.place >= 2 ? 0.4 * cnt(me, 'roller') : 0);
+    let m = 1 + 0.05 * cnt(me, 'bookie') + run.fx.sharp + setBonus(me, 'bet') + (c.place >= 2 ? 0.4 * cnt(me, 'roller') : 0);
     if (allin) m *= 2;
     return c.stake * c.odds * m;
   }
@@ -629,12 +749,14 @@ const Engine = (() => {
     const cm = fxCash(run);
     const pend = betTotal(L);
     if (pend) { run.cash += pend; L.g.staked -= pend; L.bets = [0, 0, 0, 0]; }
-    const prize = Math.round(CFG.prizes[me.place - 1] * cm);
+    const M = modOf(run), dm = 1 - CFG.diffPrize * run.diff, pm = M.pointsMult || 1;
+    const prize = Math.round(CFG.prizes[me.place - 1] * cm * (M.prizeMult || 1) * dm);
     const secs = CFG.par - me.finT;
     const bonus = Math.round(Math.max(0, secs) * CFG.bonusPerSec * (cnt(me, 'ticket') ? 2 : 1) * cm);
     const divs = L.divs.reduce((a, d) => a + d.div, 0);
     const interest = Math.floor(run.cash * 0.08 * cnt(me, 'interest'));
     const penny = 20 * cnt(me, 'penny');
+    const sponsor = me.place >= 3 ? 40 * cnt(me, 'sponsor') : 0;
     // bets
     let hits = 0, staked = 0, missed = 0;
     L.calls.forEach(c => { c.hit = run.horses[c.horse].place === c.place; staked += c.stake; if (c.hit) hits++; else missed += c.stake; });
@@ -645,12 +767,22 @@ const Engine = (() => {
     const refund = Math.round(missed * refundPct);
     const betReturn = Math.round(wins * combo) + refund;
     run.correct += hits;
-    const total = prize + bonus + divs + interest + penny + betReturn;
+    const total = prize + bonus + divs + interest + penny + sponsor + betReturn;
     run.cash += total; run.cashEarned += total + L.windfall;
-    run.horses.forEach(h => { h.points += CFG.points[h.place - 1]; h.totalT += h.finT; });
+    run.horses.forEach(h => { h.points += CFG.points[h.place - 1] * pm; h.totalT += h.finT; });
+    const earn = CFG.trapEarn[me.place - 1] || 0;
+    run.traps = Math.min(CFG.trapCap, L.traps + earn);
+    const st = run.stats, ls = L.stats, sc = ls.startCounts, nd = ls.drawn.reduce((a, b) => a + b, 0);
+    st.bestStreak = Math.max(st.bestStreak, L.g.best); st.perfects += L.hzStats.perfect; st.stumbles += L.hzStats.stumble;
+    st.spurs += ls.spurs[me.i]; st.traps += ls.traps; st.trapHits += ls.trapHits; st.peeks += ls.peeks; st.burns += ls.burns;
+    st.bestLap = Math.max(st.bestLap, total + L.windfall); if (me.place === 1) st.lapsWon++;
+    if (run.prevPlace === 4 && me.place === 1) st.comeback = true;
+    if (L.calls.length === 4 && hits === 4) st.calls4 = true;
+    run.prevPlace = me.place;
     const res = {
-      lapNo: run.lapNo, place: me.place, finT: me.finT, secs, prize, bonus, divCount: L.divs.length, divs, interest, penny,
-      windfall: L.windfall, total: total + L.windfall, points: CFG.points[me.place - 1],
+      lapNo: run.lapNo, place: me.place, finT: me.finT, secs, prize, bonus, divCount: L.divs.length, divs, interest, penny, sponsor,
+      pm, mod: run.mod, trapsEarned: earn, trapsLeft: run.traps, stats: ls, expectedMine: nd ? nd * sc[me.i] / (sc.reduce((a, b) => a + b, 0) || 1) : 0, mineDrawn: ls.drawn[me.i],
+      windfall: L.windfall, total: total + L.windfall, points: CFG.points[me.place - 1] * pm,
       calls: L.calls.map(c => ({ ...c })), hits, combo, staked, betReturn, refund, betNet: betReturn - staked,
       dice: L.dice, coin: L.coin, gamble: { ...L.g, net: L.g.ret - L.g.staked }, hz: { ...L.hzStats },
       order: run.horses.slice().sort((a, b) => a.place - b.place).map(h => ({ i: h.i, t: h.finT, place: h.place }))
@@ -659,11 +791,16 @@ const Engine = (() => {
     run.rivalLog = [];
     if (run.lapNo >= run.laps) { run.phase = 'over'; run.result = finalize(run); }
     else {
-      run.horses.forEach(h => { if (h.i === run.me) return; if (run.rng() < CFG.aiChance) aiUpgrade(run, h); if (run.rng() < CFG.aiExtra) aiUpgrade(run, h); });
+      run.horses.forEach(h => { if (h.i === run.me) return; if (run.rng() < CFG.aiChance) aiUpgrade(run, h); if (run.rng() < CFG.aiExtra + CFG.diffAi * run.diff) aiUpgrade(run, h); });
       run.phase = 'shop'; run.shopStop = { rerolls: 0, paid: 0 };
       run.table = { hands: 0, cur: null, last: null };
       topUp(run);
       res.topUps = run.topUps;
+      const rk = runOrder(run).indexOf(run.me);
+      if (rk === 3) run.stats.lastAtStop = true;
+      run.draft = rk === 3 ? { slots: 1, rerolls: 1 } : rk === 2 ? { slots: 0, rerolls: 1 } : { slots: 0, rerolls: 0 };
+      res.draft = { ...run.draft }; res.rank = rk + 1;
+      run.nextMod = pickMod(run); res.nextMod = run.nextMod;
       makeShop(run);
       run.quote = quote(run);
       lockSelf(run);
@@ -676,8 +813,8 @@ const Engine = (() => {
     const rank = order.indexOf(run.me) + 1;
     const bonus = rank === 1 ? run.laps * 2 : rank === 2 ? run.laps : 0;
     const raw = me.points + bonus + run.correct;
-    const sp = Math.round(raw * run.fx.spMult);
-    return { order, rank, points: me.points, bonus, correct: run.correct, sp, forfeited: run.cash, champion: rank === 1 };
+    const sp = Math.round(raw * run.fx.spMult * (1 + CFG.diffSp * run.diff));
+    return { order, rank, points: me.points, bonus, correct: run.correct, sp, forfeited: run.cash, champion: rank === 1, stats: { ...run.stats }, diff: run.diff, laps: run.laps, cashEarned: run.cashEarned };
   }
 
   /* ---------- shop ---------- */
@@ -685,13 +822,13 @@ const Engine = (() => {
     const u = upgradeById(id);
     return u.kind === 'lap' ? run.queue[id] : cnt(meOf(run), id);
   }
-  function available(run, id) { return owned(run, id) < upgradeById(id).max; }
+  function available(run, id) { return owned(run, id) < upgradeById(id).max && isUnlocked(run, id); }
   function priceOf(run, id) {
     const u = upgradeById(id);
     const disc = Math.min(0.6, run.fx.discount + 0.1 * cnt(meOf(run), 'haggler'));
     return round5(CFG.tierPrice[u.tier] * (1 - disc));
   }
-  function shopSlots(run) { return CFG.shopSlots + run.fx.slots; }
+  function shopSlots(run) { return CFG.shopSlots + run.fx.slots + (run.draft ? run.draft.slots : 0); }
   function makeShop(run) {
     const picks = [];
     const w = tierWeights(run);
@@ -706,7 +843,7 @@ const Engine = (() => {
     run.shop = picks.map(u => ({ id: u.id, sold: false }));
     return run.shop;
   }
-  const freeRerolls = run => run.fx.freeRerolls;
+  const freeRerolls = run => run.fx.freeRerolls + (run.draft ? run.draft.rerolls : 0) + (setTier(meOf(run), 'luck') >= 1 ? 1 : 0);
   function rerollCost(run) {
     const s = run.shopStop;
     if (s.rerolls < freeRerolls(run)) return 0;
@@ -767,6 +904,7 @@ const Engine = (() => {
     newRun, startLap, stepLap, spur, endLap, lapOrder, runOrder, deckCounts, chaosCount,
     quote, setCall, lockSelf, cycleStake, placeBet, betOdds, brace, spurPower, topUp, reserved, spendable, comboOf, callPayout,
     owned, available, priceOf, shopSlots, makeShop, reroll, rerollCost, freeRerolls, buy, cnt, fxCash,
-    tierOdds, tableOdds, tableDeal, tableGuess };
+    tierOdds, tableOdds, tableDeal, tableGuess,
+    trap, peek, burn, MODS, TRAITS, SETS, UNLOCK, setLevel, setTier, setBonus, modOf, isUnlocked };
 })();
 if (typeof module !== 'undefined') module.exports = Engine;

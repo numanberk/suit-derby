@@ -15,7 +15,35 @@ const Meta = (() => {
     { id: 'sharp', name: 'Bookie’s Pal', blurb: 'Every bet you win pays 4% more.', costs: [15, 25, 40, 55] }
   ];
 
-  const fresh = () => ({ sp: 0, levels: {}, runs: 0, champs: 0, bestPts: 0 });
+  /* trophies: earned once, forever. Some of them unlock an upgrade for the shop. */
+  const ACH = [
+    { id: 'streak', name: 'Hot Hand', blurb: 'Hit 3 next-card bets in a row in one lap.', unlocks: 'echo' },
+    { id: 'saboteur', name: 'Saboteur', blurb: 'Trip rivals with 3 traps in one run.', unlocks: 'trapper' },
+    { id: 'comeback', name: 'Comeback Kid', blurb: 'Win a lap right after finishing last.', unlocks: 'phoenix' },
+    { id: 'perfectionist', name: 'Perfectionist', blurb: 'Land 6 perfect jumps in one run.', unlocks: 'grit' },
+    { id: 'champion', name: 'Champion', blurb: 'Win a run.' },
+    { id: 'underdog', name: 'Underdog', blurb: 'Win a run after being last at a pit stop.' },
+    { id: 'highroller', name: 'High Roller', blurb: 'Take $300 or more in a single lap.' },
+    { id: 'marathon', name: 'Marathon', blurb: 'Finish a 10 lap run.' },
+    { id: 'calls4', name: 'Clairvoyant', blurb: 'Call all four places right in one lap.' },
+    { id: 'daily', name: 'Daily Rider', blurb: 'Finish a Daily Derby.' }
+  ];
+  const fresh = () => ({ sp: 0, levels: {}, runs: 0, champs: 0, bestPts: 0, ach: {}, maxStake: 0, daily: null, guide: false });
+  const has = (state, id) => !!(state.ach && state.ach[id]);
+  /* decide which trophies a finished run earned; returns the new ones and stores them */
+  function evaluate(state, r, ctx) {
+    ctx = ctx || {};
+    const st = r.stats || {}, got = [];
+    const ok = {
+      streak: st.bestStreak >= 3, saboteur: st.trapHits >= 3, comeback: !!st.comeback, perfectionist: st.perfects >= 6,
+      champion: !!r.champion, underdog: !!r.champion && !!st.lastAtStop, highroller: st.bestLap >= 300,
+      marathon: r.laps >= 10, calls4: !!st.calls4, daily: !!ctx.daily
+    };
+    ACH.forEach(a => { if (ok[a.id] && !has(state, a.id)) { state.ach[a.id] = 1; got.push(a.id); } });
+    let stake = null;
+    if (!ctx.daily && r.champion && r.diff >= state.maxStake && state.maxStake < (ctx.maxDiff || 4)) { state.maxStake = r.diff + 1; stake = state.maxStake; }
+    return { ach: got, stake };
+  }
 
   function level(state, id) { return state.levels[id] || 0; }
   function maxOf(item) { return item.costs.length; }
@@ -44,7 +72,8 @@ const Meta = (() => {
       owners: L('owners'),
       spMult: 1 + 0.1 * L('purse'),
       luck: L('lucky'),
-      sharp: 0.04 * L('sharp')
+      sharp: 0.04 * L('sharp'),
+      unlocked: ACH.filter(a => a.unlocks && has(state, a.id)).map(a => a.unlocks)
     };
   }
   function record(state, sp, champion, pts) {
@@ -59,7 +88,7 @@ const Meta = (() => {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const o = JSON.parse(raw);
-        if (o && typeof o.sp === 'number') return Object.assign(fresh(), o, { levels: Object.assign({}, o.levels) });
+        if (o && typeof o.sp === 'number') return Object.assign(fresh(), o, { levels: Object.assign({}, o.levels), ach: Object.assign({}, o.ach) });
       }
     } catch (e) {}
     return fresh();
@@ -67,6 +96,6 @@ const Meta = (() => {
   function save(state) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function reset() { const s = fresh(); save(s); return s; }
 
-  return { ITEMS, fresh, level, maxOf, costOf, buy, effects, record, load, save, reset };
+  return { ITEMS, ACH, fresh, level, maxOf, costOf, buy, effects, record, evaluate, has, load, save, reset };
 })();
 if (typeof module !== 'undefined') module.exports = Meta;

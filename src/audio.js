@@ -146,6 +146,30 @@ const Sfx = (() => {
     tone({ f: 340, to: 165, dur: 0.4, type: 'triangle', vol: 0.08 * v, at: 0.04 });
     noise({ type: 'lowpass', f: 420, dur: 0.16, vol: 0.18 * v });
   });
+  const trap = S(() => {            // a ratchet, then a snap: the trap is set
+    for (let i = 0; i < 4; i++) noise({ type: 'bandpass', f: 2400 + i * 300, q: 4, dur: 0.02, vol: 0.14, at: i * 0.045 });
+    tone({ f: 150, to: 60, dur: 0.14, type: 'square', lp: 700, vol: 0.12, at: 0.2 }); noise({ type: 'highpass', f: 5000, dur: 0.05, vol: 0.12, at: 0.2 });
+  });
+  const trapHit = S(() => {         // gotcha
+    noise({ type: 'highpass', f: 4500, dur: 0.06, vol: 0.2 }); tone({ f: 120, to: 50, dur: 0.22, type: 'sawtooth', lp: 600, vol: 0.14 });
+    ping(SC[6], 0.1, 0.1, 0.35); ping(SC[8], 0.09, 0.17, 0.45);
+  });
+  const peek = S(() => {            // a quick glance: soft shimmer
+    noise({ type: 'bandpass', f: 3000, to: 6000, q: 1, dur: 0.16, vol: 0.07 }); ping(SC[7], 0.09, 0.05, 0.3); ping(SC[9], 0.07, 0.12, 0.35);
+  });
+  const burn = S(() => {            // whoosh and a low thud: the card is gone
+    noise({ type: 'bandpass', f: 2500, to: 350, q: 0.7, dur: 0.34, vol: 0.16 }); tone({ f: 170, to: 55, dur: 0.3, type: 'triangle', vol: 0.14, at: 0.04 });
+  });
+  const achieve = S(() => {         // trophy
+    [0, 2, 4, 5, 7, 9].forEach((k, i) => ping(SC[k], 0.1, i * 0.07, 0.5)); noise({ type: 'highpass', f: 7500, dur: 0.4, vol: 0.05, at: 0.25 });
+  });
+  const final = S(() => {           // Derby Day fanfare
+    brass(SC[0], 0, 0.22, 0.1); brass(SC[2], 0.2, 0.22, 0.1); brass(SC[4], 0.4, 0.22, 0.11); brass(SC[5], 0.6, 0.8, 0.13);
+    noise({ type: 'highpass', f: 6500, dur: 0.6, vol: 0.05, at: 0.6 });
+  });
+  const phoenix = S(() => {         // rising sweep and a bright chord
+    tone({ f: 220, to: 1100, dur: 0.6, type: 'sawtooth', lp: 2400, vol: 0.09 }); [4, 6, 8].forEach((k, i) => ping(SC[k], 0.11, 0.5 + i * 0.03, 0.8));
+  });
   const lucky = S(() => { [6, 8, 9].forEach((k, i) => ping(SC[k], 0.09, i * 0.06, 0.4)); });
   const coinFlip = S(() => { ping(2100, 0.08, 0, 0.5); ping(2600, 0.05, 0.12, 0.4); });
   const dice = S(() => { for (let i = 0; i < 5; i++) noise({ type: 'bandpass', f: rnd(900, 1800), q: 3, dur: 0.03, vol: 0.15, at: i * 0.05 + rnd(0, 0.02) }); });
@@ -439,6 +463,7 @@ const Sfx = (() => {
 
   const api = {
     click, pick, chip, shuffle, flip, buy, deny, count, draw, chaos, surge, spur, warn, perfect, clear, stumble,
+    trap, trapHit, peek, burn, achieve, final, phoenix,
     lucky, coinFlip, dice, hit, miss, refund, win, tally, finish, champion, podium, settle, pit,
     crowd, cheer, hooves, set, unlock, render, renderMusic, music,
     toggle: () => set(!on),

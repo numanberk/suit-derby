@@ -251,6 +251,16 @@ const Scene = (() => {
             if (z.type === 'hurdle') {
               ctx.fillStyle = '#d8d2c0'; ctx.fillRect(x - 15 * k, y - 26 * k, 4 * k, 26 * k); ctx.fillRect(x + 11 * k, y - 26 * k, 4 * k, 26 * k);
               for (let s = 0; s < 6; s++) { ctx.fillStyle = s % 2 ? '#fff' : (mine ? '#ff5a46' : '#e38b2c'); ctx.fillRect(x - 15 * k + s * 5 * k, y - 26 * k, 5 * k, 6 * k); }
+            } else if (z.type === 'trap') {
+              // a bear-trap: jagged teeth on a dark plate, with a pulsing warning mark
+              ctx.fillStyle = '#2a1c1c'; ctx.beginPath(); ctx.ellipse(x, y - 2 * k, 24 * k, 6 * k, 0, 0, Math.PI * 2); ctx.fill();
+              ctx.fillStyle = '#e8ded0';
+              for (let s = 0; s < 6; s++) { const tx = x - 20 * k + s * 8 * k; ctx.beginPath(); ctx.moveTo(tx, y - 3 * k); ctx.lineTo(tx + 4 * k, y - 17 * k); ctx.lineTo(tx + 8 * k, y - 3 * k); ctx.fill(); }
+              ctx.strokeStyle = '#c0453a'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.ellipse(x, y - 2 * k, 24 * k, 6 * k, 0, 0, Math.PI * 2); ctx.stroke();
+              if (z.state === 'ahead') {
+                ctx.globalAlpha = 0.6 + 0.4 * Math.sin(sc.t * 6); ctx.fillStyle = '#ff6a55'; ctx.font = '800 ' + Math.max(10, 13 * k * 1.6) + 'px Big Shoulders Display, Impact, sans-serif';
+                ctx.textAlign = 'center'; ctx.fillText('⚠', x, y - 24 * k);
+              }
             } else {
               const w = ctx.createLinearGradient(x - 24 * k, 0, x + 24 * k, 0);
               w.addColorStop(0, 'rgba(90,170,230,.2)'); w.addColorStop(0.5, 'rgba(140,210,255,.85)'); w.addColorStop(1, 'rgba(90,170,230,.2)');

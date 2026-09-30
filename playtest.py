@@ -14,6 +14,11 @@ async def leak(pg, label):
     hits = sorted(set(WORDS.findall(txt)))
     print('LEAK-CHECK', label, hits if hits else 'clean')
 
+async def leak_modal(pg):
+    if LANG_ID != 'tr': return
+    txt = await pg.evaluate("document.querySelector('#guide').innerText")
+    print('LEAK-CHECK guide', sorted(set(WORDS.findall(txt))) or 'clean')
+
 async def pit_actions(pg, lap):
     for pl in range(1, 4):
         h = (pl + lap) % 4
@@ -40,6 +45,17 @@ async def play_lap(pg, stats):
             try:
                 await pg.click('#brace', force=True, timeout=1500); stats['brace'] += 1
             except Exception: pass
+        if await pg.locator('#trap:not([disabled])').count():
+            try:
+                await pg.click('#trap', timeout=1500); stats['trap'] += 1
+            except Exception: pass
+        if tick % 37 == 0 and await pg.locator('#peek:not([disabled])').count():
+            try:
+                await pg.click('#peek', timeout=1500); stats['peek'] += 1
+                await pg.wait_for_timeout(100)
+                if tick % 74 == 0 and await pg.locator('#burn:not([disabled])').count():
+                    await pg.click('#burn', timeout=1500); stats['burn'] += 1
+            except Exception: pass
         if await pg.locator('#spur.full:not([disabled])').count():
             try:
                 await pg.click('#spur', timeout=1500); stats['spur'] += 1
@@ -49,7 +65,9 @@ async def play_lap(pg, stats):
             if await b.count() == 0:
                 best = pg.locator('.bbtn:not([disabled]):not(.out):not(.dry)')
                 if await best.count():
-                    await best.first.click(); stats['bets'] += 1
+                    try:
+                        await best.first.click(timeout=1200); stats['bets'] += 1
+                    except Exception: pass
 
 async def main():
     async with async_playwright() as p:
@@ -64,6 +82,12 @@ async def main():
         await pg.screenshot(path=shot('menu.png'), full_page=True)
         await pg.click('#s-menu [data-go="setup"]')
         await leak(pg, 'setup')
+        assert await pg.locator('#guide:not([hidden])').count() == 1, 'guide shows on first run'
+        await pg.screenshot(path=shot('guide.png'))
+        await leak_modal(pg)
+        for _ in range(4): await pg.click('#gnext')
+        assert await pg.locator('#guide:not([hidden])').count() == 0, 'guide closes'
+        await pg.screenshot(path=shot('setup.png'), full_page=True)
         await pg.click('#startRun'); await pg.wait_for_timeout(300)
         print('start screen', await pg.evaluate('__derby.S.screen'))
         await pit_actions(pg, 0)
@@ -71,7 +95,7 @@ async def main():
         await pg.screenshot(path=shot('prep.png'), full_page=True)
         await leak(pg, 'prep')
         await pg.click('#nextLap')
-        stats = {'brace': 0, 'spur': 0, 'bets': 0}
+        stats = {'brace': 0, 'spur': 0, 'bets': 0, 'trap': 0, 'peek': 0, 'burn': 0}
         laps = 0
         await pg.wait_for_timeout(3000)
         await leak(pg, 'game')
@@ -99,12 +123,33 @@ async def main():
         await pg.click('#s-menu [data-go="rules"]')
         await leak(pg, 'rules')
         await pg.screenshot(path=shot('rules.png'), full_page=True)
+        await pg.click('#s-rules #openGuide'); assert await pg.locator('#guide:not([hidden])').count() == 1
+        await pg.keyboard.press('Escape')
+        await pg.click('#s-rules [data-go="menu"]')
+        await pg.screenshot(path=shot('menu2.png'), full_page=True)
+        await pg.click('#dailyBtn'); await pg.wait_for_timeout(300)
+        print('daily', await pg.evaluate('JSON.stringify([__derby.S.daily, __derby.S.run.me, __derby.S.run.laps])'))
+        await pit_actions(pg, 0); await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
+        st2 = {'brace': 0, 'spur': 0, 'bets': 0, 'trap': 0, 'peek': 0, 'burn': 0}
+        for lap in range(6):
+            await play_lap(pg, st2)
+            sc = await pg.evaluate('__derby.S.screen')
+            if sc == 'pit':
+                await pg.wait_for_timeout(300)
+                if lap == 1: await pg.screenshot(path=shot('pit-daily.png'), full_page=True)
+                await pit_actions(pg, lap + 1); await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
+            elif sc == 'over': break
+        await pg.wait_for_timeout(600)
+        print('daily over', await pg.evaluate('__derby.S.screen'), st2)
+        print(await pg.evaluate('document.querySelector("#sharetxt").textContent'))
+        await pg.screenshot(path=shot('over-daily.png'), full_page=True)
+        await pg.click('#s-over [data-go="stable"]'); await pg.screenshot(path=shot('stable.png'), full_page=True)
         pg2 = await b.new_page(viewport={'width': 390, 'height': 844})
         pg2.on('pageerror', lambda e: errs.append('PHONE ' + str(e)))
         await pg2.goto(URL)
         if LANG_ID != 'en': await pg2.click(f'[data-lang="{LANG_ID}"]')
         await pg2.screenshot(path=shot('phone-menu.png'))
-        await pg2.click('#s-menu [data-go="setup"]'); await pg2.click('#startRun'); await pg2.wait_for_timeout(300)
+        await pg2.click('#s-menu [data-go="setup"]'); await pg2.screenshot(path=shot('phone-guide.png')); await pg2.keyboard.press('Escape'); await pg2.screenshot(path=shot('phone-setup.png'), full_page=True); await pg2.click('#startRun'); await pg2.wait_for_timeout(300)
         print('phone prep scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
         await pg2.click('#nextLap'); await pg2.wait_for_timeout(5000)
         await pg2.screenshot(path=shot('phone-game.png'))

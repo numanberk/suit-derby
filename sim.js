@@ -40,6 +40,7 @@ function playRun({ laps, buy, bet, metaLevels = {}, seed, me = 0 }) {
     let spent = 0;
     while (!run.lap.done) {
       E.stepLap(run, 0.05);
+      if (run.lap.traps > 0 && Math.round(run.lap.t / 0.05) % 60 === 30) E.trap(run);
     }
     const res = E.endLap(run);
     places.push(res.place);

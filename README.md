@@ -21,6 +21,16 @@ crowd and a galloping hoofbeat sit under the race and swell when something happe
 buying goes cha-ching, and the lap payout counts up with rising ticks. Sound starts after your first tap,
 the speaker button (menu and race screen) or the **M** key mutes it, and the choice is saved.
 
+### v9: comeback and depth
+- **Trap tokens.** Finish 3rd (1) or 4th (2) and keep tokens (cap 3). **Trap** (X) drops a bear-trap in front of the leading rival (70% trip chance).
+- **Grit.** The further a horse trails the leader, the faster its stamina refills, up to +90%.
+- **Derby Day.** The final lap is worth double points. **Lap modifiers** (Mud Run, Quickdraw, Headwind, Clear Track, Golden Lap, Chaos Night) are announced at the pit stop and priced in by the bookie.
+- **Underdog draft.** Last in the standings: +1 shop slot and a free reroll; 3rd: a free reroll. Prizes are flatter (130/95/65/40), so the 1st:4th income gap dropped from about 5x to about 3x.
+- **Peek and burn.** $10 shows the next card (bets close until it is drawn), $25 discards it.
+- **Horse traits** (one per suit), **set bonuses** for owning several upgrade types, and new upgrades: Underdog Sponsor, Grit Amplifier, Trap Master, Echo Chamber, Phoenix.
+- **Trophies** (saved in the Stable) unlock four of those upgrades; **stakes** levels 0 to 4 open by winning; a **Daily Derby** on a date seed with a shareable result; a **first-run guide**; a **race recap** ("Why 3rd?") and a **run stats** screen.
+- Balance tools: `node sim.js quick`, and `node sim_catchup.js` for seat fairness, comeback rate and income gap.
+
 ### v6: Turkish language
 Pick **English** or **Türkçe** with the switch at the top of the menu. The choice is remembered in this
 browser (and defaults to Turkish on Turkish-language browsers). Every screen, upgrade, perk, the rules
@@ -66,6 +76,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/app.js       screens, input, HUD, bets
     build.py         inlines everything into dist/suit-derby.html
     sim.js           balance simulation:  node sim.js
+    sim_catchup.js   seat fairness and comeback checks:  node sim_catchup.js
     playtest.py      headless full-run test (calls, shop, card table) (needs python playwright + chromium)
 
 ## Tuning

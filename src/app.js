@@ -13,7 +13,7 @@
   var S = {
     screen: 'menu', me: 0, laps: 5, run: null, meta: M.load(),
     gphase: 'idle', speed: 1, paused: false, cd: 0, goT: 0, endDelay: 0,
-    hist: [], ticker: [], quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
+    hist: [], ticker: [], diff: 0, daily: 0, peekCard: null, newStuff: null, guideAt: 0, quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
   };
 
   function money(n, sign) {
@@ -26,6 +26,11 @@
   function lab(c) { var l = E.label(c); return I.lang === 'tr' ? ({ J: 'V', Q: 'K', K: 'P' }[l] || l) : l; }
   function fmtT(t) { var m = Math.floor(t / 60); var s = (t - m * 60).toFixed(1); return m + ':' + I.n((s.length < 4 ? '0' : '') + s); }
   function odds(o) { return '×' + I.n(o.toFixed(2)); }
+  function mname(id) { return T(E.MODS[id].name); }
+  function cardTxt(c) { return c.chaos ? '★' : lab(c) + SUITS[c.s].glyph; }
+  var STAKE_NAMES = ['Standard', 'Tough', 'Hard', 'Brutal', 'Legend'];
+  function dailySeed() { var d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
+  function dailyLabel(seed) { var t = String(seed); return t.slice(6) + '.' + t.slice(4, 6) + '.' + t.slice(0, 4); }
 
   /* ---------- horse markup ---------- */
   function horseSVG(i) {
@@ -66,7 +71,7 @@
   document.addEventListener('pointerdown', function () { Sfx.unlock(); }, { passive: true });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button');
-    if (b && !b.matches('#spur,#brace,[data-bet],[data-buy],#reroll,[data-deal],[data-tg],[data-perk],#snd,#sndMenu,#mus,#musMenu,[data-cell],[data-chip]')) Sfx.click();
+    if (b && !b.matches('#spur,#brace,#trap,#peek,#burn,[data-bet],[data-buy],#reroll,[data-deal],[data-tg],[data-perk],#snd,#sndMenu,#mus,#musMenu,[data-cell],[data-chip]')) Sfx.click();
   });
   document.addEventListener('keydown', function (e) {
     if (e.repeat || e.ctrlKey || e.metaKey || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
@@ -96,8 +101,13 @@
     $('#menu-stats').textContent = S.meta.runs
       ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
       : T('No runs yet.');
+    var ds = dailySeed(), dd = S.meta.daily;
+    $('#daily-sub').textContent = dd && dd.date === ds
+      ? T('Today: {o} overall, {p} pts. Ride again?', { o: dd.champion ? T('Champion') : ord(dd.rank), p: dd.pts })
+      : T('Same deck for everyone today · you ride {s} · 5 laps', { s: sn(ds % 4) });
     renderLang(); renderSnd();
   };
+  $('#dailyBtn').addEventListener('click', function () { Sfx.click(); S.daily = dailySeed(); begin({ me: S.daily % 4, laps: 5, seed: S.daily, meta: M.effects(M.fresh()), diff: 0 }); });
   /* language switch: the choice is saved, and every screen is rebuilt in the new language */
   function renderLang() {
     $('#langsw').innerHTML = I.LANGS.map(function (l) {
@@ -118,15 +128,24 @@
   function buildSetup() {
     $('#picks').innerHTML = SUITS.map(function (s, i) {
       return '<label class="pick s' + i + '"><input type="radio" name="horse" value="' + i + '"' + (i === S.me ? ' checked' : '') + '>' +
-        '<span class="g">' + s.glyph + '</span><span class="n">' + T(s.name) + '</span><span class="you">' + T('You') + '</span></label>';
+        '<span class="g">' + s.glyph + '</span><span class="n">' + T(s.name) + '</span><span class="trait"><b>' + T(E.TRAITS[i].name) + '</b>' + T(E.TRAITS[i].blurb) + '</span><span class="you">' + T('You') + '</span></label>';
     }).join('');
     $('#lapPills').innerHTML = CFG.lapChoices.map(function (n) {
       return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + T('{n} laps', { n: n }) + '</b><span>' + T('about {m} minutes', { m: Math.round(n * 1.3) }) + '</span></label>';
     }).join('');
+    if (S.diff > S.meta.maxStake) S.diff = S.meta.maxStake;
+    $('#stakePills').innerHTML = STAKE_NAMES.map(function (nm, k) {
+      var lock = k > S.meta.maxStake;
+      var sub = lock ? T('Win a run on {s} to unlock', { s: T(STAKE_NAMES[k - 1]) }) : k ? T('rivals buy more · prizes −{p}% · SP +{s}%', { p: Math.round(CFG.diffPrize * k * 100), s: Math.round(CFG.diffSp * k * 100) }) : T('the normal rules');
+      return '<label class="pill"><input type="radio" name="stake" value="' + k + '"' + (k === S.diff ? ' checked' : '') + (lock ? ' disabled' : '') + '><b>' + T(nm) + '</b><span>' + sub + '</span></label>';
+    }).join('');
   }
+  $('#stakePills').addEventListener('change', function (e) { S.diff = +e.target.value; });
   $('#picks').addEventListener('change', function (e) { S.me = +e.target.value; });
   $('#lapPills').addEventListener('change', function (e) { S.laps = +e.target.value; });
   onEnter.setup = function () {
+    buildSetup();
+    if (!S.meta.guide) openGuide();
     var fx = M.effects(S.meta), bits = [];
     if (fx.startCash > 90) bits.push(T('start with {m}', { m: money(fx.startCash) }));
     if (fx.loaded) bits.push(TP(fx.loaded, '{n} extra card in your suit', '{n} extra cards in your suit'));
@@ -138,13 +157,17 @@
     if (fx.owners) bits.push(T('a free starting upgrade'));
     if (fx.luck) bits.push(T('better shop rarity'));
     if (fx.sharp) bits.push(T('+{p}% bet payouts', { p: Math.round(fx.sharp * 100) }));
-    $('#setup-perks').textContent = T('Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1.') + ' ' +
+    $('#setup-perks').textContent = T('Every run starts level: 10 cards per suit and no rival upgrades before lap 1. Each horse has its own trait.') + ' ' +
       (bits.length ? T('Your Stable perks: {list}.', { list: bits.join(', ') }) : T('No Stable perks yet. Finish a run to earn Stable Points.'));
   };
-  $('#startRun').addEventListener('click', function () {
-    S.run = E.newRun({ me: S.me, laps: S.laps, meta: M.effects(S.meta) });
-    S.recorded = false; S.lastRes = null; S.tstake = 10; S.cstake = 10; S.lastBets = null; S.roundBets = [];
+  function begin(opts) {
+    S.run = E.newRun(opts);
+    S.recorded = false; S.lastRes = null; S.tstake = 10; S.cstake = 10; S.lastBets = null; S.roundBets = []; S.newStuff = null; S.peekCard = null;
     renderPit(); go('pit');
+  }
+  $('#startRun').addEventListener('click', function () {
+    S.daily = 0;
+    begin({ me: S.me, laps: S.laps, meta: M.effects(S.meta), diff: S.diff });
   });
 
   /* ---------- track: the canvas scene ---------- */
@@ -181,7 +204,7 @@
     var R = S.run, me = R.horses[R.me], z = R.lap.hz[R.me][me.hzi];
     return z && z.state === 'open' ? z : null;
   }
-  var lastSub = '', lastBsub = '';
+  var lastSub = '', lastBsub = '', lastTsub = '', lastGrit = '', lastMod = '';
   function renderActions() {
     var R = S.run, L = R.lap, me = R.horses[R.me];
     var live = S.gphase === 'racing' && !S.paused && !me.fin && !L.done;
@@ -191,6 +214,12 @@
     sp.classList.toggle('full', live && pct >= 98);
     var sub = me.fin ? T('home') : pct >= 98 ? T('FULL CHARGE · surge +{v}', { v: f1(E.spurPower(me)) }) : me.sta >= CFG.spurMin ? T('now +{v} · wait for more', { v: f1(E.spurPower(me)) }) : T('charging {p}%', { p: Math.round(pct) });
     if (sub !== lastSub) { $('#spsub').textContent = sub; lastSub = sub; }
+    var tk = L.traps || 0, tb = $('#trap');
+    tb.disabled = !(live && tk > 0);
+    var ts = tk ? TP(tk, '{n} token', '{n} tokens') : T('none');
+    if (ts !== lastTsub) { $('#trapsub').textContent = ts; lastTsub = ts; }
+    var gp = $('#gritpill'), gv = me.grit || 0, gt = live && gv > 0.03 ? T('GRIT +{p}% stamina refill', { p: Math.round(gv * 100) }) : '';
+    if (gt !== lastGrit) { gp.textContent = gt; gp.hidden = !gt; lastGrit = gt; }
     var nx = live ? openHazard() : null, br = $('#brace');
     br.disabled = !nx; br.classList.toggle('hot', !!nx);
     var bs = nx ? T('NOW!') : T('no hazard near');
@@ -232,7 +261,13 @@
       setTimeout(function () { fb.classList.remove(cls); }, 750);
     }
     var tot = L.bets.reduce(function (x, y) { return x + y; }, 0);
-    $('#betinfo').textContent = tot ? T('{m} on the next card. Pays stake × odds if it lands.', { m: money(tot) }) : T('Odds are the exact chance from the cards left. A hit streak fills your Spur.');
+    var pk = $('#peek'), bn = $('#burn'), pd = $('#peeked');
+    pk.textContent = T('Peek {m}', { m: money(CFG.peekCost) }); bn.textContent = T('Burn {m}', { m: money(CFG.burnCost) });
+    pk.disabled = !(canBet && !L.peeked && !tot && R.cash >= CFG.peekCost && L.deck.length > 0);
+    bn.disabled = !(canBet && L.peeked && L.burns < CFG.burnMax && R.cash >= CFG.burnCost);
+    pd.classList.toggle('on', !!(L.peeked && S.peekCard));
+    pd.innerHTML = L.peeked && S.peekCard ? T('Next card:') + ' ' + mini(S.peekCard) : T('See the next card first');
+    $('#betinfo').textContent = L.peeked ? T('You know the next card. Bets are closed until it is drawn.') : tot ? T('{m} on the next card. Pays stake × odds if it lands.', { m: money(tot) }) : T('Odds are the exact chance from the cards left. A hit streak fills your Spur.');
     var sk = $('#streak');
     sk.textContent = L.streak ? T('Streak ×{n} · next hit +{s} stamina', { n: L.streak, s: Math.min(L.streak + 1, 5) * CFG.streakSta }) : T('Streak 0');
     sk.classList.toggle('on', L.streak > 0);
@@ -276,11 +311,17 @@
     $('#glap').textContent = T('Lap {n} / {m}', { n: R.lapNo, m: R.laps });
     $('#gclock').textContent = fmtT(L.t);
     $('#gcash').textContent = money(R.cash);
-    $('#tick').style.transform = 'scaleX(' + Math.min(1, L.drawTimer / CFG.drawEvery).toFixed(3) + ')';
+    $('#tick').style.transform = 'scaleX(' + Math.min(1, L.drawTimer / L.drawEvery).toFixed(3) + ')';
+    var gm = $('#gmod'), mk = (R.mod || '') + I.lang;
+    if (mk !== lastMod) {
+      lastMod = mk; gm.hidden = !R.mod;
+      if (R.mod) { gm.textContent = R.mod === 'derby' ? T('FINAL LAP · ×2 pts') : mname(R.mod); gm.className = 'gmod mono' + (R.mod === 'derby' ? ' derby' : ''); gm.title = T(E.MODS[R.mod].blurb); }
+    }
     $('#skip').disabled = !me.fin || L.done;
   }
 
   function showCard(ev) {
+    S.peekCard = null;
     var c = ev.card, s = c.s, lb = lab(c), face = $('#face'), chaos = !!c.chaos;
     var col = chaos ? 'var(--gold)' : 'var(' + VARS[s] + ')', g = chaos ? '★' : SUITS[s].glyph;
     face.style.setProperty('--c', col);
@@ -353,6 +394,12 @@
         else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: T('unleashes a full-charge Spur') });
       } else if (ev.type === 'hz_open') {
         if (!quiet && ev.horse === R.me) Sfx.warn();
+      } else if (ev.type === 'hz' && ev.trap) {
+        if (ev.res === 'stumble') {
+          scene.stumble(ev.horse); scene.say(ev.horse, T('TRIPPED!'), '#ff9a82', true); scene.spark(ev.horse, '#ff9a82', 14);
+          if (!quiet) Sfx.trapHit();
+          S.ticker.push({ i: ev.horse, text: ev.horse === R.me ? T('stumbles in your own trap') : T('trips over your trap!') });
+        } else { scene.say(ev.horse, T('DODGED'), '#9ba593'); S.ticker.push({ i: ev.horse, text: T('dodges the trap') }); }
       } else if (ev.type === 'hz') {
         var me = ev.horse === R.me;
         if (!quiet) { if (ev.res === 'stumble') { if (me || Math.random() < 0.3) Sfx.stumble(me); } else if (me) Sfx[ev.res === 'perfect' ? 'perfect' : 'clear'](); }
@@ -362,14 +409,34 @@
           if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: T('perfect jump {m}', { m: money(CFG.perfectCash, true) }) }); }
         } else if (me) scene.say(R.me, T('CLEAR'), '#9ba593');
       } else if (ev.type === 'luck') {
-        var lk = { horseshoe: 'lucky', coin: 'coinFlip', dice: 'dice' }[ev.kind]; if (lk && !quiet) Sfx[lk]();
+        var lk = { horseshoe: 'lucky', coin: 'coinFlip', dice: 'dice', echo: 'lucky' }[ev.kind]; if (lk && !quiet) Sfx[lk]();
         if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, T('HORSESHOE'), '#ffe07a'); S.ticker.push({ i: R.me, text: T('Lucky Horseshoe: bonus surge') }); }
         else if (ev.kind === 'jackpot') {
           surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: T('JACKPOT {m}', { m: money(ev.cash, true) }) });
           if (!quiet) FX.win(ev.cash, innerWidth / 2, innerHeight * 0.4, T('JACKPOT'));
         }
         else if (ev.kind === 'coin') S.ticker.push({ i: R.me, text: T('Coin of Fate landed {c}: {v} cruising this lap', { c: T(ev.text), v: I.n((ev.text === 'heads' ? '+' + CFG.coinHeads : CFG.coinTails).toString().replace('-', '−')) }) });
+        else if (ev.kind === 'echo') { scene.say(R.me, T('ECHO'), '#ffe07a'); S.ticker.push({ i: R.me, text: T('Echo Chamber: your card goes back in the deck') }); }
         else if (ev.kind === 'dice') S.ticker.push({ i: R.me, text: T('Loaded Dice: {n} extra cards this lap', { n: ev.n }) });
+      } else if (ev.type === 'peek') {
+        S.peekCard = ev.card; if (!quiet) Sfx.peek();
+        S.ticker.push({ i: -1, text: T('Peek: the next card is {c}', { c: cardTxt(ev.card) }) });
+        redraw = true;
+      } else if (ev.type === 'burn') {
+        S.peekCard = null; if (!quiet) Sfx.burn();
+        S.ticker.push({ i: -1, text: T('Burned the {c}. Peek again to see the new top card.', { c: cardTxt(ev.card) }) });
+        redraw = true;
+      } else if (ev.type === 'trap') {
+        if (!quiet) Sfx.trap();
+        scene.say(ev.horse, T('TRAP!'), '#ff9a82', true);
+        S.ticker.push({ i: ev.horse, text: T('a trap lies ahead of {s}', { s: sn(ev.horse) }) });
+      } else if (ev.type === 'phoenix') {
+        scene.say(ev.horse, T('PHOENIX'), '#ffb347', true); surge(ev.horse);
+        if (!quiet) { Sfx.phoenix(); var pa = scene.anchor(ev.horse, R); FX.ring(pa.x, pa.y, '#ffb347'); FX.sparks(pa.x, pa.y, 24); }
+        S.ticker.push({ i: ev.horse, text: T('rises like a Phoenix: surge and full stamina') });
+      } else if (ev.type === 'mod') {
+        if (!quiet) { if (ev.id === 'derby') { Sfx.final(); FX.banner(T('DERBY DAY'), null, 'big'); } else FX.banner(mname(ev.id), null, 'big'); }
+        S.ticker.push({ i: -1, text: mname(ev.id) + ': ' + T(E.MODS[ev.id].blurb) });
       } else if (ev.type === 'sabotage') {
         S.ticker.push({ i: ev.horse, text: T('is sabotaged and surges 40% less this lap') });
       } else if (ev.type === 'finish') {
@@ -391,7 +458,7 @@
   /* ---------- lap flow ---------- */
   function beginLap() {
     var R = S.run;
-    S.ticker = []; S.hist = []; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
+    S.ticker = []; S.hist = []; S.peekCard = null; lastMod = ''; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
     E.startLap(R);
     scene.setMe(R.me); scene.reset(); $('#hzcall').hidden = true;
     $('#hist').innerHTML = ''; $('#dname').textContent = T('Shuffling'); $('#dline').textContent = T('First card comes out soon.');
@@ -441,6 +508,15 @@
     if (S.screen !== 'game' || S.gphase !== 'racing' || S.paused) return;
     if (E.brace(R)) { handleEvents(); renderActions(); }
   }
+  function doTrap() {
+    var R = S.run;
+    if (S.screen !== 'game' || S.gphase !== 'racing' || S.paused) return;
+    if (E.trap(R) != null) { handleEvents(); renderActions(); } else Sfx.deny();
+  }
+  function inBetting() { return S.screen === 'game' && (S.gphase === 'racing' || S.gphase === 'countdown') && !S.paused; }
+  $('#trap').addEventListener('click', doTrap);
+  $('#peek').addEventListener('click', function () { if (inBetting() && E.peek(S.run)) { handleEvents(); renderBets(); } else Sfx.deny(); });
+  $('#burn').addEventListener('click', function () { if (inBetting() && E.burn(S.run)) { handleEvents(); renderBets(); } else Sfx.deny(); });
   $('#spur').addEventListener('click', doSpur);
   $('#brace').addEventListener('click', doBrace);
   document.addEventListener('keydown', function (e) {
@@ -448,6 +524,7 @@
     if (e.code === 'Space') { e.preventDefault(); if (S.run && openHazard()) doBrace(); else doSpur(); }
     else if (e.code === 'KeyB') doBrace();
     else if (e.code === 'KeyS') doSpur();
+    else if (e.code === 'KeyX') doTrap();
     else if (e.code >= 'Digit1' && e.code <= 'Digit4') placeBet(+e.code.slice(5) - 1);
   });
 
@@ -465,13 +542,14 @@
     var pl = $('#pit-place'), stmt = $('#pit-stmt');
     if (prep) {
       pl.textContent = T('Level start'); pl.style.color = 'var(--ink)';
-      stmt.innerHTML = '<p class="note" style="margin:0">' + T('Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.') + '</p>';
+      stmt.innerHTML = '<p class="note" style="margin:0">' + T('Every suit has the same 10 cards and nobody has an upgrade yet, so the odds below are close to even. Call the order and place your first bets, then start the lap.') + '</p>';
     } else {
       pl.textContent = T('{o} this lap', { o: ord(res.place) }); pl.style.color = res.place === 1 ? 'var(--gold)' : 'var(--ink)';
       var rows = [[T('Prize'), res.prize], [res.secs > 0 ? T('Speed bonus, {s}s under par', { s: f1(res.secs) }) : T('Speed bonus, {s}s over par', { s: f1(Math.abs(res.secs)) }), res.bonus],
         [TP(res.divCount, 'Dividends, {n} card', 'Dividends, {n} cards'), res.divs]];
       if (res.interest) rows.push([T('Interest'), res.interest]);
       if (res.penny) rows.push([T('Lucky Penny'), res.penny]);
+      if (res.sponsor) rows.push([T('Sponsor'), res.sponsor]);
       var hzCash = (res.hz ? res.hz.perfect : 0) * CFG.perfectCash;
       if (res.hz && (res.hz.perfect + res.hz.clear + res.hz.stumble)) rows.push([T('Hazards: {p} perfect, {c} clear, {s} stumbled', { p: res.hz.perfect, c: res.hz.clear, s: res.hz.stumble }), hzCash]);
       if (res.windfall - hzCash > 0) rows.push([T('Luck windfalls'), res.windfall - hzCash]);
@@ -492,10 +570,10 @@
     var order = E.runOrder(R);
     $('#pit-standings').innerHTML = order.map(function (i, k) {
       var h = R.horses[i], lp = res ? res.order.filter(function (o) { return o.i === i; })[0] : null;
-      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
+      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] * res.pm + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
     }).join('');
-    renderRivals();
-    $('#nextLap').textContent = T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
+    renderRivals(); renderIntel(); renderRecap();
+    $('#nextLap').textContent = R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
     $('#shopclosed').hidden = !prep;
     $('#offers').hidden = prep; $('#tiers').hidden = prep; $('#reroll').hidden = prep;
     renderPitState();
@@ -504,6 +582,53 @@
     var res = S.lastRes;
     if (!res || !res.topUps || !res.topUps.length) return '';
     return '<p class="uf"><b>' + T('Underdog fund') + '</b> ' + T('(no suit is starved out of the deck):') + ' ' + res.topUps.map(function (u) { return SUITS[u.horse].glyph + ' ' + TP(u.n, '+{n} card', '+{n} cards'); }).join(', ') + '.</p>';
+  }
+  function renderIntel() {
+    var R = S.run, res = S.lastRes, h = '', box = $('#intel');
+    if (R.phase === 'prep' || !res) { box.innerHTML = ''; return; }
+    if (R.nextMod) {
+      var m = E.MODS[R.nextMod];
+      h += '<div class="card2 mod' + (m.final ? ' derby' : '') + '"><h4>' + (m.final ? T('Next: the final lap') : T('Next lap modifier')) + '</h4><p><b>' + T(m.name) + '</b>: ' + T(m.blurb) + '</p></div>';
+    }
+    var d = res.draft;
+    if (d && (d.slots || d.rerolls)) {
+      var bits = [];
+      if (d.slots) bits.push(TP(d.slots, '{n} extra shop slot', '{n} extra shop slots'));
+      if (d.rerolls) bits.push(TP(d.rerolls, '{n} free reroll', '{n} free rerolls'));
+      h += '<div class="card2 draft"><h4>' + T('Underdog draft') + '</h4><p>' + T('You are {o} in the standings, so this stop gives you {list}.', { o: ord(res.rank), list: bits.join(' + ') }) + '</p></div>';
+    }
+    if (R.traps > 0 || res.trapsEarned) {
+      h += '<div class="card2 trapc"><h4>' + T('Trap tokens') + '</h4><p>' + (res.trapsEarned ? T('You earned {n} for finishing {o}. ', { n: res.trapsEarned, o: ord(res.place) }) : '') +
+        (R.traps > 0 ? T('{n} ready: press Trap (X) in the next lap to drop one in front of the leading rival.', { n: R.traps }) : '') + '</p></div>';
+    }
+    box.innerHTML = h;
+  }
+  function renderRecap() {
+    var R = S.run, res = S.lastRes, box = $('#recap');
+    if (R.phase === 'prep' || !res || !res.stats) { box.hidden = true; return; }
+    var ls = res.stats, me = R.me, lines = [], dv = res.mineDrawn - res.expectedMine, pr = { n: res.mineDrawn, e: f1(res.expectedMine) };
+    lines.push(dv >= 1.5 ? T('Cards: your suit came up <b>{n}</b> times (about {e} expected). The deck was kind.', pr) : dv <= -1.5 ? T('Cards: your suit came up only <b>{n}</b> times (about {e} expected). A cold deck.', pr) : T('Cards: your suit came up <b>{n}</b> times, about what the deck promised.', pr));
+    if (res.hz.stumble) lines.push(TP(res.hz.stumble, 'Hazards: <b>{n}</b> stumble, and each one costs seconds.', 'Hazards: <b>{n}</b> stumbles, and each one costs seconds.'));
+    else if (res.hz.perfect >= 2) lines.push(T('Hazards: <b>{n}</b> perfect jumps, clean riding.', { n: res.hz.perfect }));
+    var sc = ls.spurs[me];
+    if (!sc) lines.push(T('Spur: you never used it, so the stamina went to waste.'));
+    else {
+      var avg = ls.spurPct.reduce(function (a, b) { return a + b; }, 0) / ls.spurPct.length;
+      lines.push(avg < 50 ? T('Spur: {n} uses at {p}% charge on average. Waiting for more charge pays off.', { n: sc, p: Math.round(avg) }) : T('Spur: {n} uses at {p}% charge on average. Good timing.', { n: sc, p: Math.round(avg) }));
+    }
+    if (ls.traps) lines.push(T('Traps: <b>{h}</b> of {n} tripped a rival.', { h: ls.trapHits, n: ls.traps }));
+    else if (res.place > 1) { var wi = res.order[0].i; lines.push(T('{s} took the lap with <b>{n}</b> cards of its suit drawn.', { s: sn(wi), n: ls.drawn[wi] })); }
+    box.hidden = false;
+    box.innerHTML = '<h4>' + (res.place === 1 ? T('How you won') : T('Why {o}?', { o: ord(res.place) })) + '</h4><ul>' + lines.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>';
+  }
+  function renderSets() {
+    var R = S.run, me = R.horses[R.me], h = '';
+    Object.keys(E.SETS).forEach(function (k) {
+      var cnt = E.setLevel(me, k); if (!cnt) return;
+      var tier = E.setTier(me, k), t = E.SETS[k], nx = t[tier];
+      h += '<div class="set' + (tier ? ' on' : '') + '"><b>' + T(E.KIND_LABEL[k]) + ' ' + cnt + '/' + (nx ? nx[0] : t[t.length - 1][0]) + '</b><small>' + (tier ? T(t[tier - 1][2]) : '') + (nx ? (tier ? ' · ' : '') + T('Next ({n}): ', { n: nx[0] }) + T(nx[2]) : '') + '</small></div>';
+    });
+    $('#sets').innerHTML = h;
   }
   function renderRivals() {
     var R = S.run, box = $('#rivals');
@@ -524,7 +649,7 @@
     renderBoard();
     if (!prep) renderShop();
     renderTable();
-    renderKit();
+    renderKit(); renderSets();
     renderDeck('#pit-deckbar', '#pit-deckleg', E.deckCounts(R, false), R.me, E.chaosCount(R, false));
   }
 
@@ -648,6 +773,7 @@
   }
   function celebrateOver() {
     var r = S.run.result;
+    if (S.newStuff && (S.newStuff.ach.length || S.newStuff.stake)) setTimeout(function () { Sfx.achieve(); }, r.champion ? 2200 : 600);
     if (r.champion) { Sfx.champion(); FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
     else if (r.rank === 2) { Sfx.podium(); FX.confetti(innerWidth / 2, innerHeight * 0.3, 50); } else Sfx.settle();
   }
@@ -655,7 +781,12 @@
   /* ---------- run over ---------- */
   function renderOver() {
     var R = S.run, r = R.result;
-    if (!S.recorded) { M.record(S.meta, r.sp, r.champion, r.points); M.save(S.meta); S.recorded = true; }
+    if (!S.recorded) {
+      M.record(S.meta, r.sp, r.champion, r.points);
+      S.newStuff = M.evaluate(S.meta, r, { daily: !!S.daily, maxDiff: CFG.maxDiff });
+      if (S.daily) { var od = S.meta.daily; if (!od || od.date !== S.daily || r.points >= od.pts) S.meta.daily = { date: S.daily, pts: r.points, rank: r.rank, champion: r.champion }; }
+      M.save(S.meta); S.recorded = true;
+    }
     var ot = $('#over-rank');
     ot.textContent = r.champion ? T('Champion') : T('{o} overall', { o: ord(r.rank) });
     ot.style.color = r.champion ? 'var(--gold)' : 'var(--ink)';
@@ -670,8 +801,35 @@
     if (extra > 0) rows.push([T('Winner’s Purse'), extra]);
     $('#over-stmt').innerHTML = rows.map(function (x) { return '<div class="row"><span>' + x[0] + '</span><b class="pos">+' + x[1] + '</b></div>'; }).join('') +
       '<div class="row total"><span>' + T('Stable Points') + '</span><b class="gold">+' + r.sp + '</b></div>';
+    var st = r.stats, cells = [[T('Laps won'), st.lapsWon], [T('Best lap'), money(st.bestLap)], [T('Cash earned'), money(r.cashEarned)], [T('Perfect jumps'), st.perfects], [T('Stumbles'), st.stumbles], [T('Spurs'), st.spurs], [T('Traps tripped'), st.trapHits + ' / ' + st.traps], [T('Peeks / burns'), st.peeks + ' / ' + st.burns], [T('Best streak'), st.bestStreak]];
+    $('#over-stats').innerHTML = cells.map(function (c) { return '<div><b>' + c[1] + '</b><span>' + c[0] + '</span></div>'; }).join('');
+    var nw = S.newStuff, nh = '';
+    if (nw) {
+      nw.ach.forEach(function (id) {
+        var a = M.ACH.filter(function (x) { return x.id === id; })[0];
+        nh += '<div class="got"><div><b>' + T('Trophy') + ': ' + T(a.name) + '</b><br><span>' + T(a.blurb) + (a.unlocks ? ' ' + T('Unlocked in the shop: {u}.', { u: T(E.upgradeById(a.unlocks).name) }) : '') + '</span></div></div>';
+      });
+      if (nw.stake) nh += '<div class="got"><div><b>' + T('Stakes unlocked') + ': ' + T(STAKE_NAMES[nw.stake]) + '</b><br><span>' + T('A harder run that pays more Stable Points.') + '</span></div></div>';
+    }
+    $('#over-new').hidden = !nh; $('#over-new').innerHTML = nh;
+    $('#over-share').hidden = !S.daily;
+    if (S.daily) { $('#sharetxt').textContent = shareText(); $('#shareBtn').textContent = T('Copy result'); }
     $('#over-forfeit').innerHTML = r.forfeited > 0 ? T('Unspent run cash <s>{m}</s> is lost. Run cash never carries over.', { m: money(r.forfeited) }) : T('Run cash never carries over.');
   }
+
+  function shareText() {
+    var R = S.run, r = R.result, medals = ['🥇', '🥈', '🥉', '⬛'];
+    return 'Suit Derby · Daily ' + dailyLabel(S.daily) + '\n' + SUITS[R.me].glyph + ' ' + R.history.map(function (h) { return medals[h.place - 1]; }).join('') + '\n' +
+      (r.champion ? T('Champion') : T('{o} overall', { o: ord(r.rank) })) + ' · ' + r.points + ' ' + T('pts');
+  }
+  $('#shareBtn').addEventListener('click', function () {
+    var txt = $('#sharetxt').textContent, b = $('#shareBtn');
+    function fallback() {
+      try { var rg = document.createRange(); rg.selectNodeContents($('#sharetxt')); var sl = getSelection(); sl.removeAllRanges(); sl.addRange(rg); } catch (e) {}
+      b.textContent = T('Selected: copy it now');
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { b.textContent = T('Copied'); }, fallback); } catch (e) { fallback(); }
+  });
 
   /* ---------- the Stable ---------- */
   function renderStable() {
@@ -683,6 +841,11 @@
         '<div class="row"><span class="lv">' + T('Level {n} / {m}', { n: lv, m: max }) + '</span>' +
         (cost == null ? '<button type="button" class="btn small" disabled>' + T('Maxed') + '</button>' :
           '<button type="button" class="btn small primary" data-perk="' + it.id + '"' + (S.meta.sp < cost ? ' disabled' : '') + '>' + T('Buy · {c} SP', { c: cost }) + '</button>') + '</div></article>';
+    }).join('');
+    $('#trophy-sub').textContent = T('Trophies are earned once and kept. Some unlock new upgrades in the shop. Highest stakes open: {s}.', { s: T(STAKE_NAMES[S.meta.maxStake]) });
+    $('#trophies').innerHTML = M.ACH.map(function (a) {
+      var on = M.has(S.meta, a.id);
+      return '<div class="troph' + (on ? ' on' : '') + '"><h4>' + T(a.name) + '</h4><p>' + T(a.blurb) + '</p>' + (a.unlocks ? '<em>' + (on ? T('Unlocked: {u}', { u: T(E.upgradeById(a.unlocks).name) }) : T('Unlocks: {u}', { u: T(E.upgradeById(a.unlocks).name) })) + '</em>' : '') + '</div>';
     }).join('');
     $('#resetMeta').textContent = S.resetArm ? T('Really reset everything?') : T('Reset all progress');
   }
@@ -696,13 +859,35 @@
     S.resetArm = 0; S.meta = M.reset(); renderStable();
   });
 
+  /* ---------- first-run guide ---------- */
+  var GUIDE = [
+    { h: 'The race', g: '♥ ♦ ♣ ♠', p: ['Four horses, one per suit. Every few seconds a card is drawn and the horse of that suit surges. You ride one suit and always back it to win.', 'Every lap is a race. Points for the place: 4, 3, 2, 1. Most points after the last lap wins the run.'] },
+    { h: 'Your hands', g: 'S · Space · X', p: ['<b>Spur</b> (S) spends stamina for a surge: a full bar is worth much more than a half bar.', '<b>Brace</b> (Space) when a hazard lights up: tap in the gold zone for a perfect jump.', '<b>Trap</b> (X) drops a trap in front of the leading rival. You earn tokens by finishing 3rd or 4th.'] },
+    { h: 'Money', g: '$ $ $', p: ['You win cash for your place, for cards of your suit after you finish, and for bets. Spend it on upgrades at the pit stop. <b>Cash left at the end of the run is lost.</b>', 'Bet on the next card. <b>Peek</b> shows it first, <b>Burn</b> throws it away.'] },
+    { h: 'Never out of it', g: '★', p: ['Trailing charges your <b>Grit</b>: stamina refills faster the further you are behind. Last in the standings? The shop gets bigger.', 'The final lap is <b>Derby Day</b>: every place is worth double points, so nothing is settled until the end.'] }
+  ];
+  function renderGuide() {
+    var g = GUIDE[S.guideAt];
+    $('#gdots').innerHTML = GUIDE.map(function (x, k) { return '<i class="' + (k <= S.guideAt ? 'on' : '') + '"></i>'; }).join('');
+    $('#gbody').innerHTML = '<div class="mglyph">' + g.g + '</div><h3>' + T(g.h) + '</h3>' + g.p.map(function (x) { return '<p>' + T(x) + '</p>'; }).join('');
+    $('#gnext').textContent = S.guideAt === GUIDE.length - 1 ? T('Got it') : T('Next');
+    $('#gskip').hidden = S.guideAt === GUIDE.length - 1;
+  }
+  function openGuide() { S.guideAt = 0; renderGuide(); $('#guide').hidden = false; }
+  function closeGuide() { $('#guide').hidden = true; if (!S.meta.guide) { S.meta.guide = true; M.save(S.meta); } }
+  $('#gnext').addEventListener('click', function () { if (S.guideAt >= GUIDE.length - 1) closeGuide(); else { S.guideAt++; renderGuide(); } });
+  $('#gskip').addEventListener('click', closeGuide);
+  $('#openGuide').addEventListener('click', openGuide);
+  document.addEventListener('keydown', function (e) { if (e.code === 'Escape' && !$('#guide').hidden) closeGuide(); });
+  I.onChange(function () { if (!$('#guide').hidden) renderGuide(); });
+
   /* ---------- rules ---------- */
   function buildRules() {
     var C = CFG, tp = C.tierPrice;
     var alt = I.rules[I.lang];
     if (alt) { $('#rules').innerHTML = alt(C); return; }
     $('#rules').innerHTML =
-      '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 10 cards per suit, identical horses, and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
+      '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 10 cards per suit and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
       '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder, but each card is a small push, so races run about a minute. Horses that have finished ignore surges.</p>' +
       '<div class="vals"><span>2–10 pips</span><span>J 11</span><span>Q 12</span><span>K 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
       '<section><h3>The deck</h3><p>The deck is small: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' cards</b>, ' + (C.copies * (15 - C.minRank)) + ' per suit, ranks ' + C.minRank + ' to Ace. Cards are drawn without being put back, so a suit that has come up a lot runs low and the horses that have been unlucky become more likely to get the next cards. Leaders fade and losers get their chance. Upgrades change it for the <b>whole run</b>: add your cards, raise them, or burn and steal a rival’s (never below ' + C.minSuit + ' cards per suit). At the start of every lap all cards are gathered and <b>reshuffled</b>.</p><p><b>Underdog fund:</b> at every pit stop, a suit holding less than ' + Math.round(C.underdog * 100) + '% of the deck gets free cards (up to ' + C.underdogMax + ') until it is back above that line, so no horse gets starved out of the run.</p><p>After every lap the rivals collect free upgrades too, and you can see which ones at the pit stop.</p></section>' +
@@ -713,6 +898,11 @@
       '<section><h3>Money</h3><p>You earn <b>run cash</b> after every lap: a prize for your finishing place (' + C.prizes.map(function (p) { return '$' + p; }).join(', ') + '), a speed bonus of $' + C.bonusPerSec + ' for every second under ' + C.par + ' seconds, and <b>dividends</b>: once your horse has crossed the line, every card of your suit still drawn pays ' + C.divPerValue + '× its value. Bets are paid on top.</p><p>Spend cash on upgrades, rerolls, bets and the card table. <b>Whatever is left when the run ends is lost.</b></p></section>' +
       '<section><h3>Pit shop and tiers</h3><p>The shop opens after lap 1 and offers ' + C.shopSlots + ' upgrades. Every upgrade belongs to a tier and <b>every upgrade of a tier costs the same</b>: Common $' + tp.common + ', Rare $' + tp.rare + ', Epic $' + tp.epic + ', Legendary $' + tp.legendary + '. The shop shows the chance of each rarity, and rarer upgrades show up more often as the run goes on. You can reroll for a fee.</p><p>Upgrade types: Deck, Horse, Money, Betting, Gear (like Scout Lens and Hurdler), Luck (random surges, cash windfalls, dice, a coin flip), and Next lap items that are used once.</p></section>' +
       '<section><h3>Card table</h3><p>At every pit stop you can play up to ' + C.tableLimit + ' hands of <b>higher or lower</b>. A card is dealt, you call whether the next is higher or lower, and ties lose. The payout follows the true chance with a small house edge.</p></section>' +
+      '<section><h3>Catching up</h3><p>Nobody should be out of a run by lap 3. <b>Grit:</b> the further your horse trails the leader in a lap, the faster its stamina refills (up to +' + Math.round(C.gritMax * 100) + '%), so a horse that is behind can build a big Spur. <b>Traps:</b> finish 3rd (1 token) or 4th (2 tokens) and you keep them for the next lap, up to ' + C.trapCap + '. Press <b>Trap</b> (X) to drop one in front of the leading rival: it trips it about ' + Math.round(C.trapHit * 100) + '% of the time. <b>Underdog draft:</b> last in the standings at a pit stop gives you an extra shop slot and a free reroll, 3rd gives a free reroll. <b>Derby Day:</b> the final lap is worth <b>double points</b>.</p></section>' +
+      '<section><h3>Lap modifiers</h3><p>Most laps after the first carry a modifier that is announced at the pit stop, and the bookie prices it in: Mud Run (4 hazards, longer stumbles), Quickdraw (a card every 1.8 seconds), Headwind (slower cruising), Clear Track (no hazards, faster cruising), Golden Lap (prizes ×1.5) and Chaos Night (4 Chaos cards in the deck).</p></section>' +
+      '<section><h3>Peek and burn</h3><p>During a lap you can <b>Peek</b> for $' + C.peekCost + ' to see the card on top of the deck. The draw waits a moment so you can react, and next-card bets are closed until it is drawn. You can only peek when no next-card bet is open. After a peek you can <b>Burn</b> the card for $' + C.burnCost + ' (up to ' + C.burnMax + ' times per lap) and peek again.</p></section>' +
+      '<section><h3>Horse traits and sets</h3><p>Every suit’s horse has its own trait: ' + E.TRAITS.map(function (t, i) { return SUITS[i].glyph + ' ' + t.name + ' (' + t.blurb.replace(/\.$/, '') + ')'; }).join('; ') + '. Upgrades also form <b>sets</b>: own different upgrades of one type (Deck, Horse, Money, Betting, Luck, Gear) and the set pays a bonus, shown at the pit stop.</p></section>' +
+      '<section><h3>Trophies, stakes and the Daily</h3><p><b>Trophies</b> are earned once for feats like a three-bet streak, three trapped rivals or a comeback win, and some of them unlock new upgrades (Echo Chamber, Trap Master, Phoenix, Grit Amplifier). Win a run to open the next <b>stakes</b> level: rivals buy more upgrades and prizes shrink, but Stable Points grow by ' + Math.round(C.diffSp * 100) + '% per level. The <b>Daily Derby</b> is a five-lap run on the same seed and horse for everyone that day, with no Stable perks, and gives a result you can copy and share.</p></section>' +
       '<section><h3>The Stable</h3><p>At the end of a run you earn <b>Stable Points</b>: lap points, correct calls, and a bonus of 2 per lap for the champion or 1 per lap for the runner-up. Spend them in The Stable on permanent perks: starting cash, extra cards, faster cruising, cheaper shops, better rarity odds and better bet payouts. Progress is saved in this browser.</p></section>';
   }
 
