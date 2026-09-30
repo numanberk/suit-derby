@@ -56,7 +56,9 @@ h1, h2, h3, p { margin: 0; }
 .sndbtn[aria-pressed="false"] { color: var(--ink-dim); }
 .sndbtn:hover { border-color: var(--ink-dim); }
 .ctrls .sndbtn { width: auto; height: auto; border-radius: 8px; padding: 6px 10px; background: var(--raise); }
-.langrow .sndbtn { margin-right: auto; }
+.langrow .sndbtn { margin-right: 0; }
+.langrow #sndMenu { margin-left: 0; }
+.langrow .langlbl { margin-left: auto; }
 .langrow { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
 .langlbl { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
 .langsw { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--track); }

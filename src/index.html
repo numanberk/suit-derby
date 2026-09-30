@@ -14,7 +14,7 @@
 
   <!-- MENU -->
   <section class="screen" id="s-menu" aria-label="Menu">
-    <div class="langrow"><button type="button" class="sndbtn" id="sndMenu"></button><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
+    <div class="langrow"><button type="button" class="sndbtn" id="sndMenu" data-snd="fx"></button><button type="button" class="sndbtn" id="musMenu" data-snd="music"></button><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
     <div class="menu-hero">
       <h1>Suit Derby</h1>
       <p class="lede" data-i18n="Four suits race through one deck. Rig the deck, win the run.">Four suits race through one deck. Rig the deck, win the run.</p>
@@ -92,7 +92,8 @@
         <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
         <button type="button" id="pause">Pause</button>
         <button type="button" id="skip" disabled data-i18n="Skip">Skip</button>
-        <button type="button" id="snd" class="sndbtn"></button>
+        <button type="button" id="snd" class="sndbtn" data-snd="fx"></button>
+        <button type="button" id="mus" class="sndbtn" data-snd="music"></button>
       </div>
     </div>
     <div class="ticker" id="ticker"></div>

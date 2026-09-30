@@ -55,6 +55,7 @@
     S.screen = name;
     $$('.screen').forEach(function (el) { el.hidden = el.id !== 's-' + name; });
     window.scrollTo(0, 0);
+    Sfx.music.mode(name === 'game' ? 'race' : 'chill');
     if (onEnter[name]) onEnter[name]();
   }
   document.addEventListener('click', function (e) {
@@ -65,22 +66,27 @@
   document.addEventListener('pointerdown', function () { Sfx.unlock(); }, { passive: true });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button');
-    if (b && !b.matches('#spur,#brace,[data-bet],[data-buy],#reroll,[data-deal],[data-tg],[data-perk],#snd,#sndMenu,[data-cell],[data-chip]')) Sfx.click();
+    if (b && !b.matches('#spur,#brace,[data-bet],[data-buy],#reroll,[data-deal],[data-tg],[data-perk],#snd,#sndMenu,#mus,#musMenu,[data-cell],[data-chip]')) Sfx.click();
   });
   document.addEventListener('keydown', function (e) {
-    if (e.code === 'KeyM' && !e.repeat && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) Sfx.toggle();
+    if (e.repeat || e.ctrlKey || e.metaKey || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.code === 'KeyM') Sfx.toggle();
+    else if (e.code === 'KeyN') Sfx.music.toggle();
   });
   var ICON_ON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  var NOTE_ON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>';
+  var NOTE_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/><path d="M3 3l18 18" stroke-width="2.4"/></svg>';
   var ICON_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg>';
   function renderSnd() {
     $$('.sndbtn').forEach(function (b) {
-      b.innerHTML = Sfx.on ? ICON_ON : ICON_OFF;
-      b.setAttribute('aria-pressed', String(Sfx.on));
-      b.setAttribute('aria-label', T(Sfx.on ? 'Sound on' : 'Sound off'));
-      b.title = T(Sfx.on ? 'Sound on' : 'Sound off') + ' (M)';
+      var mus = b.dataset.snd === 'music', on = mus ? Sfx.music.on : Sfx.on;
+      b.innerHTML = mus ? (on ? NOTE_ON : NOTE_OFF) : (on ? ICON_ON : ICON_OFF);
+      b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', T(mus ? (on ? 'Music on' : 'Music off') : (on ? 'Sound on' : 'Sound off')));
+      b.title = T(mus ? (on ? 'Music on' : 'Music off') : (on ? 'Sound on' : 'Sound off')) + (mus ? ' (N)' : ' (M)');
     });
   }
-  $$('.sndbtn').forEach(function (b) { b.addEventListener('click', function () { Sfx.toggle(); }); });
+  $$('.sndbtn').forEach(function (b) { b.addEventListener('click', function () { if (b.dataset.snd === 'music') Sfx.music.toggle(); else Sfx.toggle(); }); });
   Sfx.onChange(renderSnd);
 
   /* ---------- menu ---------- */
@@ -739,12 +745,16 @@
     var live = S.screen === 'game' && S.run && S.run.lap && !S.paused;
     var mh = live && S.gphase === 'racing' ? S.run.horses[S.run.me] : null;
     Sfx.crowd(!!(live && (S.gphase === 'racing' || S.gphase === 'ending')));
+    Sfx.music.dim(S.screen === 'game' && S.paused ? 0.25 : 1);
+    var mp = live && S.gphase !== 'countdown' ? S.run.horses[S.run.me].pos / CFG.lapLen : 0;
+    Sfx.music.level(mp > 0.85 ? 3 : mp > 0.55 ? 2 : mp > 0.18 ? 1 : 0);
     Sfx.hooves(mh && !mh.fin ? (mh.base + mh.tb + mh.ex) * (mh.slowT > 0 ? 0.4 : 1) * (openHazard() ? 0.5 : 1) * (1 + (S.speed - 1) * 0.3) : 0);
     requestAnimationFrame(frame);
   }
 
   buildSetup(); buildRules();
   onEnter.menu();
+  Sfx.music.mode('chill');
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   requestAnimationFrame(frame);
   window.__derby = { S: S, E: E, M: M, go: go, scene: scene, FX: FX };

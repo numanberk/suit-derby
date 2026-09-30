@@ -5,6 +5,14 @@ Every lap is a full race; you earn run cash, spend it on upgrades in a pit shop 
 and lose whatever is left when the run ends. Stable Points earned at the end of a run buy
 permanent perks in The Stable.
 
+### v8: music
+Two generated tracks (no audio files). A relaxed one plays on the menu, setup, pit stop and results screens
+(warm keys, soft beat, a small hook that arrives on the second pass). The race has a driving track that starts
+with kick, bass and hats, then adds a plucked arpeggio and clap, then a pad and a lead hook as your horse gets
+further along the lap, and gets busier in the last stretch. It dips under big wins and when you pause.
+Music has its own on/off button (note icon, next to the speaker) and the **N** key; **M** still mutes effects.
+Both choices are saved separately.
+
 ### v7: sound
 All sound is synthesized live with WebAudio (no audio files). Every card drawn is a soft mallet note on a
 pentatonic scale, so the race plays a little tune; a next-card hit streak climbs the scale; wins escalate
@@ -49,7 +57,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/index.html   page structure: menu, setup, game, pit stop, run over, Stable, rules
     src/style.css    all styling
     src/engine.js    game rules: deck, laps, upgrades, cash, shop (no DOM, runs in Node)
-    src/audio.js     WebAudio sound engine (Sfx): every effect, crowd, hoofbeats, mute
+    src/audio.js     WebAudio engine (Sfx): effects, crowd, hoofbeats, the two music tracks, both switches
     src/i18n.js      translator: t('English text', {params}), language switch, saved choice
     src/lang_tr.js   Turkish dictionary and Turkish rules page
     src/meta.js      Stable perks and saved progress (localStorage)

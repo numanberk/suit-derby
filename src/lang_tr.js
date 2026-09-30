@@ -16,6 +16,8 @@
     'Language': 'Dil',
     'Sound on': 'Ses açık',
     'Sound off': 'Ses kapalı',
+    'Music on': 'Müzik açık',
+    'Music off': 'Müzik kapalı',
     'New run': 'Yeni koşu',
     'Choose your horse': 'Atını seç',
     'Length': 'Uzunluk',

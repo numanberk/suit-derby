@@ -12,6 +12,9 @@ const Sfx = (() => {
   const SUIT_NOTE = [0, 2, 3, 4];          // hearts C, diamonds E, clubs G, spades A
   let ctx = null, bus = null, comp = null, master = null, noiseBuf = null, on = true, offline = false;
   const listeners = [];
+  const KEY_M = 'suitderby.mus', MUS = 0.3;
+  let mon = true, musBus = null, musOut = null;
+  try { mon = localStorage.getItem(KEY_M) !== '0'; } catch (e) {}
   try { on = localStorage.getItem(KEY) !== '0'; } catch (e) {}
 
   function init() {
@@ -20,13 +23,19 @@ const Sfx = (() => {
     master = ctx.createGain(); master.gain.value = on ? 0.9 : 0;
     bus = ctx.createGain(); bus.gain.value = 1.5;
     bus.connect(comp); comp.connect(master); master.connect(ctx.destination);
+    // music has its own bus, a gentle compressor and its own on/off
+    musBus = ctx.createGain(); musBus.gain.value = 0.0001;
+    const mc = ctx.createDynamicsCompressor();
+    mc.threshold.value = -20; mc.knee.value = 14; mc.ratio.value = 3; mc.attack.value = 0.01; mc.release.value = 0.25;
+    musOut = ctx.createGain(); musOut.gain.value = mon ? 1 : 0;
+    musBus.connect(mc); mc.connect(musOut); musOut.connect(ctx.destination);
     const len = Math.floor(ctx.sampleRate * 2);
     noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
   }
-  function go() {
-    if (!on) return null;
+  function go() { return on ? ctxGo() : null; }
+  function ctxGo() {
     if (!ctx) {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
@@ -161,6 +170,7 @@ const Sfx = (() => {
     }
   }
   const win = S(tier => {
+    if (tier !== 'nice') music.duck(tier === 'big' ? 0.5 : 0.3, tier === 'jackpot' ? 2.4 : 1.4);
     if (tier === 'nice') { coins(6, 0.4, 0.045); [0, 2, 4].forEach((k, i) => ping(SC[k + 2], 0.08, i * 0.05, 0.4)); }
     else if (tier === 'big') {
       coins(14, 0.9, 0.05); [0, 2, 3, 5, 7].forEach((k, i) => ping(SC[k], 0.1, i * 0.055, 0.5));
@@ -185,11 +195,12 @@ const Sfx = (() => {
   });
   const finish = S((place, mine) => {
     if (!mine) { if (place === 1) { tone({ f: 500, dur: 0.06, vol: 0.04, type: 'triangle' }); } return; }
-    if (place === 1) { [0, 2, 4, 5].forEach((k, i) => brass(SC[k], i * 0.1, i === 3 ? 0.7 : 0.16, 0.1)); coins(8, 0.6, 0.04); }
+    if (place === 1) { music.duck(0.45, 1.2); [0, 2, 4, 5].forEach((k, i) => brass(SC[k], i * 0.1, i === 3 ? 0.7 : 0.16, 0.1)); coins(8, 0.6, 0.04); }
     else if (place === 2) { [2, 4, 5].forEach((k, i) => ping(SC[k], 0.1, i * 0.08, 0.5)); }
     else { ping(SC[3], 0.08, 0, 0.35); ping(SC[2], 0.07, 0.11, 0.4); }
   });
   const champion = S(() => {
+    music.duck(0.25, 2.6);
     [[0, 0], [0, 0.14], [0, 0.28], [2, 0.42], [4, 0.62]].forEach(([k, at], i) => brass(SC[k], at, i === 4 ? 1.2 : 0.12, 0.11));
     [0, 2, 4, 5].forEach(k => brass(SC[k] / 2, 0.62, 1.2, 0.05));
     coins(30, 2, 0.05);
@@ -258,6 +269,132 @@ const Sfx = (() => {
     else if (v <= 0 && hoof) { clearInterval(hoof); hoof = null; }
   }
 
+
+  /* ---------- music ----------
+     Two generated tracks, both loops of four bars.
+     chill: the menu, setup, pit stop and results. Warm keys, a soft beat, a little hook that comes in on the second pass.
+     race:  driving pulse. It starts with kick, bass and hats, then adds a plucked arpeggio, a clap, a pad and a lead hook
+            as the lap goes on, and gets busier in the last stretch. */
+  let mWant = null, mMode = null, mLevel = 0, mDim = 1, mStep = 0, mNext = 0, mTimer = null;
+  const mt = o => tone(Object.assign({ dest: musBus }, o));
+  const mn = o => noise(Object.assign({ dest: musBus }, o));
+  const hz = (root, semi) => root * Math.pow(2, semi / 12);
+  const CH = { min: [0, 3, 7, 12], maj: [0, 4, 7, 12], m7: [0, 3, 7, 10], M7: [0, 4, 7, 11], d7: [0, 4, 7, 10] };
+  const kick = (at, v) => { mt({ f: 135, to: 42, dur: 0.17, vol: 0.6 * v, at, atk: 0.002 }); mn({ type: 'lowpass', f: 900, dur: 0.02, vol: 0.12 * v, at }); };
+  const hat = (at, v, open) => mn({ type: 'highpass', f: 8500, dur: open ? 0.09 : 0.035, vol: 0.06 * v, at });
+  const clap = (at, v) => [0, 0.012, 0.024].forEach(d => mn({ type: 'bandpass', f: 1600, q: 0.9, dur: 0.06, vol: 0.1 * v, at: at + d }));
+  const bass = (f, at, dur, v) => { mt({ f, dur, vol: 0.32 * v, at, type: 'triangle', lp: 520, atk: 0.005 }); mt({ f, dur: dur * 0.8, vol: 0.16 * v, at, atk: 0.005 }); };
+  const ep = (f, at, v, dur) => { dur = dur || 0.9; mt({ f, dur, vol: 0.085 * v, at, atk: 0.004 }); mt({ f: f * 2, dur: dur * 0.5, vol: 0.03 * v, at }); mt({ f: f * 4.02, dur: 0.12, vol: 0.02 * v, at }); };
+  const pluck = (f, at, v) => mt({ f, dur: 0.13, vol: 0.065 * v, at, type: 'triangle', lp: 2800, atk: 0.002 });
+  const lead = (f, at, v) => { mt({ f, dur: 0.24, vol: 0.05 * v, at, type: 'square', lp: 2300, atk: 0.005 }); mt({ f: f * 1.005, dur: 0.24, vol: 0.03 * v, at, type: 'sawtooth', lp: 2000, atk: 0.005 }); };
+  const pad = (f, at, dur, v) => { mt({ f, dur, vol: 0.035 * v, at, type: 'sawtooth', lp: 900, atk: 0.35 }); mt({ f: f * 1.008, dur, vol: 0.03 * v, at, type: 'sawtooth', lp: 900, atk: 0.35 }); };
+
+  const RACE_CH = [[110, 'min'], [87.31, 'maj'], [130.81, 'maj'], [98, 'maj']];          // Am F C G
+  const ARP = [0, 2, 1, 3, 2, 1, 3, 2, 0, 2, 1, 3, 2, 3, 1, 2];
+  const RACE_LEAD = [
+    [880, 0, 0, 659.25, 0, 0, 523.25, 0, 659.25, 0, 0, 0, 587.33, 0, 523.25, 0],
+    [523.25, 0, 0, 587.33, 0, 0, 523.25, 0, 440, 0, 0, 0, 523.25, 0, 0, 0],
+    [659.25, 0, 0, 783.99, 0, 0, 659.25, 0, 587.33, 0, 523.25, 0, 587.33, 0, 659.25, 0],
+    [587.33, 0, 0, 659.25, 0, 587.33, 0, 0, 523.25, 0, 0, 0, 587.33, 0, 0, 0]
+  ];
+  const CHILL_CH = [[130.81, 'M7'], [110, 'm7'], [146.83, 'm7'], [98, 'd7']];               // Cmaj7 Am7 Dm7 G7
+  const CHILL_MEL = [
+    [[0, 659.25], [3, 783.99], [6, 880], [10, 783.99]],
+    [[0, 880], [4, 783.99], [8, 659.25], [12, 523.25]],
+    [[0, 587.33], [3, 659.25], [7, 880], [10, 783.99]],
+    [[0, 783.99], [6, 659.25], [8, 587.33], [12, 659.25]]
+  ];
+  const MODES = {
+    race: {
+      bpm: 126, swing: 0,
+      step(i, at, L) {
+        const bar = (i >> 4) & 3, s = i & 15, sp = 60 / 126 / 4, [root, q] = RACE_CH[bar];
+        if (s % 4 === 0) kick(at, L >= 1 ? 1 : 0.8);
+        if (s % 2 === 0) bass(root * (s === 6 || s === 14 ? 2 : 1), at, 0.2, s === 0 ? 1 : 0.8);
+        if (s % 4 === 2) hat(at, 1, true);
+        else if (L >= 3 || (L >= 2 && s % 2 === 1)) hat(at, 0.5, false);
+        if (L >= 1 && (s === 4 || s === 12)) clap(at, 1);
+        if (L >= 1) pluck(hz(root * 4, CH[q][ARP[s]]), at, L >= 3 ? 1.15 : 0.85);
+        if (L >= 2 && s === 0) [0, 1, 2].forEach(k => pad(hz(root * 2, CH[q][k]), at, 1.9, 1));
+        if (L >= 2 && RACE_LEAD[bar][s]) { lead(RACE_LEAD[bar][s], at, 1); lead(RACE_LEAD[bar][s], at + 3 * sp, 0.35); }
+        if (L >= 3 && s === 8) pluck(hz(root * 8, CH[q][3]), at, 0.9);
+      }
+    },
+    chill: {
+      bpm: 82, swing: 0.3,
+      step(i, at, L) {
+        const bar = (i >> 4) & 3, s = i & 15, loop = (i >> 6) & 1, [root, q] = CHILL_CH[bar];
+        if (s === 0) CH[q].forEach((semi, k) => ep(hz(root * 2, semi), at + k * 0.014, 0.85, 1.7));
+        if (s === 10) CH[q].slice(1).forEach((semi, k) => ep(hz(root * 2, semi), at + k * 0.012, 0.5, 0.55));
+        if (s === 0) bass(root, at, 0.55, 1);
+        if (s === 8) bass(root * 1.5, at, 0.4, 0.6);
+        if (s === 0 || s === 10) kick(at, 0.45);
+        if (s === 4 || s === 12) mn({ type: 'bandpass', f: 1900, q: 0.8, dur: 0.11, vol: 0.06, at });
+        if (s % 4 === 2) hat(at, 0.4, false);
+        if (loop === 1) CHILL_MEL[bar].forEach(([st, f]) => { if (st === s) ep(f, at, 0.9, 1.1); });
+      }
+    }
+  };
+  function mGain(mult, tc) { if (musBus) musBus.gain.setTargetAtTime(Math.max(0.0001, MUS * mDim * (mult || 1)), ctx.currentTime, tc || 0.15); }
+  function mSched() {
+    if (!ctx || !mMode || !mon) return;
+    if (!offline && ctx.state !== 'running') return;
+    if (mNext < ctx.currentTime - 0.3) mNext = ctx.currentTime + 0.05;
+    const m = MODES[mMode], sp = 60 / m.bpm / 4;
+    while (mNext < ctx.currentTime + 0.15) {
+      const sw = (mStep & 1) ? m.swing * sp : 0;
+      try { m.step(mStep, Math.max(0, mNext + sw - ctx.currentTime), mLevel); } catch (e) {}
+      mStep++; mNext += sp;
+    }
+  }
+  function mStart() {
+    mMode = mWant; mStep = 0; mNext = ctx.currentTime + 0.06;
+    musBus.gain.cancelScheduledValues(ctx.currentTime);
+    mGain(1, 0.3);
+    if (!mTimer) mTimer = setInterval(mSched, 30);
+  }
+  function mStop() {
+    if (mTimer) { clearInterval(mTimer); mTimer = null; }
+    mMode = null;
+    if (ctx && musBus) { musBus.gain.cancelScheduledValues(ctx.currentTime); musBus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08); }
+  }
+  /* starts, switches or stops the track to match what the game wants (and the on/off switch) */
+  function mApply() {
+    if (!ctx) return;
+    if (!mon || !mWant) { mStop(); return; }
+    if (mMode === mWant && mTimer) return;
+    if (mTimer && mMode) {           // dip, then start the other track
+      const want = mWant;
+      mMode = null;
+      musBus.gain.cancelScheduledValues(ctx.currentTime);
+      musBus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.06);
+      setTimeout(() => { if (mWant === want && mon && !mMode) mStart(); }, 260);
+      return;
+    }
+    mStart();
+  }
+  const music = {
+    mode(m) { mWant = m; mApply(); },
+    level(n) { mLevel = n; },
+    dim(v) { if (v !== mDim) { mDim = v; if (ctx && mMode) mGain(1, 0.12); } },
+    duck(amt, dur) {
+      if (!ctx || !mMode || !mon) return;
+      const t = ctx.currentTime;
+      musBus.gain.cancelScheduledValues(t);
+      musBus.gain.setTargetAtTime(MUS * mDim * amt, t, 0.03);
+      musBus.gain.setTargetAtTime(MUS * mDim, t + dur, 0.4);
+    },
+    set(v) {
+      mon = !!v;
+      try { localStorage.setItem(KEY_M, mon ? '1' : '0'); } catch (e) {}
+      if (ctx && musOut) musOut.gain.setTargetAtTime(mon ? 1 : 0, ctx.currentTime, 0.02);
+      if (mon) { ctxGo(); mApply(); } else mStop();
+      listeners.forEach(f => f(on));
+    },
+    toggle() { music.set(!mon); },
+    get on() { return mon; }
+  };
+
   /* ---------- on / off ---------- */
   function set(v) {
     on = !!v;
@@ -267,7 +404,7 @@ const Sfx = (() => {
     listeners.forEach(f => f(on));
     if (on) { go(); click(); }
   }
-  const unlock = () => { if (on) go(); };
+  const unlock = () => { if (on || mon) { ctxGo(); mApply(); } };
 
   /* test hook: render a sound offline and report its level (used by the build checks) */
   async function render(name, args, secs) {
@@ -278,10 +415,29 @@ const Sfx = (() => {
     finally { ({ ctx, bus, comp, master, noiseBuf, offline, on } = keep); }
   }
 
+  async function renderMusic(mode, level, secs) {
+    const oc = new OfflineAudioContext(1, Math.floor(44100 * secs), 44100);
+    const keep = { ctx, bus, comp, master, noiseBuf, offline, on, musBus, musOut, mon, mMode, mLevel, mStep, mNext };
+    ctx = oc; offline = true; on = true; mon = true; init(); mMode = mode; mLevel = level;
+    try {
+      const m = MODES[mode], sp = 60 / m.bpm / 4;
+      let i = 0, t = 0.05;
+      while (t < secs) { m.step(i, t + ((i & 1) ? m.swing * sp : 0), level); i++; t += sp; }
+      musBus.gain.value = MUS;
+      return (await oc.startRendering()).getChannelData(0);
+    } finally { ({ ctx, bus, comp, master, noiseBuf, offline, on, musBus, musOut, mon, mMode, mLevel, mStep, mNext } = keep); }
+  }
+
+  /* keep quiet while the tab is hidden */
+  document.addEventListener('visibilitychange', () => {
+    if (!ctx || offline) return;
+    try { if (document.hidden) ctx.suspend(); else if (on || mon) ctx.resume(); } catch (e) {}
+  });
+
   const api = {
     click, pick, chip, shuffle, flip, buy, deny, count, draw, chaos, surge, spur, warn, perfect, clear, stumble,
     lucky, coinFlip, dice, hit, miss, refund, win, tally, finish, champion, podium, settle, pit,
-    crowd, cheer, hooves, set, unlock, render,
+    crowd, cheer, hooves, set, unlock, render, renderMusic, music,
     toggle: () => set(!on),
     get on() { return on; },
     onChange: f => { listeners.push(f); }
