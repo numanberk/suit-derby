@@ -5,6 +5,12 @@ Every lap is a full race; you earn run cash, spend it on upgrades in a pit shop 
 and lose whatever is left when the run ends. Stable Points earned at the end of a run buy
 permanent perks in The Stable.
 
+### v6: Turkish language
+Pick **English** or **Türkçe** with the switch at the top of the menu. The choice is remembered in this
+browser (and defaults to Turkish on Turkish-language browsers). Every screen, upgrade, perk, the rules
+and the canvas labels are translated. To add a language, copy `src/lang_tr.js`, translate the values
+(the English text is the key), and add it to `LANGS` in `src/i18n.js`.
+
 ### v5: a race you play, not just watch
 - **Stamina Spur for every horse.** Stamina refills all lap; a Spur spends it all and the surge grows faster than the stamina (full bar is about 3x a half bar), so waiting pays but going early works. Rivals spur too, each with its own patience.
 - **Hazards.** Every horse meets 3 per lap. Tap Brace (Space or B) when it lights up: gold zone = perfect jump (surge and $8), miss = stumble. The game slows while a hazard is open.
@@ -35,6 +41,8 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/index.html   page structure: menu, setup, game, pit stop, run over, Stable, rules
     src/style.css    all styling
     src/engine.js    game rules: deck, laps, upgrades, cash, shop (no DOM, runs in Node)
+    src/i18n.js      translator: t('English text', {params}), language switch, saved choice
+    src/lang_tr.js   Turkish dictionary and Turkish rules page
     src/meta.js      Stable perks and saved progress (localStorage)
     src/scene.js     the canvas race scene (camera, crowd, horses, hazards)
     src/fx.js        win effects: coins, confetti, banner, shake

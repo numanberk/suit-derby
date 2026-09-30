@@ -14,28 +14,29 @@
 
   <!-- MENU -->
   <section class="screen" id="s-menu" aria-label="Menu">
+    <div class="langrow"><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
     <div class="menu-hero">
       <h1>Suit Derby</h1>
-      <p class="lede">Four suits race through one deck. Rig the deck, win the run.</p>
+      <p class="lede" data-i18n="Four suits race through one deck. Rig the deck, win the run.">Four suits race through one deck. Rig the deck, win the run.</p>
     </div>
     <div class="lineup" id="lineup" aria-hidden="true"></div>
-    <nav class="menu-list" aria-label="Main menu">
-      <button type="button" class="mrow primary" data-go="setup"><span class="mt">Play</span><span class="md">Start a 5 or 10 lap run</span></button>
-      <button type="button" class="mrow" data-go="stable"><span class="mt">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
-      <button type="button" class="mrow" data-go="rules"><span class="mt">Rules</span><span class="md">How a run works</span></button>
+    <nav class="menu-list" data-i18n-label="Main menu" aria-label="Main menu">
+      <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
+      <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
+      <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a run works">How a run works</span></button>
     </nav>
     <p class="mstats mono" id="menu-stats"></p>
   </section>
 
   <!-- SETUP -->
   <section class="screen" id="s-setup" hidden aria-label="New run">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>New run</h2></header>
-    <h3 class="lbl pickhead">Choose your horse</h3>
-    <div class="picks" role="radiogroup" aria-label="Horse" id="picks"></div>
-    <h3 class="lbl">Length</h3>
-    <div class="pills" role="radiogroup" aria-label="Number of laps" id="lapPills"></div>
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="New run">New run</h2></header>
+    <h3 class="lbl pickhead" data-i18n="Choose your horse">Choose your horse</h3>
+    <div class="picks" role="radiogroup" data-i18n-label="Horse" aria-label="Horse" id="picks"></div>
+    <h3 class="lbl" data-i18n="Length">Length</h3>
+    <div class="pills" role="radiogroup" data-i18n-label="Number of laps" aria-label="Number of laps" id="lapPills"></div>
     <p class="note" id="setup-perks"></p>
-    <div class="actions"><button type="button" class="btn primary" id="startRun">Start run</button></div>
+    <div class="actions"><button type="button" class="btn primary" id="startRun" data-i18n="Start run">Start run</button></div>
   </section>
 
   <!-- GAME -->
@@ -43,21 +44,21 @@
     <div class="gbar">
       <button type="button" class="btn ghost" id="quit">Quit</button>
       <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gclock mono" id="gclock">0:00.0</span></div>
-      <div class="gcash" id="gcash" title="Run cash. Lost when the run ends.">$0</div>
+      <div class="gcash" id="gcash" data-i18n-title="Run cash. Lost when the run ends." title="Run cash. Lost when the run ends.">$0</div>
     </div>
     <div class="stage" id="stagebox">
-      <canvas id="stage" aria-label="Race track: four horses in four lanes"></canvas>
+      <canvas id="stage" data-i18n-label="Race track: four horses in four lanes" aria-label="Race track: four horses in four lanes"></canvas>
       <div class="overlay" id="overlay" hidden><div class="big" id="ovtxt"></div></div>
       <div class="hzcall" id="hzcall" hidden>
-        <b>BRACE!</b>
+        <b data-i18n="BRACE!">BRACE!</b>
         <div class="hzmeter" aria-hidden="true"><i id="hzfill"></i><u></u></div>
-        <small>Tap in the gold zone for a perfect jump</small>
+        <small data-i18n="Tap in the gold zone for a perfect jump">Tap in the gold zone for a perfect jump</small>
       </div>
     </div>
     <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
     <div class="actrow">
-      <button type="button" class="btn act brace" id="brace" disabled><span class="a-t">Brace</span><span class="a-s mono" id="bracesub">no hazard near</span></button>
-      <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
+      <button type="button" class="btn act brace" id="brace" disabled><span class="a-t" data-i18n="Brace">Brace</span><span class="a-s mono" id="bracesub" data-i18n="no hazard near">no hazard near</span></button>
+      <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t" data-i18n="Spur">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
     </div>
     <div class="cockpit">
       <div class="cp-card">
@@ -66,31 +67,31 @@
           <div class="hinfo">
             <div class="dname" id="dname">Shuffling</div>
             <div class="dline" id="dline">First card comes out soon.</div>
-            <div class="hist" id="hist" aria-label="Recent cards"></div>
+            <div class="hist" id="hist" data-i18n-label="Recent cards" aria-label="Recent cards"></div>
           </div>
         </div>
-        <div class="deckbar" id="deckbar" aria-label="Cards left in the deck"></div>
+        <div class="deckbar" id="deckbar" data-i18n-label="Cards left in the deck" aria-label="Cards left in the deck"></div>
         <div class="deckleg mono" id="deckleg"></div>
       </div>
       <div class="cp-bets">
-        <div class="betshead"><h3 class="lbl">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
+        <div class="betshead"><h3 class="lbl" data-i18n="Next card: pick a suit">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
         <div class="bets" id="bets"></div>
         <div class="betctl">
-          <div class="chips" id="chips" role="radiogroup" aria-label="Stake"></div>
-          <button type="button" class="btn small" id="rebet">Rebet</button>
+          <div class="chips" id="chips" role="radiogroup" data-i18n-label="Stake" aria-label="Stake"></div>
+          <button type="button" class="btn small" id="rebet" data-i18n="Rebet">Rebet</button>
           <span class="betinfo mono" id="betinfo"></span>
         </div>
       </div>
     </div>
     <div class="calls mono" id="calls" hidden></div>
     <div class="glow">
-      <div class="pts mono" id="pts" aria-label="Championship points"></div>
+      <div class="pts mono" id="pts" data-i18n-label="Championship points" aria-label="Championship points"></div>
       <div class="ctrls">
         <button type="button" data-sp="1" aria-pressed="true">1&times;</button>
         <button type="button" data-sp="2" aria-pressed="false">2&times;</button>
         <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
         <button type="button" id="pause">Pause</button>
-        <button type="button" id="skip" disabled>Skip</button>
+        <button type="button" id="skip" disabled data-i18n="Skip">Skip</button>
       </div>
     </div>
     <div class="ticker" id="ticker"></div>
@@ -109,7 +110,7 @@
       </div>
       <div class="pit-stand">
         <h3 class="lbl" id="pit-stand-h">Championship</h3>
-        <table class="tbl"><thead><tr><th>Pos</th><th>Horse</th><th class="num">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
+        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
         <div class="deckbar sm" id="pit-deckbar"></div>
         <div class="deckleg mono" id="pit-deckleg"></div>
       </div>
@@ -117,20 +118,20 @@
     <div class="rivals" id="rivals"></div>
 
     <div class="sect">
-      <div class="shophead"><h3 class="lbl">Call the order</h3><span class="hint mono" id="board-hint">Odds lock when the lap starts</span></div>
+      <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
       <div class="board" id="board"></div>
       <p class="boardfoot" id="boardfoot"></p>
     </div>
 
     <div class="sect" id="shopsect">
-      <div class="shophead"><h3 class="lbl">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
+      <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
       <div class="tiers mono" id="tiers"></div>
       <div class="offers" id="offers"></div>
-      <p class="note" id="shopclosed" hidden>The shop opens after lap 1. Every horse starts level: 26 cards per suit and no upgrades.</p>
+      <p class="note" id="shopclosed" hidden data-i18n="The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.">The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.</p>
     </div>
 
     <div class="sect">
-      <div class="shophead"><h3 class="lbl">Card table</h3><span class="hint mono" id="table-hint"></span></div>
+      <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
       <div class="table" id="table"></div>
     </div>
 
@@ -140,46 +141,48 @@
 
   <!-- RUN OVER -->
   <section class="screen" id="s-over" hidden aria-label="Run complete">
-    <header class="bar"><h2>Run complete</h2></header>
+    <header class="bar"><h2 data-i18n="Run complete">Run complete</h2></header>
     <div class="over-top">
       <div class="bigplace" id="over-rank">Champion</div>
       <p class="lede" id="over-sub"></p>
     </div>
     <div class="pit-top">
       <div>
-        <h3 class="lbl">Final standings</h3>
-        <table class="tbl"><thead><tr><th>Pos</th><th>Horse</th><th class="num">Pts</th></tr></thead><tbody id="over-standings"></tbody></table>
+        <h3 class="lbl" data-i18n="Final standings">Final standings</h3>
+        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="over-standings"></tbody></table>
       </div>
       <div>
-        <h3 class="lbl">Stable Points</h3>
+        <h3 class="lbl" data-i18n="Stable Points">Stable Points</h3>
         <div class="stmt" id="over-stmt"></div>
         <p class="forfeit" id="over-forfeit"></p>
       </div>
     </div>
     <div class="actions">
-      <button type="button" class="btn primary" data-go="setup">Play again</button>
-      <button type="button" class="btn" data-go="stable">The Stable</button>
-      <button type="button" class="btn ghost" data-go="menu">Menu</button>
+      <button type="button" class="btn primary" data-go="setup" data-i18n="Play again">Play again</button>
+      <button type="button" class="btn" data-go="stable" data-i18n="The Stable">The Stable</button>
+      <button type="button" class="btn ghost" data-go="menu" data-i18n="Menu">Menu</button>
     </div>
   </section>
 
   <!-- STABLE -->
   <section class="screen" id="s-stable" hidden aria-label="The Stable">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
-    <p class="lede sm">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="The Stable">The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
+    <p class="lede sm" data-i18n="Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
     <div class="perks" id="perks"></div>
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 
   <!-- RULES -->
   <section class="screen" id="s-rules" hidden aria-label="Rules">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>Rules</h2></header>
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="Rules">Rules</h2></header>
     <div class="rules" id="rules"></div>
   </section>
 
 </div>
 <div id="flashfx" aria-hidden="true"></div>
-<div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t">BIG WIN</div><div class="bw-a mono"></div></div>
+<div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t" data-i18n="BIG WIN">BIG WIN</div><div class="bw-a mono"></div></div>
+<script src="i18n.js"></script>
+<script src="lang_tr.js"></script>
 <script src="meta.js"></script>
 <script src="engine.js"></script>
 <script src="fx.js"></script>

@@ -52,6 +52,12 @@ h1, h2, h3, p { margin: 0; }
 .cashchip.sp { color: var(--ink); }
 
 /* menu */
+.langrow { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
+.langlbl { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+.langsw { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--track); }
+.langsw button { font: 700 13px var(--f-body, inherit); padding: 7px 14px; border-radius: 999px; color: var(--ink-dim); min-height: 34px; }
+.langsw button:hover { color: var(--ink); }
+.langsw button[aria-pressed="true"] { background: var(--gold); color: var(--gold-ink); }
 .menu-hero h1 { font: 900 clamp(56px, 13vw, 104px)/0.86 var(--f-display); text-transform: uppercase; letter-spacing: 0.015em; }
 .menu-hero .lede { margin-top: 14px; }
 .lineup { display: flex; gap: 8px; margin: 30px 0 26px; flex-wrap: wrap; }

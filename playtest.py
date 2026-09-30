@@ -1,8 +1,18 @@
 """Headless full-run test: calls, shop, card table, then every lap is played with hazards
 (Brace), next-card bets and the stamina Spur. Needs python playwright + chromium."""
-import asyncio, pathlib
+import asyncio, pathlib, os, re
+LANG_ID = os.environ.get('LANG_ID', 'en')   # set LANG_ID=tr to play the whole test in Turkish
+SHOTS = os.environ.get('SHOTS', '.')
 from playwright.async_api import async_playwright
+def shot(name): return SHOTS + '/' + LANG_ID + '-' + name
 URL = 'file://' + str(pathlib.Path(__file__).parent.resolve()) + '/dist/suit-derby.html'
+
+WORDS = re.compile(r"\b(the|and|Lap|Buy|Spur|Stable|Your|Next|Rules|Play|Menu|Brace|cards?|stake|bets?|horse|run|wins?|lost|won)\b")
+async def leak(pg, label):
+    if LANG_ID != 'tr': return
+    txt = await pg.evaluate("Array.from(document.querySelectorAll('.screen:not([hidden])')).map(e=>e.innerText).join('\\n')")
+    hits = sorted(set(WORDS.findall(txt)))
+    print('LEAK-CHECK', label, hits if hits else 'clean')
 
 async def pit_actions(pg, lap):
     for pl in range(1, 4):
@@ -49,44 +59,55 @@ async def main():
         pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' and 'ERR_TUNNEL' not in m.text else None)
         pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e)))
         await pg.goto(URL); await pg.wait_for_timeout(400)
-        await pg.screenshot(path='shot-menu.png', full_page=True)
+        if LANG_ID != 'en': await pg.click(f'[data-lang="{LANG_ID}"]')
+        await leak(pg, 'menu')
+        await pg.screenshot(path=shot('menu.png'), full_page=True)
         await pg.click('#s-menu [data-go="setup"]')
+        await leak(pg, 'setup')
         await pg.click('#startRun'); await pg.wait_for_timeout(300)
         print('start screen', await pg.evaluate('__derby.S.screen'))
         await pit_actions(pg, 0)
         assert await pg.locator('[data-cell^="0,"]:not([disabled])').count() == 0, 'first place must be locked'
-        await pg.screenshot(path='shot-prep.png', full_page=True)
+        await pg.screenshot(path=shot('prep.png'), full_page=True)
+        await leak(pg, 'prep')
         await pg.click('#nextLap')
         stats = {'brace': 0, 'spur': 0, 'bets': 0}
         laps = 0
         await pg.wait_for_timeout(3000)
-        await pg.screenshot(path='shot-game.png')
+        await leak(pg, 'game')
+        await pg.screenshot(path=shot('game.png'))
         for lap in range(10):
             await play_lap(pg, stats)
             sc = await pg.evaluate('__derby.S.screen')
             if sc == 'pit':
                 laps += 1
                 await pg.wait_for_timeout(300)
-                if laps == 2: await pg.screenshot(path='shot-pit.png', full_page=True)
+                if laps == 2: await leak(pg, 'pit')
+                if laps == 2: await pg.screenshot(path=shot('pit.png'), full_page=True)
                 await pit_actions(pg, laps)
                 await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
             elif sc == 'over': break
         print('laps at pit', laps, 'screen', await pg.evaluate('__derby.S.screen'), stats)
         await pg.wait_for_timeout(500)
-        await pg.screenshot(path='shot-over.png', full_page=True)
+        await leak(pg, 'over')
+        await pg.screenshot(path=shot('over.png'), full_page=True)
         print('over', await pg.evaluate('JSON.stringify(__derby.S.run.result)'))
         await pg.click('#s-over [data-go="stable"]')
+        await leak(pg, 'stable')
         if await pg.locator('[data-perk]:not([disabled])').count(): await pg.click('[data-perk]:not([disabled]) >> nth=0')
         await pg.click('#s-stable [data-go="menu"]')
         await pg.click('#s-menu [data-go="rules"]')
-        await pg.screenshot(path='shot-rules.png', full_page=True)
+        await leak(pg, 'rules')
+        await pg.screenshot(path=shot('rules.png'), full_page=True)
         pg2 = await b.new_page(viewport={'width': 390, 'height': 844})
         pg2.on('pageerror', lambda e: errs.append('PHONE ' + str(e)))
         await pg2.goto(URL)
+        if LANG_ID != 'en': await pg2.click(f'[data-lang="{LANG_ID}"]')
+        await pg2.screenshot(path=shot('phone-menu.png'))
         await pg2.click('#s-menu [data-go="setup"]'); await pg2.click('#startRun'); await pg2.wait_for_timeout(300)
         print('phone prep scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
         await pg2.click('#nextLap'); await pg2.wait_for_timeout(5000)
-        await pg2.screenshot(path='shot-phone-game.png')
+        await pg2.screenshot(path=shot('phone-game.png'))
         print('phone game scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
         print('errors', errs)
         await b.close()

@@ -57,6 +57,12 @@ h1, h2, h3, p { margin: 0; }
 .cashchip.sp { color: var(--ink); }
 
 /* menu */
+.langrow { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
+.langlbl { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+.langsw { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--track); }
+.langsw button { font: 700 13px var(--f-body, inherit); padding: 7px 14px; border-radius: 999px; color: var(--ink-dim); min-height: 34px; }
+.langsw button:hover { color: var(--ink); }
+.langsw button[aria-pressed="true"] { background: var(--gold); color: var(--gold-ink); }
 .menu-hero h1 { font: 900 clamp(56px, 13vw, 104px)/0.86 var(--f-display); text-transform: uppercase; letter-spacing: 0.015em; }
 .menu-hero .lede { margin-top: 14px; }
 .lineup { display: flex; gap: 8px; margin: 30px 0 26px; flex-wrap: wrap; }
@@ -412,28 +418,29 @@ h1, h2, h3, p { margin: 0; }
 
   <!-- MENU -->
   <section class="screen" id="s-menu" aria-label="Menu">
+    <div class="langrow"><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
     <div class="menu-hero">
       <h1>Suit Derby</h1>
-      <p class="lede">Four suits race through one deck. Rig the deck, win the run.</p>
+      <p class="lede" data-i18n="Four suits race through one deck. Rig the deck, win the run.">Four suits race through one deck. Rig the deck, win the run.</p>
     </div>
     <div class="lineup" id="lineup" aria-hidden="true"></div>
-    <nav class="menu-list" aria-label="Main menu">
-      <button type="button" class="mrow primary" data-go="setup"><span class="mt">Play</span><span class="md">Start a 5 or 10 lap run</span></button>
-      <button type="button" class="mrow" data-go="stable"><span class="mt">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
-      <button type="button" class="mrow" data-go="rules"><span class="mt">Rules</span><span class="md">How a run works</span></button>
+    <nav class="menu-list" data-i18n-label="Main menu" aria-label="Main menu">
+      <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
+      <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
+      <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a run works">How a run works</span></button>
     </nav>
     <p class="mstats mono" id="menu-stats"></p>
   </section>
 
   <!-- SETUP -->
   <section class="screen" id="s-setup" hidden aria-label="New run">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>New run</h2></header>
-    <h3 class="lbl pickhead">Choose your horse</h3>
-    <div class="picks" role="radiogroup" aria-label="Horse" id="picks"></div>
-    <h3 class="lbl">Length</h3>
-    <div class="pills" role="radiogroup" aria-label="Number of laps" id="lapPills"></div>
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="New run">New run</h2></header>
+    <h3 class="lbl pickhead" data-i18n="Choose your horse">Choose your horse</h3>
+    <div class="picks" role="radiogroup" data-i18n-label="Horse" aria-label="Horse" id="picks"></div>
+    <h3 class="lbl" data-i18n="Length">Length</h3>
+    <div class="pills" role="radiogroup" data-i18n-label="Number of laps" aria-label="Number of laps" id="lapPills"></div>
     <p class="note" id="setup-perks"></p>
-    <div class="actions"><button type="button" class="btn primary" id="startRun">Start run</button></div>
+    <div class="actions"><button type="button" class="btn primary" id="startRun" data-i18n="Start run">Start run</button></div>
   </section>
 
   <!-- GAME -->
@@ -441,21 +448,21 @@ h1, h2, h3, p { margin: 0; }
     <div class="gbar">
       <button type="button" class="btn ghost" id="quit">Quit</button>
       <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gclock mono" id="gclock">0:00.0</span></div>
-      <div class="gcash" id="gcash" title="Run cash. Lost when the run ends.">$0</div>
+      <div class="gcash" id="gcash" data-i18n-title="Run cash. Lost when the run ends." title="Run cash. Lost when the run ends.">$0</div>
     </div>
     <div class="stage" id="stagebox">
-      <canvas id="stage" aria-label="Race track: four horses in four lanes"></canvas>
+      <canvas id="stage" data-i18n-label="Race track: four horses in four lanes" aria-label="Race track: four horses in four lanes"></canvas>
       <div class="overlay" id="overlay" hidden><div class="big" id="ovtxt"></div></div>
       <div class="hzcall" id="hzcall" hidden>
-        <b>BRACE!</b>
+        <b data-i18n="BRACE!">BRACE!</b>
         <div class="hzmeter" aria-hidden="true"><i id="hzfill"></i><u></u></div>
-        <small>Tap in the gold zone for a perfect jump</small>
+        <small data-i18n="Tap in the gold zone for a perfect jump">Tap in the gold zone for a perfect jump</small>
       </div>
     </div>
     <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
     <div class="actrow">
-      <button type="button" class="btn act brace" id="brace" disabled><span class="a-t">Brace</span><span class="a-s mono" id="bracesub">no hazard near</span></button>
-      <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
+      <button type="button" class="btn act brace" id="brace" disabled><span class="a-t" data-i18n="Brace">Brace</span><span class="a-s mono" id="bracesub" data-i18n="no hazard near">no hazard near</span></button>
+      <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t" data-i18n="Spur">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
     </div>
     <div class="cockpit">
       <div class="cp-card">
@@ -464,31 +471,31 @@ h1, h2, h3, p { margin: 0; }
           <div class="hinfo">
             <div class="dname" id="dname">Shuffling</div>
             <div class="dline" id="dline">First card comes out soon.</div>
-            <div class="hist" id="hist" aria-label="Recent cards"></div>
+            <div class="hist" id="hist" data-i18n-label="Recent cards" aria-label="Recent cards"></div>
           </div>
         </div>
-        <div class="deckbar" id="deckbar" aria-label="Cards left in the deck"></div>
+        <div class="deckbar" id="deckbar" data-i18n-label="Cards left in the deck" aria-label="Cards left in the deck"></div>
         <div class="deckleg mono" id="deckleg"></div>
       </div>
       <div class="cp-bets">
-        <div class="betshead"><h3 class="lbl">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
+        <div class="betshead"><h3 class="lbl" data-i18n="Next card: pick a suit">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
         <div class="bets" id="bets"></div>
         <div class="betctl">
-          <div class="chips" id="chips" role="radiogroup" aria-label="Stake"></div>
-          <button type="button" class="btn small" id="rebet">Rebet</button>
+          <div class="chips" id="chips" role="radiogroup" data-i18n-label="Stake" aria-label="Stake"></div>
+          <button type="button" class="btn small" id="rebet" data-i18n="Rebet">Rebet</button>
           <span class="betinfo mono" id="betinfo"></span>
         </div>
       </div>
     </div>
     <div class="calls mono" id="calls" hidden></div>
     <div class="glow">
-      <div class="pts mono" id="pts" aria-label="Championship points"></div>
+      <div class="pts mono" id="pts" data-i18n-label="Championship points" aria-label="Championship points"></div>
       <div class="ctrls">
         <button type="button" data-sp="1" aria-pressed="true">1&times;</button>
         <button type="button" data-sp="2" aria-pressed="false">2&times;</button>
         <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
         <button type="button" id="pause">Pause</button>
-        <button type="button" id="skip" disabled>Skip</button>
+        <button type="button" id="skip" disabled data-i18n="Skip">Skip</button>
       </div>
     </div>
     <div class="ticker" id="ticker"></div>
@@ -507,7 +514,7 @@ h1, h2, h3, p { margin: 0; }
       </div>
       <div class="pit-stand">
         <h3 class="lbl" id="pit-stand-h">Championship</h3>
-        <table class="tbl"><thead><tr><th>Pos</th><th>Horse</th><th class="num">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
+        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
         <div class="deckbar sm" id="pit-deckbar"></div>
         <div class="deckleg mono" id="pit-deckleg"></div>
       </div>
@@ -515,20 +522,20 @@ h1, h2, h3, p { margin: 0; }
     <div class="rivals" id="rivals"></div>
 
     <div class="sect">
-      <div class="shophead"><h3 class="lbl">Call the order</h3><span class="hint mono" id="board-hint">Odds lock when the lap starts</span></div>
+      <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
       <div class="board" id="board"></div>
       <p class="boardfoot" id="boardfoot"></p>
     </div>
 
     <div class="sect" id="shopsect">
-      <div class="shophead"><h3 class="lbl">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
+      <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
       <div class="tiers mono" id="tiers"></div>
       <div class="offers" id="offers"></div>
-      <p class="note" id="shopclosed" hidden>The shop opens after lap 1. Every horse starts level: 26 cards per suit and no upgrades.</p>
+      <p class="note" id="shopclosed" hidden data-i18n="The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.">The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.</p>
     </div>
 
     <div class="sect">
-      <div class="shophead"><h3 class="lbl">Card table</h3><span class="hint mono" id="table-hint"></span></div>
+      <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
       <div class="table" id="table"></div>
     </div>
 
@@ -538,46 +545,428 @@ h1, h2, h3, p { margin: 0; }
 
   <!-- RUN OVER -->
   <section class="screen" id="s-over" hidden aria-label="Run complete">
-    <header class="bar"><h2>Run complete</h2></header>
+    <header class="bar"><h2 data-i18n="Run complete">Run complete</h2></header>
     <div class="over-top">
       <div class="bigplace" id="over-rank">Champion</div>
       <p class="lede" id="over-sub"></p>
     </div>
     <div class="pit-top">
       <div>
-        <h3 class="lbl">Final standings</h3>
-        <table class="tbl"><thead><tr><th>Pos</th><th>Horse</th><th class="num">Pts</th></tr></thead><tbody id="over-standings"></tbody></table>
+        <h3 class="lbl" data-i18n="Final standings">Final standings</h3>
+        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="over-standings"></tbody></table>
       </div>
       <div>
-        <h3 class="lbl">Stable Points</h3>
+        <h3 class="lbl" data-i18n="Stable Points">Stable Points</h3>
         <div class="stmt" id="over-stmt"></div>
         <p class="forfeit" id="over-forfeit"></p>
       </div>
     </div>
     <div class="actions">
-      <button type="button" class="btn primary" data-go="setup">Play again</button>
-      <button type="button" class="btn" data-go="stable">The Stable</button>
-      <button type="button" class="btn ghost" data-go="menu">Menu</button>
+      <button type="button" class="btn primary" data-go="setup" data-i18n="Play again">Play again</button>
+      <button type="button" class="btn" data-go="stable" data-i18n="The Stable">The Stable</button>
+      <button type="button" class="btn ghost" data-go="menu" data-i18n="Menu">Menu</button>
     </div>
   </section>
 
   <!-- STABLE -->
   <section class="screen" id="s-stable" hidden aria-label="The Stable">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
-    <p class="lede sm">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="The Stable">The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
+    <p class="lede sm" data-i18n="Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
     <div class="perks" id="perks"></div>
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 
   <!-- RULES -->
   <section class="screen" id="s-rules" hidden aria-label="Rules">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; Menu</button><h2>Rules</h2></header>
+    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="Rules">Rules</h2></header>
     <div class="rules" id="rules"></div>
   </section>
 
 </div>
 <div id="flashfx" aria-hidden="true"></div>
-<div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t">BIG WIN</div><div class="bw-a mono"></div></div>
+<div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t" data-i18n="BIG WIN">BIG WIN</div><div class="bw-a mono"></div></div>
+<script>
+/* Suit Derby translations. English text is the key: t('Lap {n}', {n: 3}) returns the English
+   text as written, or the Turkish one from I18n.dict.tr when that language is selected.
+   A missing translation falls back to English, so nothing ever shows up blank.
+   The choice is stored in localStorage (wrapped in try/catch: the game works without storage). */
+const I18n = (() => {
+  const KEY = 'suitderby.lang';
+  const LANGS = [{ id: 'en', name: 'English', short: 'EN', html: 'en' }, { id: 'tr', name: 'Türkçe', short: 'TR', html: 'tr' }];
+  const dict = { en: {}, tr: {} };
+  const rules = { en: null, tr: null };
+  const listeners = [];
+  let lang = 'en';
+
+  function detect() {
+    try { const v = localStorage.getItem(KEY); if (v && dict[v]) return v; } catch (e) {}
+    try { if (/^tr\b/i.test(navigator.language || '')) return 'tr'; } catch (e) {}
+    return 'en';
+  }
+  function fill(s, p) {
+    if (!p) return s;
+    return s.replace(/\{(\w+)\}/g, (m, k) => (p[k] != null ? p[k] : m));
+  }
+  function t(en, p) {
+    const d = dict[lang];
+    const s = d && Object.prototype.hasOwnProperty.call(d, en) ? d[en] : en;
+    return fill(s, p);
+  }
+  /* plural helper: one/other are both English keys; Turkish usually has the same text for both */
+  const tp = (n, one, other, p) => t(n === 1 ? one : other, Object.assign({ n }, p));
+  /* decimal comma in Turkish: n(2.5.toFixed(1)) -> "2,5" */
+  const n = s => (lang === 'tr' ? String(s).replace('.', ',') : String(s));
+  const locale = () => (lang === 'tr' ? 'tr-TR' : 'en-US');
+
+  function applyStatic(root) {
+    root = root || document;
+    root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+    root.querySelectorAll('[data-i18n-label]').forEach(el => { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-label'))); });
+    root.querySelectorAll('[data-i18n-title]').forEach(el => { el.setAttribute('title', t(el.getAttribute('data-i18n-title'))); });
+    if (root === document) {
+      document.documentElement.lang = lang;
+      const ti = document.querySelector('title'); if (ti) ti.textContent = t('Suit Derby');
+    }
+  }
+  function set(id, silent) {
+    if (!dict[id]) id = 'en';
+    lang = id;
+    if (!silent) { try { localStorage.setItem(KEY, id); } catch (e) {} }
+    applyStatic();
+    listeners.forEach(f => f(id));
+  }
+  function init() { lang = detect(); applyStatic(); }
+  return {
+    t, tp, n, locale, set, init, LANGS, dict, rules,
+    get lang() { return lang; },
+    onChange: f => { listeners.push(f); },
+    apply: applyStatic
+  };
+})();
+if (typeof module !== 'undefined') module.exports = I18n;
+
+</script>
+<script>
+/* Turkish (Türkçe) translation. Keys are the English texts used in the game.
+   Vocabulary: suit = renk, run = koşu, lap = tur, surge = atılım, stamina = dayanıklılık,
+   Spur = Mahmuz, Stable = Ahır, Stable Points = Ahır Puanı (AP). */
+(function () {
+  const tr = {
+    // --- static screens
+    'Suit Derby': 'Suit Derby',
+    'Menu': 'Menü',
+    'Four suits race through one deck. Rig the deck, win the run.': 'Dört renk tek bir desteyle yarışır. Desteyi ayarla, koşuyu kazan.',
+    'Play': 'Oyna',
+    'Start a 5 or 10 lap run': '5 veya 10 turluk koşu başlat',
+    'The Stable': 'Ahır',
+    'Permanent upgrades': 'Kalıcı geliştirmeler',
+    'Rules': 'Kurallar',
+    'How a run works': 'Bir koşu nasıl işler',
+    'Language': 'Dil',
+    'New run': 'Yeni koşu',
+    'Choose your horse': 'Atını seç',
+    'Length': 'Uzunluk',
+    'Start run': 'Koşuyu başlat',
+    'Horse': 'At',
+    'Number of laps': 'Tur sayısı',
+    'Main menu': 'Ana menü',
+    'Race': 'Yarış',
+    'Race track: four horses in four lanes': 'Yarış pisti: dört şeritte dört at',
+    'Run cash. Lost when the run ends.': 'Koşu parası. Koşu bitince kaybolur.',
+    'Quit': 'Çık',
+    'Quit run?': 'Koşudan çık?',
+    'BRACE!': 'ATLA!',
+    'Tap in the gold zone for a perfect jump': 'Kusursuz atlayış için altın bölgeye dokun',
+    'Brace': 'Atla',
+    'Spur': 'Mahmuz',
+    'no hazard near': 'yakında engel yok',
+    'NOW!': 'ŞİMDİ!',
+    'Recent cards': 'Son kartlar',
+    'Cards left in the deck': 'Destede kalan kartlar',
+    'Next card: pick a suit': 'Sıradaki kart: bir renk seç',
+    'Stake': 'Bahis',
+    'Rebet': 'Tekrar bahis',
+    'Championship points': 'Şampiyona puanları',
+    'Pause': 'Duraklat',
+    'Resume': 'Devam',
+    'Skip': 'Geç',
+    'Paused': 'Duraklatıldı',
+    'Shuffling': 'Karıştırılıyor',
+    'First card comes out soon.': 'İlk kart birazdan çıkıyor.',
+    'Pit stop': 'Mola',
+    'Pos': 'Sıra',
+    'Pts': 'Puan',
+    'pts': 'puan',
+    'Call the order': 'Sıralamayı tahmin et',
+    'Odds lock when the lap starts': 'Oranlar tur başlayınca kilitlenir',
+    'Pit shop': 'Mola dükkanı',
+    'Reroll': 'Yenile',
+    'The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.': 'Dükkan 1. turdan sonra açılır. Her at eşit başlar: renk başına 10 kart ve geliştirme yok.',
+    'Card table': 'Kart masası',
+    'Run complete': 'Koşu tamamlandı',
+    'Final standings': 'Final sıralaması',
+    'Stable Points': 'Ahır Puanı',
+    'Play again': 'Tekrar oyna',
+    'Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.': 'Ahır Puanı ile satın alınan kalıcı geliştirmeler. Her koşunun sonunda puan kazanırsın.',
+    'Reset all progress': 'Tüm ilerlemeyi sıfırla',
+    'Really reset everything?': 'Gerçekten her şey sıfırlansın mı?',
+    'BIG WIN': 'BÜYÜK KAZANÇ',
+    'MEGA WIN': 'MEGA KAZANÇ',
+    'JACKPOT': 'JACKPOT',
+
+    // --- menu / setup
+    'Permanent upgrades · {n} Stable Points': 'Kalıcı geliştirmeler · {n} Ahır Puanı',
+    '{runs} runs · {champs} won · best {pts} pts': '{runs} koşu · {champs} galibiyet · en iyi {pts} puan',
+    'No runs yet.': 'Henüz koşu yok.',
+    'You': 'Sen',
+    '{n} laps': '{n} tur',
+    'about {m} minutes': 'yaklaşık {m} dakika',
+    'start with {m}': '{m} ile başla',
+    '{n} extra card in your suit': 'rengine {n} ekstra kart',
+    '{n} extra cards in your suit': 'rengine {n} ekstra kart',
+    '+{v} cruising speed': '+{v} seyir hızı',
+    '+{p}% winnings': '%{p} daha fazla kazanç',
+    '{p}% cheaper shop': 'dükkan %{p} daha ucuz',
+    '+{n} shop slot': '+{n} dükkan yuvası',
+    '+{n} shop slots': '+{n} dükkan yuvası',
+    '{n} free reroll': '{n} bedava yenileme',
+    '{n} free rerolls': '{n} bedava yenileme',
+    'a free starting upgrade': 'başlangıçta bedava bir geliştirme',
+    'better shop rarity': 'daha iyi dükkan nadirliği',
+    '+{p}% bet payouts': 'bahis ödemeleri +%{p}',
+    'Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1.': 'Her koşu eşit başlar: renk başına 10 kart, aynı atlar ve 1. turdan önce rakiplerde geliştirme yok.',
+    'Your Stable perks: {list}.': 'Ahır avantajların: {list}.',
+    'No Stable perks yet. Finish a run to earn Stable Points.': 'Henüz Ahır avantajın yok. Ahır Puanı kazanmak için bir koşuyu bitir.',
+
+    // --- game HUD
+    '{n} cards': '{n} kart',
+    '{n} chaos': '{n} kaos',
+    'home': 'bitiş',
+    'FULL CHARGE · surge +{v}': 'TAM DOLU · atılım +{v}',
+    'now +{v} · wait for more': 'şimdi +{v} · daha fazlası için bekle',
+    'charging {p}%': 'doluyor %{p}',
+    'not next': 'sıradaki değil',
+    'likeliest': 'en olası',
+    '{p}% · {n} left': '%{p} · {n} kaldı',
+    '{m} on the next card. Pays stake × odds if it lands.': 'Sıradaki kartta {m}. Tutarsa bahis × oran öder.',
+    'Odds are the exact chance from the cards left. A hit streak fills your Spur.': 'Oranlar, kalan kartlardan hesaplanan kesin şanstır. İsabet serisi Mahmuz’unu doldurur.',
+    'Streak ×{n} · next hit +{s} stamina': 'Seri ×{n} · sonraki isabet +{s} dayanıklılık',
+    'Streak 0': 'Seri 0',
+    'Your calls': 'Tahminlerin',
+    'Lap {n} / {m}': 'Tur {n} / {m}',
+    'Jack': 'Vale', 'Queen': 'Kız', 'King': 'Papaz', 'Ace': 'As',
+    'Chaos card': 'Kaos kartı',
+    '{s} surges +{b}. You collect {m}.': '{s} +{b} atılım yaptı. {m} kazandın.',
+    'Nobody left to surge. You collect {m}.': 'Atılım yapacak kimse kalmadı. {m} kazandın.',
+    'Joker of {s}': '{s} Jokeri',
+    '{r} of {s}': '{s} {r}',
+    'Home already. Dividend {m}.': 'Zaten bitirdi. Temettü {m}.',
+    '{s} already finished.': '{s} zaten bitirdi.',
+    '{s} surges +{b}. That one is yours.': '{s} +{b} atılım yaptı. O senin atın.',
+    '{s} surges +{b}.': '{s} +{b} atılım yaptı.',
+
+    // --- ticker, floating text, banners
+    'Chaos card: {s} surges, you collect {m}': 'Kaos kartı: {s} atılım yaptı, {m} kazandın',
+    'Chaos card, you collect {m}': 'Kaos kartı, {m} kazandın',
+    'Chaos card: your next-card bets are refunded': 'Kaos kartı: sıradaki kart bahislerin iade edildi',
+    'Next-card hit {o} · {m}': 'Sıradaki kart isabet {o} · {m}',
+    ' · streak ×{n}': ' · seri ×{n}',
+    'HOT STREAK ×{n}': 'SICAK SERİ ×{n}',
+    'STREAK ×{n}': 'SERİ ×{n}',
+    'Next card was {s} · {m}': 'Sıradaki kart {s} oldu · {m}',
+    'SPUR +{v}': 'MAHMUZ +{v}',
+    'Spur at {p}% stamina: surge +{v}': '%{p} dayanıklılıkla mahmuz: atılım +{v}',
+    'unleashes a full-charge Spur': 'tam dolu Mahmuz’u patlatıyor',
+    'stumbles over the hazard': 'engelde tökezliyor',
+    'PERFECT +{m}': 'KUSURSUZ +{m}',
+    'PERFECT': 'KUSURSUZ',
+    'perfect jump {m}': 'kusursuz atlayış {m}',
+    'CLEAR': 'GEÇTİ',
+    'OOPS': 'EYVAH',
+    'HORSESHOE': 'NAL',
+    'Lucky Horseshoe: bonus surge': 'Şans Nalı: bonus atılım',
+    'JACKPOT {m}': 'JACKPOT {m}',
+    'heads': 'tura',
+    'tails': 'yazı',
+    'Coin of Fate landed {c}: {v} cruising this lap': 'Kader Parası {c} geldi: bu tur seyir {v}',
+    'Loaded Dice: {n} extra cards this lap': 'Hileli Zar: bu tur {n} ekstra kart',
+    'is sabotaged and surges 40% less this lap': 'sabote edildi, bu tur %40 daha az atılım yapıyor',
+    'you finish {o}': '{o} sırada bitirdin',
+    'finishes {o}': '{o} sırada bitiriyor',
+    'WINNER': 'KAZANAN',
+    'GO': 'BAŞLA',
+    'START': 'BAŞLA',
+    'YOU': 'SEN',
+    'FINISH': 'BİTİŞ',
+    'NICE LAP': 'GÜZEL TUR',
+    '1ST PLACE': '1. SIRA',
+    'CHAMPION': 'ŞAMPİYON',
+
+    // --- pit stop
+    'Before lap 1': '1. turdan önce',
+    'Lap {n} of {m} complete': 'Tur {n} / {m} tamamlandı',
+    'On the line': 'Startta',
+    'Championship': 'Şampiyona',
+    'Level start': 'Eşit başlangıç',
+    'Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.': 'Her rengin aynı 10 kartı ve aynı atı var. Kimsenin henüz geliştirmesi yok, bu yüzden aşağıdaki oranlar eşit. Sıralamayı tahmin et, ilk bahislerini yap, sonra turu başlat.',
+    '{o} this lap': 'Bu tur {o} sıra',
+    'Prize': 'Ödül',
+    'Speed bonus, {s}s under par': 'Hız bonusu, baremin {s}sn altında',
+    'Speed bonus, {s}s over par': 'Hız bonusu, baremin {s}sn üstünde',
+    'Dividends, {n} card': 'Temettü, {n} kart',
+    'Dividends, {n} cards': 'Temettü, {n} kart',
+    'Interest': 'Faiz',
+    'Lucky Penny': 'Şans Kuruşu',
+    'Hazards: {p} perfect, {c} clear, {s} stumbled': 'Engeller: {p} kusursuz, {c} temiz, {s} tökezleme',
+    'Luck windfalls': 'Şans getirileri',
+    'Next-card bets, {h} of {n} hit': 'Sıradaki kart bahisleri, {n} bahisten {h} isabet',
+    ' (best streak {n})': ' (en iyi seri {n})',
+    'Bets, {h} of {n} right': 'Tahminler, {n} tahminden {h} doğru',
+    ' (combo ×{c})': ' (kombo ×{c})',
+    'on {m}': '· {m}',
+    'miss': 'ıska',
+    'Net this lap': 'Bu tur net',
+    '(you)': '(sen)',
+    'Start lap {n} of {m}': 'Tur {n} / {m} başlat',
+    'Underdog fund': 'Zayıflara destek fonu',
+    '(no suit is starved out of the deck):': '(hiçbir renk desteden silinmez):',
+    '+{n} card': '+{n} kart',
+    '+{n} cards': '+{n} kart',
+    'Rivals at the stop': 'Molada rakipler',
+    'Nobody upgraded this time.': 'Bu sefer kimse geliştirme yapmadı.',
+    'Rivals upgraded during the stop': 'Rakipler molada geliştirme yaptı',
+    'cash {c} · {r} on bets': 'nakit {c} · bahislerde {r}',
+    'to spend': 'harcanabilir',
+    'Your horse is locked in for 1st': 'Atın 1. sıraya kilitli',
+    'Locked': 'Kilitli',
+    '{s} for {o}: {p}% chance': '{o} için {s}: %{p} şans',
+    'Change stake': 'Bahsi değiştir',
+    'wins {m}': 'kazanır {m}',
+    '<b>{m}</b> staked on {n} call. ': '{n} tahmine <b>{m}</b> yatırıldı. ',
+    '<b>{m}</b> staked on {n} calls. ': '{n} tahmine <b>{m}</b> yatırıldı. ',
+    'You are locked in for 1st. Tap a horse to call 2nd, 3rd and 4th. ': '1. sıraya kilitlisin. 2., 3. ve 4. sırayı tahmin etmek için bir ata dokun. ',
+    'A wrong call loses its stake. Combo on total winnings: 2 right ×{a}, 3 right ×{b}, 4 right ×{c}. Every correct call also earns 1 Stable Point. You are locked in for 1st, and your horse is the first column.': 'Yanlış tahmin bahsi kaybettirir. Toplam kazançta kombo: 2 doğru ×{a}, 3 doğru ×{b}, 4 doğru ×{c}. Her doğru tahmin ayrıca 1 Ahır Puanı kazandırır. 1. sıraya kilitlisin ve atın ilk sütunda.',
+    'Rarity odds this stop: ': 'Bu moladaki nadirlik şansı: ',
+    'Owned {n}/{m}': 'Sahip: {n}/{m}',
+    'Bought': 'Alındı',
+    'Buy': 'Al',
+    'Reroll (free)': 'Yenile (bedava)',
+    'Reroll {m}': 'Yenile {m}',
+    'Next lap: ': 'Sonraki tur: ',
+    'No upgrades yet.': 'Henüz geliştirme yok.',
+    'Ties lose · ': 'Beraberlik kaybeder · ',
+    '{n} hand left this stop': 'bu molada {n} el kaldı',
+    '{n} hands left this stop': 'bu molada {n} el kaldı',
+    'Higher': 'Daha yüksek',
+    'Lower': 'Daha düşük',
+    'higher': 'daha yüksek',
+    'lower': 'daha düşük',
+    'a tie': 'eşit',
+    '{m} at stake': '{m} bahiste',
+    'Stake {m}': 'Bahis {m}',
+    'Deal': 'Dağıt',
+    'Second card was {w}. You called {d}: ': 'İkinci kart {w}. Tahminin {d}: ',
+    'won {m}': '{m} kazandın',
+    'lost {m}': '{m} kaybettin',
+    'A card is dealt face up. Call whether the next one is higher or lower. The payout follows the real chance.': 'Bir kart açık dağıtılır. Sıradakinin daha yüksek mi daha düşük mü olacağını tahmin et. Ödeme gerçek şansı izler.',
+
+    // --- run over / stable
+    'Champion': 'Şampiyon',
+    '{o} overall': 'Genelde {o}',
+    'Your suit took the run after {n} laps.': 'Rengin {n} tur sonunda koşuyu aldı.',
+    '{s} took the run after {n} laps.': '{s} {n} tur sonunda koşuyu aldı.',
+    'Lap points': 'Tur puanları',
+    'Champion bonus': 'Şampiyon bonusu',
+    'Runner-up bonus': 'İkincilik bonusu',
+    'Correct calls': 'Doğru tahminler',
+    'Unspent run cash <s>{m}</s> is lost. Run cash never carries over.': 'Harcanmayan koşu parası <s>{m}</s> kaybolur. Koşu parası asla sonraki koşuya geçmez.',
+    'Run cash never carries over.': 'Koşu parası asla sonraki koşuya geçmez.',
+    '{n} SP': '{n} AP',
+    'Level {n} / {m}': 'Seviye {n} / {m}',
+    'Maxed': 'Maksimum',
+    'Buy · {c} SP': 'Al · {c} AP',
+
+    // --- tiers and kinds
+    'Common': 'Yaygın', 'Rare': 'Nadir', 'Epic': 'Epik', 'Legendary': 'Efsanevi',
+    'Deck': 'Deste', 'Money': 'Para', 'Luck': 'Şans', 'Betting': 'Bahis', 'Gear': 'Ekipman', 'Next lap': 'Sonraki tur',
+    'Hearts': 'Kupa', 'Diamonds': 'Karo', 'Clubs': 'Sinek', 'Spades': 'Maça',
+
+    // --- upgrades (names and descriptions as written in the engine)
+    'Stacked Deck': 'Hileli Deste', 'Shuffle 2 extra cards of your suit into the deck.': 'Desteye kendi renginden 2 ekstra kart karıştır.',
+    'Second Wind': 'İkinci Nefes', 'Cruising speed +0.07 for the rest of the run.': 'Koşunun geri kalanında seyir hızı +0,07.',
+    'Deep Lungs': 'Derin Ciğerler', 'Stamina refills 25% faster, so your Spur is ready sooner.': 'Dayanıklılık %25 daha hızlı dolar, Mahmuz’un daha çabuk hazır olur.',
+    'Sure Hooves': 'Sağlam Toynaklar', 'Stumbles over hazards last half as long.': 'Engellerdeki tökezlemeler yarı kadar sürer.',
+    'Earn an extra $20 at the end of every lap.': 'Her turun sonunda fazladan $20 kazan.',
+    'Scout Lens': 'Gözcü Merceği', 'Before every card, one suit that will NOT come next is marked (two with two lenses). Safer next-card bets.': 'Her karttan önce, sıradaki kartta GELMEYECEK bir renk işaretlenir (iki mercekle iki renk). Daha güvenli sıradaki kart bahisleri.',
+    'Sand Trap': 'Kum Tuzağı', 'Remove 5 cards of the points leader from the deck.': 'Puan liderinin 5 kartını desteden çıkar.',
+    'Retread': 'Yenileme', 'Swap your 3 lowest cards for fresh cards of rank 8 to Queen.': 'En düşük 3 kartını 8 ile Kız arası yeni kartlarla değiştir.',
+    'Bookie’s Friend': 'Bahisçinin Dostu', 'Every bet you win pays 5% more.': 'Kazandığın her bahis %5 fazla öder.',
+    'Aces High': 'Yüksek Aslar', 'Add two of your Aces, the biggest normal surge.': 'Rengine iki As ekle, en büyük normal atılım.',
+    'Long Stride': 'Uzun Adım', 'Surges fade 10% slower, so speed carries further.': 'Atılımlar %10 daha yavaş söner, hız daha uzağa taşınır.',
+    'Court Cards': 'Resimli Kartlar', 'Add a Queen and a King of your suit.': 'Rengine bir Kız ve bir Papaz ekle.',
+    'Slipstream': 'Arka Rüzgâr', 'Whenever a rival’s card is drawn, you get a small surge of +0.18.': 'Bir rakibin kartı çekildiğinde +0,18 küçük bir atılım alırsın.',
+    'Marked Cards': 'İşaretli Kartlar', 'Your 4 lowest cards each gain 6 ranks, up to Ace.': 'En düşük 4 kartının her biri 6 derece yükselir, en fazla As.',
+    'Hurdler': 'Engelci', 'Your horse takes the first hazard of every lap with a perfect jump by itself (two with two).': 'Atın her turun ilk engelini kendi başına kusursuz atlar (ikisiyle ilk iki engeli).',
+    'Adrenaline': 'Adrenalin', 'After a Spur you keep 25% of your stamina (50% with two).': 'Mahmuzdan sonra dayanıklılığının %25’ini korursun (ikisiyle %50).',
+    'Lucky Horseshoe': 'Şans Nalı', 'Every card drawn has an 8% chance to also surge your horse by +1.6, whatever its suit.': 'Çekilen her kartın, rengi ne olursa olsun, atını ayrıca +1,6 atılım yaptırma şansı %8.',
+    'Insurance Policy': 'Sigorta Poliçesi', 'Get 25% of every lost stake back.': 'Kaybedilen her bahsin %25’ini geri al.',
+    'Haggler': 'Pazarlıkçı', 'Every shop price is 10% lower.': 'Her dükkan fiyatı %10 daha ucuz.',
+    'Counterfeit': 'Sahte Kart', 'Turn 3 cards of the points leader into your suit.': 'Puan liderinin 3 kartını kendi rengine çevir.',
+    'Wild Joker': 'Vahşi Joker', 'Add two Jokers in your colours. Each surges harder than an Ace.': 'Rengine iki Joker ekle. Her biri As’tan daha güçlü atılım yaptırır.',
+    'Loaded Dice': 'Hileli Zar', 'At the start of every lap roll 1 to 3: that many cards of rank 9 to Ace join your suit for the lap.': 'Her turun başında 1 ile 3 arası zar at: o kadar 9 ile As arası kart o tur için rengine katılır.',
+    'Chaos Cards': 'Kaos Kartları', 'Shuffle in 2 Chaos cards. When drawn, one surges a random horse by +5 and pays you $25.': 'Desteye 2 Kaos kartı karıştır. Çekildiğinde biri rastgele bir ata +5 atılım yaptırır ve sana $25 öder.',
+    'Slingshot': 'Sapan', 'Whenever a rival surges you gain 5% of that surge.': 'Bir rakip atılım yaptığında o atılımın %5’ini sen kazanırsın.',
+    'High Roller': 'Büyük Oyuncu', 'Correct 2nd, 3rd and 4th calls pay 40% more.': 'Doğru 2., 3. ve 4. tahminler %40 fazla öder.',
+    'Deep Vault': 'Derin Kasa', 'All cash you win from races is 25% higher.': 'Yarışlardan kazandığın tüm para %25 daha yüksek.',
+    'Unspent cash earns 8% at the end of every lap.': 'Harcanmayan para her turun sonunda %8 getirir.',
+    'Royal Flush': 'Royal Flush', 'Add a 10, Jack, Queen, King and Ace of your suit.': 'Rengine bir 10, Vale, Kız, Papaz ve As ekle.',
+    'Coin of Fate': 'Kader Parası', 'Flip a coin at the start of every lap: heads +2 cruising speed, tails −0.8.': 'Her turun başında yazı tura at: tura seyir hızı +2, yazı −0,8.',
+    'Golden Ticket': 'Altın Bilet', 'Your speed bonus and dividends are doubled.': 'Hız bonusun ve temettülerin ikiye katlanır.',
+    'Jackpot Deck': 'Jackpot Destesi', 'Every card drawn has a 2% chance to pay you $150.': 'Çekilen her kartın sana $150 ödeme şansı %2.',
+    'Hostile Takeover': 'Düşmanca Devralma', 'Turn 5 cards of the points leader into your suit.': 'Puan liderinin 5 kartını kendi rengine çevir.',
+    'Grand Slam': 'Büyük Slam', 'Combo bonuses on correct calls grow: 2 right ×1.3, 3 right ×1.8, 4 right ×3.': 'Doğru tahminlerdeki kombo bonusları büyür: 2 doğru ×1,3, 3 doğru ×1,8, 4 doğru ×3.',
+    'Cut the Deck': 'Desteyi Kes', 'Your 3 best cards start on top of the deck next lap.': 'En iyi 3 kartın sonraki turda destenin en üstünde başlar.',
+    'Head Start': 'Avantajlı Başlangıç', 'Begin next lap 25 units down the track.': 'Sonraki tura pistte 25 birim ileride başla.',
+    'Double Dividend': 'Çift Temettü', 'Dividends are doubled next lap.': 'Sonraki tur temettüler ikiye katlanır.',
+    'Sabotage': 'Sabotaj', 'The points leader surges 40% less next lap.': 'Puan lideri sonraki turda %40 daha az atılım yapar.',
+    'Insurance Slip': 'Sigorta Fişi', 'Get 60% of every lost stake back next lap.': 'Sonraki tur kaybedilen her bahsin %60’ını geri al.',
+    'All In': 'Hepsi Bahis', 'Every bet you win pays double next lap.': 'Sonraki tur kazandığın her bahis iki kat öder.',
+
+    // --- Stable perks
+    'Deep Pockets': 'Dolu Cepler', 'Start every run with +$40 more cash.': 'Her koşuya +$40 daha fazla parayla başla.',
+    'Bigger Winnings': 'Büyük Kazançlar', 'All cash you win in a lap is 6% higher.': 'Bir turda kazandığın tüm para %6 daha yüksek.',
+    'Loaded Deck': 'Yüklü Deste', 'Start every run with 1 extra card of your suit in the deck.': 'Her koşuya destede renginden 1 ekstra kartla başla.',
+    'Paddock Training': 'Padok Antrenmanı', 'Your horse cruises 0.1 faster in every run.': 'Atın her koşuda 0,1 daha hızlı seyreder.',
+    'Shrewd Buyer': 'Kurnaz Alıcı', 'Every shop price is 5% lower.': 'Her dükkan fiyatı %5 daha ucuz.',
+    'Wider Shop': 'Geniş Dükkan', 'One more upgrade on offer at every pit stop.': 'Her molada teklifte bir geliştirme daha.',
+    'Free Reroll': 'Bedava Yenileme', 'One free shop reroll at every pit stop.': 'Her molada bir bedava dükkan yenilemesi.',
+    'Owner’s Pick': 'Sahibin Seçimi', 'Every run begins with one free random upgrade.': 'Her koşu bedava rastgele bir geliştirmeyle başlar.',
+    'Winner’s Purse': 'Kazanan Keseni', 'Stable Points earned at the end of a run are 10% higher.': 'Koşu sonunda kazanılan Ahır Puanı %10 daha yüksek.',
+    'Lucky Stable': 'Şanslı Ahır', 'Rarer upgrades show up more often in the shop.': 'Nadir geliştirmeler dükkanda daha sık çıkar.',
+    'Bookie’s Pal': 'Bahisçi Kankası', 'Every bet you win pays 4% more.': 'Kazandığın her bahis %4 fazla öder.'
+  };
+  Object.assign(I18n.dict.tr, tr);
+
+  /* the rules page, written out in Turkish so the grammar stays natural */
+  I18n.rules.tr = function (C) {
+    const n = I18n.n, tp = C.tierPrice, m = x => '$' + x;
+    return '' +
+      '<section><h3>Bir koşu</h3><p>Bir renk ve bir uzunluk seç: <b>5 veya 10 tur</b>. Her tur, her renkten bir at olmak üzere dört at arasında pist boyunca tam bir yarıştır. 1., 2., 3. veya 4. bitirmek sırasıyla <b>' + C.points.join(', ') + ' puan</b> kazandırır. Son turdan sonra en çok puanı olan şampiyon olur.</p><p>Her koşu <b>eşit</b> başlar: renk başına 10 kart, aynı atlar ve 1. turdan önce rakiplerde geliştirme yok. Tek avantajın Ahır geliştirmeleridir.</p></section>' +
+      '<section><h3>Çekiliş</h3><p>Her ' + n(C.drawEvery) + ' saniyede bir kart çekilir. O renkteki at, birkaç saniyede sönen bir <b>atılım</b> alır. Yüksek kartlar daha sert atılım yaptırır, ama her kart küçük bir itiştir; bu yüzden yarışlar yaklaşık bir dakika sürer. Bitiren atlar atılımları yok sayar.</p>' +
+      '<div class="vals"><span>2–10 sayı</span><span>V 11</span><span>K 12</span><span>P 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
+      '<section><h3>Deste</h3><p>Deste küçüktür: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' kart</b>, renk başına ' + (C.copies * (15 - C.minRank)) + ', dereceler ' + C.minRank + ' ile As arası. Kartlar geri konmadan çekilir; bu yüzden çok çıkan bir renk azalır ve şanssız kalan atların sıradaki kartları alma ihtimali artar. Liderler söner, geride kalanlar şansını bulur. Geliştirmeler bunu <b>tüm koşu</b> için değiştirir: kendi kartlarını ekle, yükselt ya da bir rakibinkini yak ve çal (renk başına asla ' + C.minSuit + ' kartın altına inmez). Her turun başında tüm kartlar toplanır ve <b>yeniden karıştırılır</b>.</p><p><b>Zayıflara destek fonu:</b> her molada, destenin %' + Math.round(C.underdog * 100) + '’inden azına sahip bir renk, bu çizgiyi aşana kadar bedava kart alır (en fazla ' + C.underdogMax + '), böylece hiçbir at koşudan silinmez.</p><p>Her turdan sonra rakipler de bedava geliştirme alır; hangilerini aldıklarını molada görebilirsin.</p></section>' +
+      '<section><h3>Dayanıklılık ve Mahmuz</h3><p>Senin ve rakiplerin her atın, tur boyunca dolan bir <b>dayanıklılık</b> çubuğu vardır. <b>Mahmuz</b> (butona dokun ya da <b>S</b> tuşuna bas) hepsini anlık bir atılım için harcar ve atılım dayanıklılıktan çok daha hızlı büyür: dolu bir çubuk, yarım çubuğun yaklaşık ' + Math.round(1 / Math.pow(0.5, C.spurCurve)) + ' katı değerindedir. Daha fazlası için bekle ya da erken git ve iki kez kullan. Rakipler de mahmuzlar; kimi sabırla, kimi hemen, hepsi son düzlükte sprint atar. Dolu çubuk dolmayı bırakır, o yüzden sonsuza dek bekleme.</p></section>' +
+      '<section><h3>Engeller</h3><p>Her at tur başına ' + C.hazards + ' engelle karşılaşır: kendi şeridinde çitler ve su birikintileri. Biri erişim mesafesine girdiğinde oyun yavaşlar ve <b>ATLA</b> yanar (dokun, <b>Boşluk</b> ya da <b>B</b> tuşuna bas). <b>Kusursuz atlayış</b> için çubuğun altın ucuna dokun: küçük bir atılım ve $' + C.perfectCash + '. Erken dokunursan güvenle geçersin. Kaçırırsan atın <b>tökezler</b> ve yaklaşık ' + n(C.stumbleT) + ' saniye hızının çoğunu kaybeder. Rakipler engellerinin yaklaşık %' + Math.round(C.aiClear * 100) + '’ini geçer.</p></section>' +
+      '<section><h3>Sıradaki kart bahisleri</h3><p>Yarış sırasında <b>sıradaki kartın rengine</b> bahis oynayabilirsin. Oranlar, destede kalan kartlardan hesaplanan kesin şanstır (yüzde olarak gösterilir); deste inceldikçe değişir ve rakamlarla oynayabilirsin: küçük kazançlar için en olası rengi, büyük bir patlama için düşük ihtimalli rengi seç. Korunmak için birkaç renge birden bahis oyna. Kasa %' + Math.round((1 - C.cardEdge) * 100) + ' alır, ama bir <b>isabet serisi</b> Mahmuz dayanıklılığını doldurur ve Gözcü Merceği sıradaki kartta <b>gelmeyecek</b> renkleri işaretler. Bahisler: ' + C.cardStakes.map(m).join(', ') + '. Bir renge bahis için 1–4 tuşlarına bas. Kaos kartı tüm bahisleri iade eder.</p></section>' +
+      '<section><h3>Sıralamayı tahmin etme</h3><p>Her turdan önce hangi atın <b>1., 2., 3. ve 4.</b> bitireceğini tahmin eder ve her tahmine bahis koyarsın. Kendi atın <b>1. sıraya kilitlidir</b>: her zaman kendine oynarsın ve yalnızca bahis miktarını değiştirebilirsin. Diğer üç sırayı seçmek ya da atlamak sana kalmış. Bahisçi turu yüzlerce kez simüle eder ve her atın her sıradaki oranını gösterir; yani sürpriz at daha çok öder. Geliştirme aldıkça oranlar değişir ve <b>tur başlayınca kilitlenir</b>.</p><p>Doğru tahmin bahis × oran öder. Yanlış tahmin bahsi kaybettirir. Birkaçını doğru bilirsen toplam ödeme bir <b>kombo</b> ile çarpılır (ikisi için ' + n(C.combo[2]) + '×, üçü için ' + n(C.combo[3]) + '×, dördü için ' + n(C.combo[4]) + '×). Her doğru tahmin ayrıca koşuna <b>1 Ahır Puanı</b> ekler. Bahisçi tek turluk eşyalarını, Mahmuzları ve şans geliştirmelerini hesaba katmaz; avantaj da buradan gelir.</p></section>' +
+      '<section><h3>Para</h3><p>Her turdan sonra <b>koşu parası</b> kazanırsın: bitirdiğin sıraya göre bir ödül (' + C.prizes.map(m).join(', ') + '), ' + C.par + ' saniyenin altındaki her saniye için $' + n(C.bonusPerSec) + ' hız bonusu ve <b>temettüler</b>: atın çizgiyi geçtikten sonra çekilen, rengindeki her kart değerinin ' + n(C.divPerValue) + ' katını öder. Bahisler bunların üstüne ödenir.</p><p>Parayı geliştirmelere, yenilemelere, bahislere ve kart masasına harca. <b>Koşu bittiğinde kalan her şey kaybolur.</b></p></section>' +
+      '<section><h3>Mola dükkanı ve nadirlikler</h3><p>Dükkan 1. turdan sonra açılır ve ' + C.shopSlots + ' geliştirme sunar. Her geliştirme bir nadirliğe aittir ve <b>bir nadirlikteki tüm geliştirmeler aynı fiyattır</b>: Yaygın $' + tp.common + ', Nadir $' + tp.rare + ', Epik $' + tp.epic + ', Efsanevi $' + tp.legendary + '. Dükkan her nadirliğin şansını gösterir ve koşu ilerledikçe daha nadir geliştirmeler daha sık çıkar. Ücret karşılığında yenileyebilirsin.</p><p>Geliştirme türleri: Deste, At, Para, Bahis, Ekipman (Gözcü Merceği ve Engelci gibi), Şans (rastgele atılımlar, nakit getirileri, zarlar, yazı tura) ve bir kez kullanılan Sonraki tur eşyaları.</p></section>' +
+      '<section><h3>Kart masası</h3><p>Her molada en fazla ' + C.tableLimit + ' el <b>daha yüksek mi daha düşük mü</b> oynayabilirsin. Bir kart açılır, sıradakinin daha yüksek mi daha düşük mü geleceğini tahmin edersin; beraberlik kaybeder. Ödeme, küçük bir kasa payıyla gerçek şansı izler.</p></section>' +
+      '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Bunları Ahır’da kalıcı geliştirmelere harca: başlangıç parası, ekstra kartlar, daha hızlı seyir, daha ucuz dükkanlar, daha iyi nadirlik şansı ve daha iyi bahis ödemeleri. İlerleme bu tarayıcıda saklanır.</p></section>';
+  };
+})();
+
+</script>
 <script>
 /* Meta progression: the Stable. Points earned at the end of a run are spent on
    permanent perks. Pure functions over a plain state object, so it can be tested in Node. */
@@ -1534,7 +1923,7 @@ const FX = (() => {
     f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
   }
   function countUp(el, to, dur, prefix, sign) {
-    const fmt = v => (v < 0 ? '−' : sign && v > 0 ? '+' : '') + prefix + Math.abs(Math.round(v)).toLocaleString('en-US');
+    const fmt = v => (v < 0 ? '−' : sign && v > 0 ? '+' : '') + prefix + Math.abs(Math.round(v)).toLocaleString(I18n.locale());
     if (reduce) { el.textContent = fmt(to); return; }
     const t0 = performance.now();
     (function step(now) {
@@ -1569,7 +1958,7 @@ const FX = (() => {
     ring(x, y, tier === 'nice' ? '#ffe07a' : '#ffd95a');
     if (tier !== 'nice') { confetti(x, y, tier === 'big' ? 40 : 90); shake(tier === 'big' ? 1 : tier === 'mega' ? 2 : 3); flash(); }
     if (tier === 'jackpot') confetti(0, 0, 120, { rain: true });
-    if (tier !== 'nice') banner(title || (tier === 'big' ? 'BIG WIN' : tier === 'mega' ? 'MEGA WIN' : 'JACKPOT'), amount, tier);
+    if (tier !== 'nice') banner(title || I18n.t(tier === 'big' ? 'BIG WIN' : tier === 'mega' ? 'MEGA WIN' : 'JACKPOT'), amount, tier);
     return tier;
   }
   return { coins, confetti, sparks, ring, shake, flash, banner, countUp, win, size };
@@ -1602,7 +1991,7 @@ const Scene = (() => {
     const r = Math.round(((n >> 16) & 255) * f), g = Math.round(((n >> 8) & 255) * f), b = Math.round((n & 255) * f);
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
-  const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]);
+  const ord = n => (I18n.lang === 'tr' ? n + '.' : n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]));
   const rand = (a, b) => a + Math.random() * (b - a);
 
   function create(canvas, cfg) {
@@ -1647,7 +2036,7 @@ const Scene = (() => {
     sc.cheer = amt => { sc.crowd = Math.min(1.4, sc.crowd + amt); };
     sc.surge = i => { sc.aura[i] = 1; sc.lines[i] = Math.max(sc.lines[i], 0.45); };
     sc.spur = i => { sc.aura[i] = 1.4; sc.lines[i] = 0.9; sc.cheer(0.12); sc.ring(i, col[i]); };
-    sc.stumble = i => { sc.tilt[i] = 1; sc.say(i, 'OOPS', '#f07272'); };
+    sc.stumble = i => { sc.tilt[i] = 1; sc.say(i, I18n.t('OOPS'), '#f07272'); };
     sc.say = (i, text, color, big) => { sc.texts.push({ i, text, color: color || '#e9cf73', life: 1.3, age: 0, big: !!big }); };
     sc.ring = (i, color) => { sc.parts.push({ k: 'ring', i, color, life: 0.6, age: 0 }); };
     sc.spark = (i, color, n) => {
@@ -1797,7 +2186,7 @@ const Scene = (() => {
       for (let d = 10; d < lapLen; d += 10) { const x = sx(d); if (x > 10 && x < W - 10) ctx.fillText(String(Math.round(d / lapLen * 100)) + '%', x, yT + 10); }
       // start line
       const s0 = sx(0);
-      if (s0 > -20 && s0 < W + 20) { ctx.fillStyle = '#ece8da'; ctx.fillRect(s0 - 2, yT, 4, yB - yT); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '700 10px JetBrains Mono, monospace'; ctx.fillText('START', s0 + 26, yT + 22); }
+      if (s0 > -20 && s0 < W + 20) { ctx.fillStyle = '#ece8da'; ctx.fillRect(s0 - 2, yT, 4, yB - yT); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '700 10px JetBrains Mono, monospace'; ctx.fillText(I18n.t('START'), s0 + 26, yT + 22); }
       // finish
       const sf = sx(lapLen);
       if (sf > -40 && sf < W + 40) {
@@ -1805,7 +2194,7 @@ const Scene = (() => {
         for (let y = yT, n = 0; y < yB; y += cs, n++) for (let c = 0; c < 2; c++) { ctx.fillStyle = (n + c) % 2 ? '#ece8da' : '#131810'; ctx.fillRect(sf + c * cs, y, cs, Math.min(cs, yB - y)); }
         ctx.fillStyle = '#e9cf73'; ctx.fillRect(sf - 3, yT - 26, 4, 26); ctx.fillRect(sf + 2 * cs - 1, yT - 26, 4, 26);
         ctx.fillRect(sf - 3, yT - 30, 2 * cs + 8, 7);
-        ctx.fillStyle = DARK; ctx.font = '800 8px JetBrains Mono, monospace'; ctx.fillText('FINISH', sf + cs, yT - 24);
+        ctx.fillStyle = DARK; ctx.font = '800 8px JetBrains Mono, monospace'; ctx.fillText(I18n.t('FINISH'), sf + cs, yT - 24);
         ctx.fillStyle = 'rgba(233,207,115,.12)'; ctx.fillRect(sf + 2 * cs, yT, 80, yB - yT);
       }
 
@@ -1940,7 +2329,7 @@ const Scene = (() => {
       if (run && run.lap && sc.me >= 0) {
         const L = g[3];
         ctx.fillStyle = col[sc.me]; ctx.font = '800 9px JetBrains Mono, monospace'; ctx.textAlign = 'left';
-        ctx.fillText('YOU', 58, L.top + 11);
+        ctx.fillText(I18n.t('YOU'), 58, L.top + 11);
       }
 
       // foreground rail with fast-moving posts (sells the speed)
@@ -1976,7 +2365,9 @@ const Scene = (() => {
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var VARS = ['--hearts', '--diamonds', '--clubs', '--spades'];
-  var PLACES = ['1st', '2nd', '3rd', '4th'];
+  var I = I18n, T = I.t, TP = I.tp;
+  function f1(x) { return I.n(x.toFixed(1)); }
+  I.init();
 
   var S = {
     screen: 'menu', me: 0, laps: 5, run: null, meta: M.load(),
@@ -1985,13 +2376,15 @@ const Scene = (() => {
   };
 
   function money(n, sign) {
-    var a = Math.abs(Math.round(n)).toLocaleString('en-US');
+    var a = Math.abs(Math.round(n)).toLocaleString(I.locale());
     if (n < 0) return '−$' + a;
     return (sign && n > 0 ? '+' : '') + '$' + a;
   }
-  function ord(n) { return n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]); }
-  function fmtT(t) { var m = Math.floor(t / 60); var s = (t - m * 60).toFixed(1); return m + ':' + (s.length < 4 ? '0' : '') + s; }
-  function odds(o) { return '×' + o.toFixed(2); }
+  function ord(n) { return I.lang === 'tr' ? n + '.' : n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]); }
+  function sn(i) { return T(SUITS[i].name); }
+  function lab(c) { var l = E.label(c); return I.lang === 'tr' ? ({ J: 'V', Q: 'K', K: 'P' }[l] || l) : l; }
+  function fmtT(t) { var m = Math.floor(t / 60); var s = (t - m * 60).toFixed(1); return m + ':' + I.n((s.length < 4 ? '0' : '') + s); }
+  function odds(o) { return '×' + I.n(o.toFixed(2)); }
 
   /* ---------- horse markup ---------- */
   function horseSVG(i) {
@@ -2031,38 +2424,54 @@ const Scene = (() => {
   /* ---------- menu ---------- */
   $('#lineup').innerHTML = SUITS.map(function (s, i) { return '<div class="lu s' + i + '">' + horseSVG(i) + '</div>'; }).join('');
   onEnter.menu = function () {
-    $('#menu-sp').textContent = 'Permanent upgrades · ' + S.meta.sp + ' Stable Points';
+    $('#menu-sp').textContent = T('Permanent upgrades · {n} Stable Points', { n: S.meta.sp });
     $('#menu-stats').textContent = S.meta.runs
-      ? S.meta.runs + ' runs · ' + S.meta.champs + ' won · best ' + S.meta.bestPts + ' pts'
-      : 'No runs yet.';
+      ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
+      : T('No runs yet.');
+    renderLang();
   };
+  /* language switch: the choice is saved, and every screen is rebuilt in the new language */
+  function renderLang() {
+    $('#langsw').innerHTML = I.LANGS.map(function (l) {
+      return '<button type="button" data-lang="' + l.id + '" lang="' + l.html + '" aria-pressed="' + (l.id === I.lang) + '">' + l.name + '</button>';
+    }).join('');
+  }
+  $('#langsw').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-lang]'); if (!b || b.dataset.lang === I.lang) return;
+    I.set(b.dataset.lang);
+  });
+  I.onChange(function () {
+    buildSetup(); buildRules(); onEnter.menu();
+    $('#quit').textContent = T('Quit'); $('#pause').textContent = T('Pause');
+    if (S.screen === 'stable') renderStable();
+  });
 
   /* ---------- setup ---------- */
   function buildSetup() {
     $('#picks').innerHTML = SUITS.map(function (s, i) {
       return '<label class="pick s' + i + '"><input type="radio" name="horse" value="' + i + '"' + (i === S.me ? ' checked' : '') + '>' +
-        '<span class="g">' + s.glyph + '</span><span class="n">' + s.name + '</span><span class="you">You</span></label>';
+        '<span class="g">' + s.glyph + '</span><span class="n">' + T(s.name) + '</span><span class="you">' + T('You') + '</span></label>';
     }).join('');
     $('#lapPills').innerHTML = CFG.lapChoices.map(function (n) {
-      return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + n + ' laps</b><span>about ' + Math.round(n * 1.3) + ' minutes</span></label>';
+      return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + T('{n} laps', { n: n }) + '</b><span>' + T('about {m} minutes', { m: Math.round(n * 1.3) }) + '</span></label>';
     }).join('');
-    $('#picks').addEventListener('change', function (e) { S.me = +e.target.value; });
-    $('#lapPills').addEventListener('change', function (e) { S.laps = +e.target.value; });
   }
+  $('#picks').addEventListener('change', function (e) { S.me = +e.target.value; });
+  $('#lapPills').addEventListener('change', function (e) { S.laps = +e.target.value; });
   onEnter.setup = function () {
     var fx = M.effects(S.meta), bits = [];
-    if (fx.startCash > 90) bits.push('start with ' + money(fx.startCash));
-    if (fx.loaded) bits.push(fx.loaded + ' extra cards in your suit');
-    if (fx.baseSpeed) bits.push('+' + fx.baseSpeed.toFixed(1) + ' cruising speed');
-    if (fx.cashMult > 1) bits.push('+' + Math.round((fx.cashMult - 1) * 100) + '% winnings');
-    if (fx.discount) bits.push(Math.round(fx.discount * 100) + '% cheaper shop');
-    if (fx.slots) bits.push('+' + fx.slots + ' shop slot' + (fx.slots > 1 ? 's' : ''));
-    if (fx.freeRerolls) bits.push(fx.freeRerolls + ' free reroll' + (fx.freeRerolls > 1 ? 's' : ''));
-    if (fx.owners) bits.push('a free starting upgrade');
-    if (fx.luck) bits.push('better shop rarity');
-    if (fx.sharp) bits.push('+' + Math.round(fx.sharp * 100) + '% bet payouts');
-    $('#setup-perks').textContent = 'Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1. ' +
-      (bits.length ? 'Your Stable perks: ' + bits.join(', ') + '.' : 'No Stable perks yet. Finish a run to earn Stable Points.');
+    if (fx.startCash > 90) bits.push(T('start with {m}', { m: money(fx.startCash) }));
+    if (fx.loaded) bits.push(TP(fx.loaded, '{n} extra card in your suit', '{n} extra cards in your suit'));
+    if (fx.baseSpeed) bits.push(T('+{v} cruising speed', { v: f1(fx.baseSpeed) }));
+    if (fx.cashMult > 1) bits.push(T('+{p}% winnings', { p: Math.round((fx.cashMult - 1) * 100) }));
+    if (fx.discount) bits.push(T('{p}% cheaper shop', { p: Math.round(fx.discount * 100) }));
+    if (fx.slots) bits.push(TP(fx.slots, '+{n} shop slot', '+{n} shop slots'));
+    if (fx.freeRerolls) bits.push(TP(fx.freeRerolls, '{n} free reroll', '{n} free rerolls'));
+    if (fx.owners) bits.push(T('a free starting upgrade'));
+    if (fx.luck) bits.push(T('better shop rarity'));
+    if (fx.sharp) bits.push(T('+{p}% bet payouts', { p: Math.round(fx.sharp * 100) }));
+    $('#setup-perks').textContent = T('Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1.') + ' ' +
+      (bits.length ? T('Your Stable perks: {list}.', { list: bits.join(', ') }) : T('No Stable perks yet. Finish a run to earn Stable Points.'));
   };
   $('#startRun').addEventListener('click', function () {
     S.run = E.newRun({ me: S.me, laps: S.laps, meta: M.effects(S.meta) });
@@ -2092,13 +2501,13 @@ const Scene = (() => {
     counts.forEach(function (n, i) { bar.children[i].style.flexGrow = n; bar.children[i].style.flexBasis = '0'; });
     leg.innerHTML = counts.map(function (n, i) {
       return '<span class="s' + i + (i === meIdx ? ' me' : '') + '"><b>' + SUITS[i].glyph + '</b> ' + n + ' · ' + Math.round(n / tot * 100) + '%</span>';
-    }).join('') + '<span>' + tot + ' cards' + (chaos ? ' + ' + chaos + ' chaos' : '') + '</span>';
+    }).join('') + '<span>' + T('{n} cards', { n: tot }) + (chaos ? ' + ' + T('{n} chaos', { n: chaos }) : '') + '</span>';
   }
   function renderPts() {
     var R = S.run;
     $('#pts').innerHTML = R.horses.map(function (h) {
       return '<span class="s' + h.i + (h.i === R.me ? ' me' : '') + '"><b>' + SUITS[h.i].glyph + '</b>' + h.points + '</span>';
-    }).join('') + '<span>pts</span>';
+    }).join('') + '<span>' + T('pts') + '</span>';
   }
   function openHazard() {
     var R = S.run, me = R.horses[R.me], z = R.lap.hz[R.me][me.hzi];
@@ -2112,11 +2521,11 @@ const Scene = (() => {
     sp.disabled = !(live && me.sta >= CFG.spurMin);
     $('#spfill').style.width = pct.toFixed(1) + '%';
     sp.classList.toggle('full', live && pct >= 98);
-    var sub = me.fin ? 'home' : pct >= 98 ? 'FULL CHARGE · surge +' + E.spurPower(me).toFixed(1) : me.sta >= CFG.spurMin ? 'now +' + E.spurPower(me).toFixed(1) + ' · wait for more' : 'charging ' + Math.round(pct) + '%';
+    var sub = me.fin ? T('home') : pct >= 98 ? T('FULL CHARGE · surge +{v}', { v: f1(E.spurPower(me)) }) : me.sta >= CFG.spurMin ? T('now +{v} · wait for more', { v: f1(E.spurPower(me)) }) : T('charging {p}%', { p: Math.round(pct) });
     if (sub !== lastSub) { $('#spsub').textContent = sub; lastSub = sub; }
     var nx = live ? openHazard() : null, br = $('#brace');
     br.disabled = !nx; br.classList.toggle('hot', !!nx);
-    var bs = nx ? 'NOW!' : 'no hazard near';
+    var bs = nx ? T('NOW!') : T('no hazard near');
     if (bs !== lastBsub) { $('#bracesub').textContent = bs; lastBsub = bs; }
     $('#hzcall').hidden = !nx;
     if (nx) $('#hzfill').style.width = (Math.max(0, Math.min(1, 1 - (nx.x - me.pos) / CFG.hzWindow)) * 100).toFixed(1) + '%';
@@ -2143,9 +2552,9 @@ const Scene = (() => {
       b.disabled = !canBet || !o.open || R.cash < S.cstake;
       b.classList.toggle('has', !!st); b.classList.toggle('out', !!o.out); b.classList.toggle('dry', !o.n);
       b.querySelector('.stk').textContent = st ? money(st) : '';
-      b.querySelector('.tag').textContent = o.out ? 'not next' : (o.s === best && o.open ? 'likeliest' : '');
+      b.querySelector('.tag').textContent = o.out ? T('not next') : (o.s === best && o.open ? T('likeliest') : '');
       b.querySelector('.o').textContent = o.p > 0 ? odds(o.odds) : '–';
-      b.querySelector('.p').textContent = pc + '% · ' + o.n + ' left';
+      b.querySelector('.p').textContent = T('{p}% · {n} left', { p: pc, n: o.n });
       b.querySelector('.pb').style.setProperty('--p', pc + '%');
     });
     $$('#chips .sk').forEach(function (c) { var v = +c.dataset.chip; c.setAttribute('aria-pressed', String(v === S.cstake)); c.disabled = R.cash < v; });
@@ -2155,9 +2564,9 @@ const Scene = (() => {
       setTimeout(function () { fb.classList.remove(cls); }, 750);
     }
     var tot = L.bets.reduce(function (x, y) { return x + y; }, 0);
-    $('#betinfo').textContent = tot ? money(tot) + ' on the next card. Pays stake × odds if it lands.' : 'Odds are the exact chance from the cards left. A hit streak fills your Spur.';
+    $('#betinfo').textContent = tot ? T('{m} on the next card. Pays stake × odds if it lands.', { m: money(tot) }) : T('Odds are the exact chance from the cards left. A hit streak fills your Spur.');
     var sk = $('#streak');
-    sk.textContent = L.streak ? 'Streak ×' + L.streak + ' · next hit +' + (Math.min(L.streak + 1, 5) * CFG.streakSta) + ' stamina' : 'Streak 0';
+    sk.textContent = L.streak ? T('Streak ×{n} · next hit +{s} stamina', { n: L.streak, s: Math.min(L.streak + 1, 5) * CFG.streakSta }) : T('Streak 0');
     sk.classList.toggle('on', L.streak > 0);
     $('#rebet').disabled = !canBet || !S.lastBets || !S.lastBets.length || tot > 0;
   }
@@ -2185,8 +2594,8 @@ const Scene = (() => {
     var R = S.run, el = $('#calls'), cs = R.lap.calls;
     if (!cs.length) { el.hidden = true; return; }
     el.hidden = false;
-    el.innerHTML = '<span style="border:0;padding-left:0">Your calls</span>' + cs.map(function (c) {
-      return '<span class="s' + c.horse + ' ' + callState(c) + '">' + PLACES[c.place - 1] + ' <b>' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' ' + money(c.stake) + '</span>';
+    el.innerHTML = '<span style="border:0;padding-left:0">' + T('Your calls') + '</span>' + cs.map(function (c) {
+      return '<span class="s' + c.horse + ' ' + callState(c) + '">' + ord(c.place) + ' <b>' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' ' + money(c.stake) + '</span>';
     }).join('');
   }
   function renderTicker() {
@@ -2196,7 +2605,7 @@ const Scene = (() => {
   }
   function syncHud() {
     var R = S.run, L = R.lap, me = R.horses[R.me];
-    $('#glap').textContent = 'Lap ' + R.lapNo + ' / ' + R.laps;
+    $('#glap').textContent = T('Lap {n} / {m}', { n: R.lapNo, m: R.laps });
     $('#gclock').textContent = fmtT(L.t);
     $('#gcash').textContent = money(R.cash);
     $('#tick').style.transform = 'scaleX(' + Math.min(1, L.drawTimer / CFG.drawEvery).toFixed(3) + ')';
@@ -2204,26 +2613,26 @@ const Scene = (() => {
   }
 
   function showCard(ev) {
-    var c = ev.card, s = c.s, lab = E.label(c), face = $('#face'), chaos = !!c.chaos;
+    var c = ev.card, s = c.s, lb = lab(c), face = $('#face'), chaos = !!c.chaos;
     var col = chaos ? 'var(--gold)' : 'var(' + VARS[s] + ')', g = chaos ? '★' : SUITS[s].glyph;
     face.style.setProperty('--c', col);
     face.className = 'face' + (chaos ? ' chaosface' : '');
-    face.innerHTML = '<span class="cr tl">' + lab + '<i>' + g + '</i></span><span class="mid">' + g + '</span><span class="cr br">' + lab + '<i>' + g + '</i></span>';
+    face.innerHTML = '<span class="cr tl">' + lb + '<i>' + g + '</i></span><span class="mid">' + g + '</span><span class="cr br">' + lb + '<i>' + g + '</i></span>';
     var inner = $('#cardin');
     inner.style.transform = 'rotateY(0deg)';
     if (!reduce && inner.animate) inner.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(0deg)' }], { duration: 400, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    var names = { 11: 'Jack', 12: 'Queen', 13: 'King', 14: 'Ace' };
+    var names = { 11: T('Jack'), 12: T('Queen'), 13: T('King'), 14: T('Ace') };
     var R = S.run, line;
     if (chaos) {
-      $('#dname').textContent = 'Chaos card';
-      line = ev.horse >= 0 ? SUITS[ev.horse].name + ' surges +' + CFG.chaosBoost + '. You collect ' + money(ev.cash, true) + '.' : 'Nobody left to surge. You collect ' + money(ev.cash, true) + '.';
+      $('#dname').textContent = T('Chaos card');
+      line = ev.horse >= 0 ? T('{s} surges +{b}. You collect {m}.', { s: sn(ev.horse), b: CFG.chaosBoost, m: money(ev.cash, true) }) : T('Nobody left to surge. You collect {m}.', { m: money(ev.cash, true) });
     } else {
-      $('#dname').textContent = c.joker ? 'Joker of ' + SUITS[s].name : (names[c.r] || c.r) + ' of ' + SUITS[s].name;
-      if (ev.fin) line = s === R.me ? 'Home already. Dividend ' + money(ev.div, true) + '.' : SUITS[s].name + ' already finished.';
-      else line = SUITS[s].name + ' surges +' + ev.boost.toFixed(1) + (s === R.me ? '. That one is yours.' : '.');
+      $('#dname').textContent = c.joker ? T('Joker of {s}', { s: sn(s) }) : T('{r} of {s}', { r: names[c.r] || c.r, s: sn(s) });
+      if (ev.fin) line = s === R.me ? T('Home already. Dividend {m}.', { m: money(ev.div, true) }) : T('{s} already finished.', { s: sn(s) });
+      else line = T(s === R.me ? '{s} surges +{b}. That one is yours.' : '{s} surges +{b}.', { s: sn(s), b: f1(ev.boost) });
     }
     $('#dline').textContent = line;
-    S.hist.unshift({ s: chaos ? -1 : s, lab: lab });
+    S.hist.unshift({ s: chaos ? -1 : s, lab: lb });
     S.hist = S.hist.slice(0, 10);
     $('#hist').innerHTML = S.hist.map(function (h) { return h.s < 0 ? '<span class="chip" style="--c:var(--gold)">?</span>' : '<span class="chip s' + h.s + '">' + h.lab + SUITS[h.s].glyph + '</span>'; }).join('');
   }
@@ -2244,53 +2653,53 @@ const Scene = (() => {
         if (k === lastCard) showCard(ev);
         surge(ev.horse);
         floatMoney(R.me, money(ev.cash, true));
-        S.ticker.push({ i: -1, text: 'Chaos card' + (ev.horse >= 0 ? ': ' + SUITS[ev.horse].name + ' surges' : '') + ', you collect ' + money(ev.cash) });
+        S.ticker.push({ i: -1, text: ev.horse >= 0 ? T('Chaos card: {s} surges, you collect {m}', { s: sn(ev.horse), m: money(ev.cash) }) : T('Chaos card, you collect {m}', { m: money(ev.cash) }) });
         redraw = true;
       } else if (ev.type === 'bet') {
         S.lastBets = S.roundBets.length ? S.roundBets : S.lastBets; S.roundBets = [];
         redraw = true;
-        if (ev.void) { S.ticker.push({ i: -1, text: 'Chaos card: your next-card bets are refunded' }); return; }
+        if (ev.void) { S.ticker.push({ i: -1, text: T('Chaos card: your next-card bets are refunded') }); return; }
         var pos = suitBtn(ev.suit);
         S.flash = { s: ev.suit, hit: ev.hit };
         if (ev.hit) {
-          S.ticker.push({ i: ev.suit, text: 'Next-card hit ' + odds(ev.odds) + ' · ' + money(ev.net, true) + (ev.streak > 1 ? ' · streak ×' + ev.streak : '') });
+          S.ticker.push({ i: ev.suit, text: T('Next-card hit {o} · {m}', { o: odds(ev.odds), m: money(ev.net, true) }) + (ev.streak > 1 ? T(' · streak ×{n}', { n: ev.streak }) : '') });
           if (!quiet) {
             var tier = FX.win(ev.pay, pos.x, pos.y);
-            if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner('HOT STREAK ×' + ev.streak, null, 'big'); }
+            if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner(T('HOT STREAK ×{n}', { n: ev.streak }), null, 'big'); }
             var a = scene.anchor(R.me, R);
-            if (ev.streak >= 2) { scene.say(R.me, 'STREAK ×' + ev.streak, '#ffe07a'); scene.spur(R.me); }
+            if (ev.streak >= 2) { scene.say(R.me, T('STREAK ×{n}', { n: ev.streak }), '#ffe07a'); scene.spur(R.me); }
             FX.sparks(a.x, a.y, 10 + ev.streak * 3);
             $('#gcash').classList.remove('bump'); void $('#gcash').offsetWidth; $('#gcash').classList.add('bump');
           }
         } else {
-          S.ticker.push({ i: ev.suit, text: 'Next card was ' + SUITS[ev.suit].name + ' · ' + money(ev.net) });
+          S.ticker.push({ i: ev.suit, text: T('Next card was {s} · {m}', { s: sn(ev.suit), m: money(ev.net) }) });
         }
       } else if (ev.type === 'spur') {
         scene.spur(ev.horse);
-        if (ev.horse === R.me) { scene.say(R.me, 'SPUR +' + ev.power.toFixed(1), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: 'Spur at ' + Math.round(ev.pct) + '% stamina: surge +' + ev.power.toFixed(1) }); }
-        else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: 'unleashes a full-charge Spur' });
+        if (ev.horse === R.me) { scene.say(R.me, T('SPUR +{v}', { v: f1(ev.power) }), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: T('Spur at {p}% stamina: surge +{v}', { p: Math.round(ev.pct), v: f1(ev.power) }) }); }
+        else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: T('unleashes a full-charge Spur') });
       } else if (ev.type === 'hz') {
         var me = ev.horse === R.me;
-        if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: 'stumbles over the hazard' }); }
+        if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: T('stumbles over the hazard') }); }
         else if (ev.res === 'perfect') {
-          scene.say(ev.horse, me ? 'PERFECT +' + money(CFG.perfectCash) : 'PERFECT', '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
-          if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: 'perfect jump ' + money(CFG.perfectCash, true) }); }
-        } else if (me) scene.say(R.me, 'CLEAR', '#9ba593');
+          scene.say(ev.horse, me ? T('PERFECT +{m}', { m: money(CFG.perfectCash) }) : T('PERFECT'), '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
+          if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: T('perfect jump {m}', { m: money(CFG.perfectCash, true) }) }); }
+        } else if (me) scene.say(R.me, T('CLEAR'), '#9ba593');
       } else if (ev.type === 'luck') {
-        if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, 'HORSESHOE', '#ffe07a'); S.ticker.push({ i: R.me, text: 'Lucky Horseshoe: bonus surge' }); }
+        if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, T('HORSESHOE'), '#ffe07a'); S.ticker.push({ i: R.me, text: T('Lucky Horseshoe: bonus surge') }); }
         else if (ev.kind === 'jackpot') {
-          surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: 'JACKPOT ' + money(ev.cash, true) });
-          if (!quiet) FX.win(ev.cash, innerWidth / 2, innerHeight * 0.4, 'JACKPOT');
+          surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: T('JACKPOT {m}', { m: money(ev.cash, true) }) });
+          if (!quiet) FX.win(ev.cash, innerWidth / 2, innerHeight * 0.4, T('JACKPOT'));
         }
-        else if (ev.kind === 'coin') S.ticker.push({ i: R.me, text: 'Coin of Fate landed ' + ev.text + ': ' + (ev.text === 'heads' ? '+' + CFG.coinHeads : CFG.coinTails).toString().replace('-', '−') + ' cruising this lap' });
-        else if (ev.kind === 'dice') S.ticker.push({ i: R.me, text: 'Loaded Dice: ' + ev.n + ' extra cards this lap' });
+        else if (ev.kind === 'coin') S.ticker.push({ i: R.me, text: T('Coin of Fate landed {c}: {v} cruising this lap', { c: T(ev.text), v: I.n((ev.text === 'heads' ? '+' + CFG.coinHeads : CFG.coinTails).toString().replace('-', '−')) }) });
+        else if (ev.kind === 'dice') S.ticker.push({ i: R.me, text: T('Loaded Dice: {n} extra cards this lap', { n: ev.n }) });
       } else if (ev.type === 'sabotage') {
-        S.ticker.push({ i: ev.horse, text: 'is sabotaged and surges 40% less this lap' });
+        S.ticker.push({ i: ev.horse, text: T('is sabotaged and surges 40% less this lap') });
       } else if (ev.type === 'finish') {
-        S.ticker.push({ i: ev.horse, text: (ev.horse === R.me ? 'you finish ' : 'finishes ') + ord(ev.place) });
+        S.ticker.push({ i: ev.horse, text: T(ev.horse === R.me ? 'you finish {o}' : 'finishes {o}', { o: ord(ev.place) }) });
         scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
         if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
-        if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner('WINNER', null, 'big'); FX.shake(1); }
+        if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner(T('WINNER'), null, 'big'); FX.shake(1); }
         redraw = true;
       }
     });
@@ -2307,9 +2716,9 @@ const Scene = (() => {
     S.ticker = []; S.hist = []; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
     E.startLap(R);
     scene.setMe(R.me); scene.reset(); $('#hzcall').hidden = true;
-    $('#hist').innerHTML = ''; $('#dname').textContent = 'Shuffling'; $('#dline').textContent = 'First card comes out soon.';
+    $('#hist').innerHTML = ''; $('#dname').textContent = T('Shuffling'); $('#dline').textContent = T('First card comes out soon.');
     $('#face').className = 'face'; $('#cardin').style.transform = 'rotateY(180deg)';
-    $('#pause').textContent = 'Pause';
+    $('#pause').textContent = T('Pause');
     go('game');
     measure(); scene.setMe(R.me); scene.reset();
     handleEvents();
@@ -2334,8 +2743,8 @@ const Scene = (() => {
     if (b.dataset.sp) { S.speed = +b.dataset.sp; setSpeedUI(); }
     else if (b.id === 'pause') {
       if (S.gphase !== 'racing') return;
-      S.paused = !S.paused; b.textContent = S.paused ? 'Resume' : 'Pause';
-      $('#ovtxt').textContent = 'Paused'; $('#ovtxt').className = 'big sm'; $('#overlay').hidden = !S.paused;
+      S.paused = !S.paused; b.textContent = S.paused ? T('Resume') : T('Pause');
+      $('#ovtxt').textContent = T('Paused'); $('#ovtxt').className = 'big sm'; $('#overlay').hidden = !S.paused;
       renderBets(); renderActions();
     } else if (b.id === 'skip') {
       if (!R.horses[R.me].fin) return;
@@ -2366,49 +2775,49 @@ const Scene = (() => {
 
   $('#quit').addEventListener('click', function () {
     var b = $('#quit');
-    if (!S.quitArm) { S.quitArm = 1; b.textContent = 'Quit run?'; setTimeout(function () { S.quitArm = 0; b.textContent = 'Quit'; }, 3000); return; }
-    S.quitArm = 0; b.textContent = 'Quit'; S.run = null; S.gphase = 'idle'; go('menu');
+    if (!S.quitArm) { S.quitArm = 1; b.textContent = T('Quit run?'); setTimeout(function () { S.quitArm = 0; b.textContent = T('Quit'); }, 3000); return; }
+    S.quitArm = 0; b.textContent = T('Quit'); S.run = null; S.gphase = 'idle'; go('menu');
   });
 
   /* ---------- pit stop ---------- */
   function renderPit() {
     var R = S.run, res = S.lastRes, me = R.horses[R.me], prep = R.phase === 'prep';
-    $('#pit-title').textContent = prep ? 'Before lap 1' : 'Lap ' + res.lapNo + ' of ' + R.laps + ' complete';
-    $('#pit-stand-h').textContent = prep ? 'On the line' : 'Championship';
+    $('#pit-title').textContent = prep ? T('Before lap 1') : T('Lap {n} of {m} complete', { n: res.lapNo, m: R.laps });
+    $('#pit-stand-h').textContent = prep ? T('On the line') : T('Championship');
     var pl = $('#pit-place'), stmt = $('#pit-stmt');
     if (prep) {
-      pl.textContent = 'Level start'; pl.style.color = 'var(--ink)';
-      stmt.innerHTML = '<p class="note" style="margin:0">Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.</p>';
+      pl.textContent = T('Level start'); pl.style.color = 'var(--ink)';
+      stmt.innerHTML = '<p class="note" style="margin:0">' + T('Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.') + '</p>';
     } else {
-      pl.textContent = ord(res.place) + ' this lap'; pl.style.color = res.place === 1 ? 'var(--gold)' : 'var(--ink)';
-      var rows = [['Prize', res.prize], [res.secs > 0 ? 'Speed bonus, ' + res.secs.toFixed(1) + 's under par' : 'Speed bonus, ' + Math.abs(res.secs).toFixed(1) + 's over par', res.bonus],
-        ['Dividends, ' + res.divCount + (res.divCount === 1 ? ' card' : ' cards'), res.divs]];
-      if (res.interest) rows.push(['Interest', res.interest]);
-      if (res.penny) rows.push(['Lucky Penny', res.penny]);
+      pl.textContent = T('{o} this lap', { o: ord(res.place) }); pl.style.color = res.place === 1 ? 'var(--gold)' : 'var(--ink)';
+      var rows = [[T('Prize'), res.prize], [res.secs > 0 ? T('Speed bonus, {s}s under par', { s: f1(res.secs) }) : T('Speed bonus, {s}s over par', { s: f1(Math.abs(res.secs)) }), res.bonus],
+        [TP(res.divCount, 'Dividends, {n} card', 'Dividends, {n} cards'), res.divs]];
+      if (res.interest) rows.push([T('Interest'), res.interest]);
+      if (res.penny) rows.push([T('Lucky Penny'), res.penny]);
       var hzCash = (res.hz ? res.hz.perfect : 0) * CFG.perfectCash;
-      if (res.hz && (res.hz.perfect + res.hz.clear + res.hz.stumble)) rows.push(['Hazards: ' + res.hz.perfect + ' perfect, ' + res.hz.clear + ' clear, ' + res.hz.stumble + ' stumbled', hzCash]);
-      if (res.windfall - hzCash > 0) rows.push(['Luck windfalls', res.windfall - hzCash]);
+      if (res.hz && (res.hz.perfect + res.hz.clear + res.hz.stumble)) rows.push([T('Hazards: {p} perfect, {c} clear, {s} stumbled', { p: res.hz.perfect, c: res.hz.clear, s: res.hz.stumble }), hzCash]);
+      if (res.windfall - hzCash > 0) rows.push([T('Luck windfalls'), res.windfall - hzCash]);
       var gm = res.gamble;
-      if (gm && gm.n) rows.push(['Next-card bets, ' + gm.hits + ' of ' + gm.n + ' hit' + (gm.best > 1 ? ' (best streak ' + gm.best + ')' : ''), gm.net]);
+      if (gm && gm.n) rows.push([T('Next-card bets, {h} of {n} hit', { h: gm.hits, n: gm.n }) + (gm.best > 1 ? T(' (best streak {n})', { n: gm.best }) : ''), gm.net]);
       var html = rows.map(function (r, k) { return '<div class="row' + (r[1] > 0 ? ' pop' : '') + '" style="animation-delay:' + (k * 0.08) + 's"><span>' + r[0] + '</span><b class="' + (r[1] > 0 ? 'pos' : r[1] < 0 ? 'neg' : 'dim') + '">' + money(r[1], true) + '</b></div>'; }).join('');
       if (res.calls.length) {
-        html += '<div class="row"><span>Bets, ' + res.hits + ' of ' + res.calls.length + ' right' + (res.combo > 1 ? ' (combo ×' + res.combo + ')' : '') + '</span><b class="' + (res.betNet >= 0 ? 'pos' : 'neg') + '">' + money(res.betNet, true) + '</b></div>';
+        html += '<div class="row"><span>' + T('Bets, {h} of {n} right', { h: res.hits, n: res.calls.length }) + (res.combo > 1 ? T(' (combo ×{c})', { c: I.n(String(res.combo)) }) : '') + '</span><b class="' + (res.betNet >= 0 ? 'pos' : 'neg') + '">' + money(res.betNet, true) + '</b></div>';
         html += res.calls.map(function (c) {
-          return '<div class="row sub"><span class="s' + c.horse + '">' + PLACES[c.place - 1] + ' <b style="color:var(--c)">' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' on ' + money(c.stake) + '</span><b class="' + (c.hit ? 'pos' : 'neg') + '">' + (c.hit ? money(c.win, true) : 'miss') + '</b></div>';
+          return '<div class="row sub"><span class="s' + c.horse + '">' + ord(c.place) + ' <b style="color:var(--c)">' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' ' + T('on {m}', { m: money(c.stake) }) + '</span><b class="' + (c.hit ? 'pos' : 'neg') + '">' + (c.hit ? money(c.win, true) : T('miss')) + '</b></div>';
         }).join('');
       }
       var race = res.total - res.betReturn;
       res.net = race + res.betNet + (gm ? gm.net : 0);
-      html += '<div class="row total"><span>Net this lap</span><b class="gold" id="netb">' + money(res.net, true) + '</b></div>';
+      html += '<div class="row total"><span>' + T('Net this lap') + '</span><b class="gold" id="netb">' + money(res.net, true) + '</b></div>';
       stmt.innerHTML = html;
     }
     var order = E.runOrder(R);
     $('#pit-standings').innerHTML = order.map(function (i, k) {
       var h = R.horses[i], lp = res ? res.order.filter(function (o) { return o.i === i; })[0] : null;
-      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + SUITS[i].name + (i === R.me ? ' <span class="dim">(you)</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
+      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
     }).join('');
     renderRivals();
-    $('#nextLap').textContent = 'Start lap ' + (R.lapNo + 1) + ' of ' + R.laps;
+    $('#nextLap').textContent = T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
     $('#shopclosed').hidden = !prep;
     $('#offers').hidden = prep; $('#tiers').hidden = prep; $('#reroll').hidden = prep;
     renderPitState();
@@ -2416,16 +2825,16 @@ const Scene = (() => {
   function ufLine() {
     var res = S.lastRes;
     if (!res || !res.topUps || !res.topUps.length) return '';
-    return '<p class="uf"><b>Underdog fund</b> (no suit is starved out of the deck): ' + res.topUps.map(function (t) { return SUITS[t.horse].glyph + ' +' + t.n + ' card' + (t.n > 1 ? 's' : ''); }).join(', ') + '.</p>';
+    return '<p class="uf"><b>' + T('Underdog fund') + '</b> ' + T('(no suit is starved out of the deck):') + ' ' + res.topUps.map(function (u) { return SUITS[u.horse].glyph + ' ' + TP(u.n, '+{n} card', '+{n} cards'); }).join(', ') + '.</p>';
   }
   function renderRivals() {
     var R = S.run, box = $('#rivals');
     if (R.phase === 'prep' || !R.rivalLog.length) {
-      box.innerHTML = R.phase === 'prep' ? '' : '<h3 class="lbl">Rivals at the stop</h3><p class="note" style="margin:0">Nobody upgraded this time.</p>' + ufLine();
+      box.innerHTML = R.phase === 'prep' ? '' : '<h3 class="lbl">' + T('Rivals at the stop') + '</h3><p class="note" style="margin:0">' + T('Nobody upgraded this time.') + '</p>' + ufLine();
       return;
     }
-    box.innerHTML = '<h3 class="lbl">Rivals upgraded during the stop</h3><div class="rvlist">' + R.rivalLog.map(function (r) {
-      return '<span class="rv s' + r.horse + ' t-' + r.tier + '"><span class="g">' + SUITS[r.horse].glyph + '</span>' + r.name + ' <em>' + E.TIER_NAME[r.tier] + '</em></span>';
+    box.innerHTML = '<h3 class="lbl">' + T('Rivals upgraded during the stop') + '</h3><div class="rvlist">' + R.rivalLog.map(function (r) {
+      return '<span class="rv s' + r.horse + ' t-' + r.tier + '"><span class="g">' + SUITS[r.horse].glyph + '</span>' + T(r.name) + ' <em>' + T(E.TIER_NAME[r.tier]) + '</em></span>';
     }).join('') + '</div>' + ufLine();
   }
   // everything that changes when cash, odds, bets or offers change
@@ -2433,7 +2842,7 @@ const Scene = (() => {
     var R = S.run, prep = R.phase === 'prep';
     var av = E.spendable(R), rs = E.reserved(R);
     $('#pit-cash').textContent = money(av);
-    $('#pit-cash-sub').textContent = rs ? 'cash ' + money(R.cash) + ' · ' + money(rs) + ' on bets' : 'to spend';
+    $('#pit-cash-sub').textContent = rs ? T('cash {c} · {r} on bets', { c: money(R.cash), r: money(rs) }) : T('to spend');
     renderBoard();
     if (!prep) renderShop();
     renderTable();
@@ -2447,20 +2856,20 @@ const Scene = (() => {
     R.calls.forEach(function (c) { if (c) used[c.h] = true; });
     var ord4 = [R.me].concat([0, 1, 2, 3].filter(function (x) { return x !== R.me; }));
     var html = '<div class="brow bhead"><span></span>' + ord4.map(function (h) {
-      return '<span class="bh s' + h + (h === R.me ? ' you' : '') + '">' + (h === R.me ? 'You' : SUITS[h].name) + '</span>';
+      return '<span class="bh s' + h + (h === R.me ? ' you' : '') + '">' + (h === R.me ? T('You') : sn(h)) + '</span>';
     }).join('') + '<span></span></div>';
     for (var pl = 0; pl < 4; pl++) {
       var c = R.calls[pl];
-      html += '<div class="brow"><span class="bplace">' + PLACES[pl] + (pl === 0 ? '<i class="lockmark" title="Your horse is locked in for 1st">Locked</i>' : '') + '</span>';
+      html += '<div class="brow"><span class="bplace">' + ord(pl + 1) + (pl === 0 ? '<i class="lockmark" title="' + T('Your horse is locked in for 1st') + '">' + T('Locked') + '</i>' : '') + '</span>';
       for (var hi = 0; hi < 4; hi++) {
         var h = ord4[hi];
         var on = c && c.h === h, dis = pl === 0 ? true : (!on && used[h]);
         html += '<button type="button" class="cell s' + h + (on ? ' on' : '') + (h === R.me ? ' mine' : '') + (pl === 0 ? ' locked' : '') + '" data-cell="' + pl + ',' + h + '"' + (dis ? ' disabled' : '') +
-          ' title="' + SUITS[h].name + ' for ' + PLACES[pl] + ': ' + Math.round(q.p[h][pl] * 100) + '% chance"><span class="g">' + SUITS[h].glyph + '</span><span class="o">' + odds(q.o[h][pl]) + '</span></button>';
+          ' title="' + T('{s} for {o}: {p}% chance', { s: sn(h), o: ord(pl + 1), p: Math.round(q.p[h][pl] * 100) }) + '"><span class="g">' + SUITS[h].glyph + '</span><span class="o">' + odds(q.o[h][pl]) + '</span></button>';
       }
       if (c) {
         var win = Math.round(E.callPayout(R, { stake: c.stake, odds: q.o[c.h][pl], place: pl + 1 }, false));
-        html += '<button type="button" class="stakebtn on" data-stake="' + pl + '" title="Change stake">' + money(c.stake) + '<small>wins ' + money(win) + '</small></button>';
+        html += '<button type="button" class="stakebtn on" data-stake="' + pl + '" title="' + T('Change stake') + '">' + money(c.stake) + '<small>' + T('wins {m}', { m: money(win) }) + '</small></button>';
       } else html += '<button type="button" class="stakebtn" disabled>–</button>';
       html += '</div>';
     }
@@ -2468,8 +2877,8 @@ const Scene = (() => {
     var cm = CFG.combo, slam = E.cnt(R.horses[R.me], 'slam');
     if (slam) cm = CFG.comboSlam;
     var n = R.calls.filter(Boolean).length;
-    $('#boardfoot').innerHTML = (n ? '<b>' + money(E.reserved(R)) + '</b> staked on ' + n + ' call' + (n > 1 ? 's' : '') + '. ' : 'You are locked in for 1st. Tap a horse to call 2nd, 3rd and 4th. ') +
-      'A wrong call loses its stake. Combo on total winnings: 2 right ×' + cm[2] + ', 3 right ×' + cm[3] + ', 4 right ×' + cm[4] + '. Every correct call also earns 1 Stable Point. You are locked in for 1st, and your horse is the first column.';
+    $('#boardfoot').innerHTML = (n ? TP(n, '<b>{m}</b> staked on {n} call. ', '<b>{m}</b> staked on {n} calls. ', { m: money(E.reserved(R)) }) : T('You are locked in for 1st. Tap a horse to call 2nd, 3rd and 4th. ')) +
+      T('A wrong call loses its stake. Combo on total winnings: 2 right ×{a}, 3 right ×{b}, 4 right ×{c}. Every correct call also earns 1 Stable Point. You are locked in for 1st, and your horse is the first column.', { a: I.n(String(cm[2])), b: I.n(String(cm[3])), c: I.n(String(cm[4])) });
   }
   $('#board').addEventListener('click', function (e) {
     var R = S.run, b = e.target.closest('button'); if (!b) return;
@@ -2483,25 +2892,25 @@ const Scene = (() => {
   /* --- shop --- */
   function renderShop() {
     var R = S.run, me = R.horses[R.me], sp = E.spendable(R);
-    $('#tiers').innerHTML = 'Rarity odds this stop: ' + E.tierOdds(R).map(function (t) {
-      return '<span class="t-' + t.tier + '"><b>' + E.TIER_NAME[t.tier] + '</b> ' + Math.round(t.pct) + '%</span>';
+    $('#tiers').innerHTML = T('Rarity odds this stop: ') + E.tierOdds(R).map(function (o) {
+      return '<span class="t-' + o.tier + '"><b>' + T(E.TIER_NAME[o.tier]) + '</b> ' + Math.round(o.pct) + '%</span>';
     }).join('');
     $('#offers').innerHTML = R.shop.map(function (o, idx) {
       var u = E.upgradeById(o.id), price = E.priceOf(R, o.id), short = sp < price;
-      var own = 'Owned ' + E.owned(R, o.id) + '/' + u.max;
-      return '<article class="offer s' + R.me + ' t-' + u.tier + (o.sold ? ' sold' : '') + '"><div class="otop"><span class="tag">' + E.TIER_NAME[u.tier] + '</span><span class="own">' + own + '</span></div>' +
-        '<h4>' + u.name + '</h4><span class="kindlbl">' + E.KIND_LABEL[u.kind] + '</span><p>' + u.blurb + '</p><div class="obuy"><span class="price' + (short && !o.sold ? ' short' : '') + '">' + money(price) + '</span>' +
-        '<button type="button" class="btn small primary" data-buy="' + idx + '"' + (o.sold || short ? ' disabled' : '') + '>' + (o.sold ? 'Bought' : 'Buy') + '</button></div></article>';
+      var own = T('Owned {n}/{m}', { n: E.owned(R, o.id), m: u.max });
+      return '<article class="offer s' + R.me + ' t-' + u.tier + (o.sold ? ' sold' : '') + '"><div class="otop"><span class="tag">' + T(E.TIER_NAME[u.tier]) + '</span><span class="own">' + own + '</span></div>' +
+        '<h4>' + T(u.name) + '</h4><span class="kindlbl">' + T(E.KIND_LABEL[u.kind]) + '</span><p>' + T(u.blurb) + '</p><div class="obuy"><span class="price' + (short && !o.sold ? ' short' : '') + '">' + money(price) + '</span>' +
+        '<button type="button" class="btn small primary" data-buy="' + idx + '"' + (o.sold || short ? ' disabled' : '') + '>' + (o.sold ? T('Bought') : T('Buy')) + '</button></div></article>';
     }).join('');
     var rc = E.rerollCost(R), rb = $('#reroll');
-    rb.textContent = rc === 0 ? 'Reroll (free)' : 'Reroll ' + money(rc);
+    rb.textContent = rc === 0 ? T('Reroll (free)') : T('Reroll {m}', { m: money(rc) });
     rb.disabled = sp < rc;
   }
   function renderKit() {
     var R = S.run, me = R.horses[R.me], chips = [];
-    E.UPGRADES.forEach(function (u) { var n = E.cnt(me, u.id); if (n) chips.push('<span class="t-' + u.tier + '">' + u.name + (n > 1 ? ' ×' + n : '') + '</span>'); });
-    E.UPGRADES.forEach(function (u) { if (u.kind === 'lap' && R.queue[u.id]) chips.push('<span class="q t-' + u.tier + '">Next lap: ' + u.name + (R.queue[u.id] > 1 ? ' ×' + R.queue[u.id] : '') + '</span>'); });
-    $('#kit').innerHTML = chips.length ? chips.join('') : '<span class="dim">No upgrades yet.</span>';
+    E.UPGRADES.forEach(function (u) { var n = E.cnt(me, u.id); if (n) chips.push('<span class="t-' + u.tier + '">' + T(u.name) + (n > 1 ? ' ×' + n : '') + '</span>'); });
+    E.UPGRADES.forEach(function (u) { if (u.kind === 'lap' && R.queue[u.id]) chips.push('<span class="q t-' + u.tier + '">' + T('Next lap: ') + T(u.name) + (R.queue[u.id] > 1 ? ' ×' + R.queue[u.id] : '') + '</span>'); });
+    $('#kit').innerHTML = chips.length ? chips.join('') : '<span class="dim">' + T('No upgrades yet.') + '</span>';
   }
   $('#offers').addEventListener('click', function (e) {
     var b = e.target.closest('[data-buy]'); if (!b) return;
@@ -2513,29 +2922,29 @@ const Scene = (() => {
   /* --- card table: higher or lower --- */
   function mini(c, hidden) {
     if (hidden) return '<div class="mc q"></div>';
-    return '<div class="mc s' + c.s + '"><b>' + E.label({ r: c.r }) + '</b><i>' + SUITS[c.s].glyph + '</i></div>';
+    return '<div class="mc s' + c.s + '"><b>' + lab({ r: c.r }) + '</b><i>' + SUITS[c.s].glyph + '</i></div>';
   }
   var TSTAKES = [10, 25, 50];
   function renderTable() {
     var R = S.run, t = R.table, el = $('#table'), av = E.spendable(R);
-    $('#table-hint').textContent = 'Ties lose · ' + (CFG.tableLimit - t.hands) + ' hand' + (CFG.tableLimit - t.hands === 1 ? '' : 's') + ' left this stop';
+    $('#table-hint').textContent = T('Ties lose · ') + TP(CFG.tableLimit - t.hands, '{n} hand left this stop', '{n} hands left this stop');
     var html = '';
     if (t.cur) {
       var od = E.tableOdds(t.cur.r);
       html = '<div class="tcards">' + mini(t.cur) + mini(null, true) + '</div><div class="tctl">' +
-        '<button type="button" class="btn small primary" data-tg="higher"' + (od.higher ? '' : ' disabled') + '>Higher ' + (od.higher ? odds(od.higher) : '') + '</button>' +
-        '<button type="button" class="btn small primary" data-tg="lower"' + (od.lower ? '' : ' disabled') + '>Lower ' + (od.lower ? odds(od.lower) : '') + '</button>' +
-        '<span class="dim mono">' + money(t.cur.stake) + ' at stake</span></div>';
+        '<button type="button" class="btn small primary" data-tg="higher"' + (od.higher ? '' : ' disabled') + '>' + T('Higher') + ' ' + (od.higher ? odds(od.higher) : '') + '</button>' +
+        '<button type="button" class="btn small primary" data-tg="lower"' + (od.lower ? '' : ' disabled') + '>' + T('Lower') + ' ' + (od.lower ? odds(od.lower) : '') + '</button>' +
+        '<span class="dim mono">' + T('{m} at stake', { m: money(t.cur.stake) }) + '</span></div>';
     } else {
       var opts = TSTAKES.filter(function (s) { return s <= av; });
       if (opts.length && opts.indexOf(S.tstake) < 0) S.tstake = opts[opts.length - 1];
       var can = t.hands < CFG.tableLimit && opts.length > 0;
       html = '<div class="tcards">' + (t.last ? mini(t.last.first) + mini(t.last.second) : mini(null, true) + mini(null, true)) + '</div><div class="tctl">' +
-        '<button type="button" class="btn small" data-tstake' + (can && opts.length > 1 ? '' : ' disabled') + '>Stake ' + money(S.tstake) + '</button>' +
-        '<button type="button" class="btn small primary" data-deal' + (can ? '' : ' disabled') + '>Deal</button></div>';
-      if (t.last) html += '<div class="tmsg">Second card was ' + (t.last.second.r > t.last.first.r ? 'higher' : t.last.second.r < t.last.first.r ? 'lower' : 'a tie') + '. You called ' + t.last.dir + ': ' +
-        (t.last.win ? '<b class="win">won ' + money(t.last.pay - t.last.stake, true) + '</b>' : '<b class="lose">lost ' + money(t.last.stake) + '</b>') + '.</div>';
-      else html += '<div class="tmsg">A card is dealt face up. Call whether the next one is higher or lower. The payout follows the real chance.</div>';
+        '<button type="button" class="btn small" data-tstake' + (can && opts.length > 1 ? '' : ' disabled') + '>' + T('Stake {m}', { m: money(S.tstake) }) + '</button>' +
+        '<button type="button" class="btn small primary" data-deal' + (can ? '' : ' disabled') + '>' + T('Deal') + '</button></div>';
+      if (t.last) html += '<div class="tmsg">' + T('Second card was {w}. You called {d}: ', { w: T(t.last.second.r > t.last.first.r ? 'higher' : t.last.second.r < t.last.first.r ? 'lower' : 'a tie'), d: T(t.last.dir) }) +
+        (t.last.win ? '<b class="win">' + T('won {m}', { m: money(t.last.pay - t.last.stake, true) }) + '</b>' : '<b class="lose">' + T('lost {m}', { m: money(t.last.stake) }) + '</b>') + '.</div>';
+      else html += '<div class="tmsg">' + T('A card is dealt face up. Call whether the next one is higher or lower. The payout follows the real chance.') + '</div>';
     }
     el.innerHTML = html;
   }
@@ -2556,12 +2965,12 @@ const Scene = (() => {
     var nb = $('#netb'); if (nb) FX.countUp(nb, net, 1100, '$', true);
     if (res.place === 1) { FX.confetti(w / 2, h * 0.28, 90); FX.shake(1); }
     if (res.hits > 0) FX.coins(w * 0.3, h * 0.45, 8 + res.hits * 8);
-    if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? 'WINNER' : 'NICE LAP');
-    else if (res.place === 1) FX.banner('1ST PLACE', null, 'big');
+    if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? T('WINNER') : T('NICE LAP'));
+    else if (res.place === 1) FX.banner(T('1ST PLACE'), null, 'big');
   }
   function celebrateOver() {
     var r = S.run.result;
-    if (r.champion) { FX.banner('CHAMPION', null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
+    if (r.champion) { FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
     else if (r.rank === 2) FX.confetti(innerWidth / 2, innerHeight * 0.3, 50);
   }
 
@@ -2569,35 +2978,35 @@ const Scene = (() => {
   function renderOver() {
     var R = S.run, r = R.result;
     if (!S.recorded) { M.record(S.meta, r.sp, r.champion, r.points); M.save(S.meta); S.recorded = true; }
-    var t = $('#over-rank');
-    t.textContent = r.champion ? 'Champion' : ord(r.rank) + ' overall';
-    t.style.color = r.champion ? 'var(--gold)' : 'var(--ink)';
-    $('#over-sub').textContent = r.champion ? 'Your suit took the run after ' + R.laps + ' laps.' : SUITS[r.order[0]].name + ' took the run after ' + R.laps + ' laps.';
+    var ot = $('#over-rank');
+    ot.textContent = r.champion ? T('Champion') : T('{o} overall', { o: ord(r.rank) });
+    ot.style.color = r.champion ? 'var(--gold)' : 'var(--ink)';
+    $('#over-sub').textContent = r.champion ? T('Your suit took the run after {n} laps.', { n: R.laps }) : T('{s} took the run after {n} laps.', { s: sn(r.order[0]), n: R.laps });
     $('#over-standings').innerHTML = r.order.map(function (i, k) {
-      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + ord(k + 1) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + SUITS[i].name + (i === R.me ? ' <span class="dim">(you)</span>' : '') + '</td><td class="num">' + R.horses[i].points + '</td></tr>';
+      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + ord(k + 1) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + '</td><td class="num">' + R.horses[i].points + '</td></tr>';
     }).join('');
-    var rows = [['Lap points', r.points]];
-    if (r.bonus) rows.push([r.rank === 1 ? 'Champion bonus' : 'Runner-up bonus', r.bonus]);
-    rows.push(['Correct calls', r.correct]);
+    var rows = [[T('Lap points'), r.points]];
+    if (r.bonus) rows.push([r.rank === 1 ? T('Champion bonus') : T('Runner-up bonus'), r.bonus]);
+    rows.push([T('Correct calls'), r.correct]);
     var extra = r.sp - (r.points + r.bonus + r.correct);
-    if (extra > 0) rows.push(['Winner’s Purse', extra]);
+    if (extra > 0) rows.push([T('Winner’s Purse'), extra]);
     $('#over-stmt').innerHTML = rows.map(function (x) { return '<div class="row"><span>' + x[0] + '</span><b class="pos">+' + x[1] + '</b></div>'; }).join('') +
-      '<div class="row total"><span>Stable Points</span><b class="gold">+' + r.sp + '</b></div>';
-    $('#over-forfeit').innerHTML = r.forfeited > 0 ? 'Unspent run cash <s>' + money(r.forfeited) + '</s> is lost. Run cash never carries over.' : 'Run cash never carries over.';
+      '<div class="row total"><span>' + T('Stable Points') + '</span><b class="gold">+' + r.sp + '</b></div>';
+    $('#over-forfeit').innerHTML = r.forfeited > 0 ? T('Unspent run cash <s>{m}</s> is lost. Run cash never carries over.', { m: money(r.forfeited) }) : T('Run cash never carries over.');
   }
 
   /* ---------- the Stable ---------- */
   function renderStable() {
-    $('#stable-sp').textContent = S.meta.sp + ' SP';
+    $('#stable-sp').textContent = T('{n} SP', { n: S.meta.sp });
     $('#perks').innerHTML = M.ITEMS.map(function (it) {
       var lv = M.level(S.meta, it.id), max = M.maxOf(it), cost = M.costOf(S.meta, it.id);
       var pips = ''; for (var k = 0; k < max; k++) pips += '<i class="' + (k < lv ? 'on' : '') + '"></i>';
-      return '<article class="perk"><h4>' + it.name + '</h4><p>' + it.blurb + '</p><div class="pips" aria-hidden="true">' + pips + '</div>' +
-        '<div class="row"><span class="lv">Level ' + lv + ' / ' + max + '</span>' +
-        (cost == null ? '<button type="button" class="btn small" disabled>Maxed</button>' :
-          '<button type="button" class="btn small primary" data-perk="' + it.id + '"' + (S.meta.sp < cost ? ' disabled' : '') + '>Buy · ' + cost + ' SP</button>') + '</div></article>';
+      return '<article class="perk"><h4>' + T(it.name) + '</h4><p>' + T(it.blurb) + '</p><div class="pips" aria-hidden="true">' + pips + '</div>' +
+        '<div class="row"><span class="lv">' + T('Level {n} / {m}', { n: lv, m: max }) + '</span>' +
+        (cost == null ? '<button type="button" class="btn small" disabled>' + T('Maxed') + '</button>' :
+          '<button type="button" class="btn small primary" data-perk="' + it.id + '"' + (S.meta.sp < cost ? ' disabled' : '') + '>' + T('Buy · {c} SP', { c: cost }) + '</button>') + '</div></article>';
     }).join('');
-    $('#resetMeta').textContent = S.resetArm ? 'Really reset everything?' : 'Reset all progress';
+    $('#resetMeta').textContent = S.resetArm ? T('Really reset everything?') : T('Reset all progress');
   }
   onEnter.stable = renderStable;
   $('#perks').addEventListener('click', function (e) {
@@ -2612,6 +3021,8 @@ const Scene = (() => {
   /* ---------- rules ---------- */
   function buildRules() {
     var C = CFG, tp = C.tierPrice;
+    var alt = I.rules[I.lang];
+    if (alt) { $('#rules').innerHTML = alt(C); return; }
     $('#rules').innerHTML =
       '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 10 cards per suit, identical horses, and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
       '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder, but each card is a small push, so races run about a minute. Horses that have finished ignore surges.</p>' +
@@ -2635,7 +3046,7 @@ const Scene = (() => {
       var R = S.run, L = R.lap, ov = $('#ovtxt');
       if (S.gphase === 'countdown') {
         S.cd -= dt;
-        var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : 'GO';
+        var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : T('GO');
         if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; }
         if (S.cd <= 0) { setGamePhase('racing'); S.goT = 0.6; }
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {

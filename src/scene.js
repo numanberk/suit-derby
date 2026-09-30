@@ -23,7 +23,7 @@ const Scene = (() => {
     const r = Math.round(((n >> 16) & 255) * f), g = Math.round(((n >> 8) & 255) * f), b = Math.round((n & 255) * f);
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
-  const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]);
+  const ord = n => (I18n.lang === 'tr' ? n + '.' : n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]));
   const rand = (a, b) => a + Math.random() * (b - a);
 
   function create(canvas, cfg) {
@@ -68,7 +68,7 @@ const Scene = (() => {
     sc.cheer = amt => { sc.crowd = Math.min(1.4, sc.crowd + amt); };
     sc.surge = i => { sc.aura[i] = 1; sc.lines[i] = Math.max(sc.lines[i], 0.45); };
     sc.spur = i => { sc.aura[i] = 1.4; sc.lines[i] = 0.9; sc.cheer(0.12); sc.ring(i, col[i]); };
-    sc.stumble = i => { sc.tilt[i] = 1; sc.say(i, 'OOPS', '#f07272'); };
+    sc.stumble = i => { sc.tilt[i] = 1; sc.say(i, I18n.t('OOPS'), '#f07272'); };
     sc.say = (i, text, color, big) => { sc.texts.push({ i, text, color: color || '#e9cf73', life: 1.3, age: 0, big: !!big }); };
     sc.ring = (i, color) => { sc.parts.push({ k: 'ring', i, color, life: 0.6, age: 0 }); };
     sc.spark = (i, color, n) => {
@@ -218,7 +218,7 @@ const Scene = (() => {
       for (let d = 10; d < lapLen; d += 10) { const x = sx(d); if (x > 10 && x < W - 10) ctx.fillText(String(Math.round(d / lapLen * 100)) + '%', x, yT + 10); }
       // start line
       const s0 = sx(0);
-      if (s0 > -20 && s0 < W + 20) { ctx.fillStyle = '#ece8da'; ctx.fillRect(s0 - 2, yT, 4, yB - yT); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '700 10px JetBrains Mono, monospace'; ctx.fillText('START', s0 + 26, yT + 22); }
+      if (s0 > -20 && s0 < W + 20) { ctx.fillStyle = '#ece8da'; ctx.fillRect(s0 - 2, yT, 4, yB - yT); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '700 10px JetBrains Mono, monospace'; ctx.fillText(I18n.t('START'), s0 + 26, yT + 22); }
       // finish
       const sf = sx(lapLen);
       if (sf > -40 && sf < W + 40) {
@@ -226,7 +226,7 @@ const Scene = (() => {
         for (let y = yT, n = 0; y < yB; y += cs, n++) for (let c = 0; c < 2; c++) { ctx.fillStyle = (n + c) % 2 ? '#ece8da' : '#131810'; ctx.fillRect(sf + c * cs, y, cs, Math.min(cs, yB - y)); }
         ctx.fillStyle = '#e9cf73'; ctx.fillRect(sf - 3, yT - 26, 4, 26); ctx.fillRect(sf + 2 * cs - 1, yT - 26, 4, 26);
         ctx.fillRect(sf - 3, yT - 30, 2 * cs + 8, 7);
-        ctx.fillStyle = DARK; ctx.font = '800 8px JetBrains Mono, monospace'; ctx.fillText('FINISH', sf + cs, yT - 24);
+        ctx.fillStyle = DARK; ctx.font = '800 8px JetBrains Mono, monospace'; ctx.fillText(I18n.t('FINISH'), sf + cs, yT - 24);
         ctx.fillStyle = 'rgba(233,207,115,.12)'; ctx.fillRect(sf + 2 * cs, yT, 80, yB - yT);
       }
 
@@ -361,7 +361,7 @@ const Scene = (() => {
       if (run && run.lap && sc.me >= 0) {
         const L = g[3];
         ctx.fillStyle = col[sc.me]; ctx.font = '800 9px JetBrains Mono, monospace'; ctx.textAlign = 'left';
-        ctx.fillText('YOU', 58, L.top + 11);
+        ctx.fillText(I18n.t('YOU'), 58, L.top + 11);
       }
 
       // foreground rail with fast-moving posts (sells the speed)

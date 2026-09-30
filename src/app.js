@@ -6,7 +6,9 @@
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var VARS = ['--hearts', '--diamonds', '--clubs', '--spades'];
-  var PLACES = ['1st', '2nd', '3rd', '4th'];
+  var I = I18n, T = I.t, TP = I.tp;
+  function f1(x) { return I.n(x.toFixed(1)); }
+  I.init();
 
   var S = {
     screen: 'menu', me: 0, laps: 5, run: null, meta: M.load(),
@@ -15,13 +17,15 @@
   };
 
   function money(n, sign) {
-    var a = Math.abs(Math.round(n)).toLocaleString('en-US');
+    var a = Math.abs(Math.round(n)).toLocaleString(I.locale());
     if (n < 0) return '−$' + a;
     return (sign && n > 0 ? '+' : '') + '$' + a;
   }
-  function ord(n) { return n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]); }
-  function fmtT(t) { var m = Math.floor(t / 60); var s = (t - m * 60).toFixed(1); return m + ':' + (s.length < 4 ? '0' : '') + s; }
-  function odds(o) { return '×' + o.toFixed(2); }
+  function ord(n) { return I.lang === 'tr' ? n + '.' : n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]); }
+  function sn(i) { return T(SUITS[i].name); }
+  function lab(c) { var l = E.label(c); return I.lang === 'tr' ? ({ J: 'V', Q: 'K', K: 'P' }[l] || l) : l; }
+  function fmtT(t) { var m = Math.floor(t / 60); var s = (t - m * 60).toFixed(1); return m + ':' + I.n((s.length < 4 ? '0' : '') + s); }
+  function odds(o) { return '×' + I.n(o.toFixed(2)); }
 
   /* ---------- horse markup ---------- */
   function horseSVG(i) {
@@ -61,38 +65,54 @@
   /* ---------- menu ---------- */
   $('#lineup').innerHTML = SUITS.map(function (s, i) { return '<div class="lu s' + i + '">' + horseSVG(i) + '</div>'; }).join('');
   onEnter.menu = function () {
-    $('#menu-sp').textContent = 'Permanent upgrades · ' + S.meta.sp + ' Stable Points';
+    $('#menu-sp').textContent = T('Permanent upgrades · {n} Stable Points', { n: S.meta.sp });
     $('#menu-stats').textContent = S.meta.runs
-      ? S.meta.runs + ' runs · ' + S.meta.champs + ' won · best ' + S.meta.bestPts + ' pts'
-      : 'No runs yet.';
+      ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
+      : T('No runs yet.');
+    renderLang();
   };
+  /* language switch: the choice is saved, and every screen is rebuilt in the new language */
+  function renderLang() {
+    $('#langsw').innerHTML = I.LANGS.map(function (l) {
+      return '<button type="button" data-lang="' + l.id + '" lang="' + l.html + '" aria-pressed="' + (l.id === I.lang) + '">' + l.name + '</button>';
+    }).join('');
+  }
+  $('#langsw').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-lang]'); if (!b || b.dataset.lang === I.lang) return;
+    I.set(b.dataset.lang);
+  });
+  I.onChange(function () {
+    buildSetup(); buildRules(); onEnter.menu();
+    $('#quit').textContent = T('Quit'); $('#pause').textContent = T('Pause');
+    if (S.screen === 'stable') renderStable();
+  });
 
   /* ---------- setup ---------- */
   function buildSetup() {
     $('#picks').innerHTML = SUITS.map(function (s, i) {
       return '<label class="pick s' + i + '"><input type="radio" name="horse" value="' + i + '"' + (i === S.me ? ' checked' : '') + '>' +
-        '<span class="g">' + s.glyph + '</span><span class="n">' + s.name + '</span><span class="you">You</span></label>';
+        '<span class="g">' + s.glyph + '</span><span class="n">' + T(s.name) + '</span><span class="you">' + T('You') + '</span></label>';
     }).join('');
     $('#lapPills').innerHTML = CFG.lapChoices.map(function (n) {
-      return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + n + ' laps</b><span>about ' + Math.round(n * 1.3) + ' minutes</span></label>';
+      return '<label class="pill"><input type="radio" name="laps" value="' + n + '"' + (n === S.laps ? ' checked' : '') + '><b>' + T('{n} laps', { n: n }) + '</b><span>' + T('about {m} minutes', { m: Math.round(n * 1.3) }) + '</span></label>';
     }).join('');
-    $('#picks').addEventListener('change', function (e) { S.me = +e.target.value; });
-    $('#lapPills').addEventListener('change', function (e) { S.laps = +e.target.value; });
   }
+  $('#picks').addEventListener('change', function (e) { S.me = +e.target.value; });
+  $('#lapPills').addEventListener('change', function (e) { S.laps = +e.target.value; });
   onEnter.setup = function () {
     var fx = M.effects(S.meta), bits = [];
-    if (fx.startCash > 90) bits.push('start with ' + money(fx.startCash));
-    if (fx.loaded) bits.push(fx.loaded + ' extra cards in your suit');
-    if (fx.baseSpeed) bits.push('+' + fx.baseSpeed.toFixed(1) + ' cruising speed');
-    if (fx.cashMult > 1) bits.push('+' + Math.round((fx.cashMult - 1) * 100) + '% winnings');
-    if (fx.discount) bits.push(Math.round(fx.discount * 100) + '% cheaper shop');
-    if (fx.slots) bits.push('+' + fx.slots + ' shop slot' + (fx.slots > 1 ? 's' : ''));
-    if (fx.freeRerolls) bits.push(fx.freeRerolls + ' free reroll' + (fx.freeRerolls > 1 ? 's' : ''));
-    if (fx.owners) bits.push('a free starting upgrade');
-    if (fx.luck) bits.push('better shop rarity');
-    if (fx.sharp) bits.push('+' + Math.round(fx.sharp * 100) + '% bet payouts');
-    $('#setup-perks').textContent = 'Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1. ' +
-      (bits.length ? 'Your Stable perks: ' + bits.join(', ') + '.' : 'No Stable perks yet. Finish a run to earn Stable Points.');
+    if (fx.startCash > 90) bits.push(T('start with {m}', { m: money(fx.startCash) }));
+    if (fx.loaded) bits.push(TP(fx.loaded, '{n} extra card in your suit', '{n} extra cards in your suit'));
+    if (fx.baseSpeed) bits.push(T('+{v} cruising speed', { v: f1(fx.baseSpeed) }));
+    if (fx.cashMult > 1) bits.push(T('+{p}% winnings', { p: Math.round((fx.cashMult - 1) * 100) }));
+    if (fx.discount) bits.push(T('{p}% cheaper shop', { p: Math.round(fx.discount * 100) }));
+    if (fx.slots) bits.push(TP(fx.slots, '+{n} shop slot', '+{n} shop slots'));
+    if (fx.freeRerolls) bits.push(TP(fx.freeRerolls, '{n} free reroll', '{n} free rerolls'));
+    if (fx.owners) bits.push(T('a free starting upgrade'));
+    if (fx.luck) bits.push(T('better shop rarity'));
+    if (fx.sharp) bits.push(T('+{p}% bet payouts', { p: Math.round(fx.sharp * 100) }));
+    $('#setup-perks').textContent = T('Every run starts level: 10 cards per suit, identical horses, no rival upgrades before lap 1.') + ' ' +
+      (bits.length ? T('Your Stable perks: {list}.', { list: bits.join(', ') }) : T('No Stable perks yet. Finish a run to earn Stable Points.'));
   };
   $('#startRun').addEventListener('click', function () {
     S.run = E.newRun({ me: S.me, laps: S.laps, meta: M.effects(S.meta) });
@@ -122,13 +142,13 @@
     counts.forEach(function (n, i) { bar.children[i].style.flexGrow = n; bar.children[i].style.flexBasis = '0'; });
     leg.innerHTML = counts.map(function (n, i) {
       return '<span class="s' + i + (i === meIdx ? ' me' : '') + '"><b>' + SUITS[i].glyph + '</b> ' + n + ' · ' + Math.round(n / tot * 100) + '%</span>';
-    }).join('') + '<span>' + tot + ' cards' + (chaos ? ' + ' + chaos + ' chaos' : '') + '</span>';
+    }).join('') + '<span>' + T('{n} cards', { n: tot }) + (chaos ? ' + ' + T('{n} chaos', { n: chaos }) : '') + '</span>';
   }
   function renderPts() {
     var R = S.run;
     $('#pts').innerHTML = R.horses.map(function (h) {
       return '<span class="s' + h.i + (h.i === R.me ? ' me' : '') + '"><b>' + SUITS[h.i].glyph + '</b>' + h.points + '</span>';
-    }).join('') + '<span>pts</span>';
+    }).join('') + '<span>' + T('pts') + '</span>';
   }
   function openHazard() {
     var R = S.run, me = R.horses[R.me], z = R.lap.hz[R.me][me.hzi];
@@ -142,11 +162,11 @@
     sp.disabled = !(live && me.sta >= CFG.spurMin);
     $('#spfill').style.width = pct.toFixed(1) + '%';
     sp.classList.toggle('full', live && pct >= 98);
-    var sub = me.fin ? 'home' : pct >= 98 ? 'FULL CHARGE · surge +' + E.spurPower(me).toFixed(1) : me.sta >= CFG.spurMin ? 'now +' + E.spurPower(me).toFixed(1) + ' · wait for more' : 'charging ' + Math.round(pct) + '%';
+    var sub = me.fin ? T('home') : pct >= 98 ? T('FULL CHARGE · surge +{v}', { v: f1(E.spurPower(me)) }) : me.sta >= CFG.spurMin ? T('now +{v} · wait for more', { v: f1(E.spurPower(me)) }) : T('charging {p}%', { p: Math.round(pct) });
     if (sub !== lastSub) { $('#spsub').textContent = sub; lastSub = sub; }
     var nx = live ? openHazard() : null, br = $('#brace');
     br.disabled = !nx; br.classList.toggle('hot', !!nx);
-    var bs = nx ? 'NOW!' : 'no hazard near';
+    var bs = nx ? T('NOW!') : T('no hazard near');
     if (bs !== lastBsub) { $('#bracesub').textContent = bs; lastBsub = bs; }
     $('#hzcall').hidden = !nx;
     if (nx) $('#hzfill').style.width = (Math.max(0, Math.min(1, 1 - (nx.x - me.pos) / CFG.hzWindow)) * 100).toFixed(1) + '%';
@@ -173,9 +193,9 @@
       b.disabled = !canBet || !o.open || R.cash < S.cstake;
       b.classList.toggle('has', !!st); b.classList.toggle('out', !!o.out); b.classList.toggle('dry', !o.n);
       b.querySelector('.stk').textContent = st ? money(st) : '';
-      b.querySelector('.tag').textContent = o.out ? 'not next' : (o.s === best && o.open ? 'likeliest' : '');
+      b.querySelector('.tag').textContent = o.out ? T('not next') : (o.s === best && o.open ? T('likeliest') : '');
       b.querySelector('.o').textContent = o.p > 0 ? odds(o.odds) : '–';
-      b.querySelector('.p').textContent = pc + '% · ' + o.n + ' left';
+      b.querySelector('.p').textContent = T('{p}% · {n} left', { p: pc, n: o.n });
       b.querySelector('.pb').style.setProperty('--p', pc + '%');
     });
     $$('#chips .sk').forEach(function (c) { var v = +c.dataset.chip; c.setAttribute('aria-pressed', String(v === S.cstake)); c.disabled = R.cash < v; });
@@ -185,9 +205,9 @@
       setTimeout(function () { fb.classList.remove(cls); }, 750);
     }
     var tot = L.bets.reduce(function (x, y) { return x + y; }, 0);
-    $('#betinfo').textContent = tot ? money(tot) + ' on the next card. Pays stake × odds if it lands.' : 'Odds are the exact chance from the cards left. A hit streak fills your Spur.';
+    $('#betinfo').textContent = tot ? T('{m} on the next card. Pays stake × odds if it lands.', { m: money(tot) }) : T('Odds are the exact chance from the cards left. A hit streak fills your Spur.');
     var sk = $('#streak');
-    sk.textContent = L.streak ? 'Streak ×' + L.streak + ' · next hit +' + (Math.min(L.streak + 1, 5) * CFG.streakSta) + ' stamina' : 'Streak 0';
+    sk.textContent = L.streak ? T('Streak ×{n} · next hit +{s} stamina', { n: L.streak, s: Math.min(L.streak + 1, 5) * CFG.streakSta }) : T('Streak 0');
     sk.classList.toggle('on', L.streak > 0);
     $('#rebet').disabled = !canBet || !S.lastBets || !S.lastBets.length || tot > 0;
   }
@@ -215,8 +235,8 @@
     var R = S.run, el = $('#calls'), cs = R.lap.calls;
     if (!cs.length) { el.hidden = true; return; }
     el.hidden = false;
-    el.innerHTML = '<span style="border:0;padding-left:0">Your calls</span>' + cs.map(function (c) {
-      return '<span class="s' + c.horse + ' ' + callState(c) + '">' + PLACES[c.place - 1] + ' <b>' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' ' + money(c.stake) + '</span>';
+    el.innerHTML = '<span style="border:0;padding-left:0">' + T('Your calls') + '</span>' + cs.map(function (c) {
+      return '<span class="s' + c.horse + ' ' + callState(c) + '">' + ord(c.place) + ' <b>' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' ' + money(c.stake) + '</span>';
     }).join('');
   }
   function renderTicker() {
@@ -226,7 +246,7 @@
   }
   function syncHud() {
     var R = S.run, L = R.lap, me = R.horses[R.me];
-    $('#glap').textContent = 'Lap ' + R.lapNo + ' / ' + R.laps;
+    $('#glap').textContent = T('Lap {n} / {m}', { n: R.lapNo, m: R.laps });
     $('#gclock').textContent = fmtT(L.t);
     $('#gcash').textContent = money(R.cash);
     $('#tick').style.transform = 'scaleX(' + Math.min(1, L.drawTimer / CFG.drawEvery).toFixed(3) + ')';
@@ -234,26 +254,26 @@
   }
 
   function showCard(ev) {
-    var c = ev.card, s = c.s, lab = E.label(c), face = $('#face'), chaos = !!c.chaos;
+    var c = ev.card, s = c.s, lb = lab(c), face = $('#face'), chaos = !!c.chaos;
     var col = chaos ? 'var(--gold)' : 'var(' + VARS[s] + ')', g = chaos ? '★' : SUITS[s].glyph;
     face.style.setProperty('--c', col);
     face.className = 'face' + (chaos ? ' chaosface' : '');
-    face.innerHTML = '<span class="cr tl">' + lab + '<i>' + g + '</i></span><span class="mid">' + g + '</span><span class="cr br">' + lab + '<i>' + g + '</i></span>';
+    face.innerHTML = '<span class="cr tl">' + lb + '<i>' + g + '</i></span><span class="mid">' + g + '</span><span class="cr br">' + lb + '<i>' + g + '</i></span>';
     var inner = $('#cardin');
     inner.style.transform = 'rotateY(0deg)';
     if (!reduce && inner.animate) inner.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(0deg)' }], { duration: 400, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    var names = { 11: 'Jack', 12: 'Queen', 13: 'King', 14: 'Ace' };
+    var names = { 11: T('Jack'), 12: T('Queen'), 13: T('King'), 14: T('Ace') };
     var R = S.run, line;
     if (chaos) {
-      $('#dname').textContent = 'Chaos card';
-      line = ev.horse >= 0 ? SUITS[ev.horse].name + ' surges +' + CFG.chaosBoost + '. You collect ' + money(ev.cash, true) + '.' : 'Nobody left to surge. You collect ' + money(ev.cash, true) + '.';
+      $('#dname').textContent = T('Chaos card');
+      line = ev.horse >= 0 ? T('{s} surges +{b}. You collect {m}.', { s: sn(ev.horse), b: CFG.chaosBoost, m: money(ev.cash, true) }) : T('Nobody left to surge. You collect {m}.', { m: money(ev.cash, true) });
     } else {
-      $('#dname').textContent = c.joker ? 'Joker of ' + SUITS[s].name : (names[c.r] || c.r) + ' of ' + SUITS[s].name;
-      if (ev.fin) line = s === R.me ? 'Home already. Dividend ' + money(ev.div, true) + '.' : SUITS[s].name + ' already finished.';
-      else line = SUITS[s].name + ' surges +' + ev.boost.toFixed(1) + (s === R.me ? '. That one is yours.' : '.');
+      $('#dname').textContent = c.joker ? T('Joker of {s}', { s: sn(s) }) : T('{r} of {s}', { r: names[c.r] || c.r, s: sn(s) });
+      if (ev.fin) line = s === R.me ? T('Home already. Dividend {m}.', { m: money(ev.div, true) }) : T('{s} already finished.', { s: sn(s) });
+      else line = T(s === R.me ? '{s} surges +{b}. That one is yours.' : '{s} surges +{b}.', { s: sn(s), b: f1(ev.boost) });
     }
     $('#dline').textContent = line;
-    S.hist.unshift({ s: chaos ? -1 : s, lab: lab });
+    S.hist.unshift({ s: chaos ? -1 : s, lab: lb });
     S.hist = S.hist.slice(0, 10);
     $('#hist').innerHTML = S.hist.map(function (h) { return h.s < 0 ? '<span class="chip" style="--c:var(--gold)">?</span>' : '<span class="chip s' + h.s + '">' + h.lab + SUITS[h.s].glyph + '</span>'; }).join('');
   }
@@ -274,53 +294,53 @@
         if (k === lastCard) showCard(ev);
         surge(ev.horse);
         floatMoney(R.me, money(ev.cash, true));
-        S.ticker.push({ i: -1, text: 'Chaos card' + (ev.horse >= 0 ? ': ' + SUITS[ev.horse].name + ' surges' : '') + ', you collect ' + money(ev.cash) });
+        S.ticker.push({ i: -1, text: ev.horse >= 0 ? T('Chaos card: {s} surges, you collect {m}', { s: sn(ev.horse), m: money(ev.cash) }) : T('Chaos card, you collect {m}', { m: money(ev.cash) }) });
         redraw = true;
       } else if (ev.type === 'bet') {
         S.lastBets = S.roundBets.length ? S.roundBets : S.lastBets; S.roundBets = [];
         redraw = true;
-        if (ev.void) { S.ticker.push({ i: -1, text: 'Chaos card: your next-card bets are refunded' }); return; }
+        if (ev.void) { S.ticker.push({ i: -1, text: T('Chaos card: your next-card bets are refunded') }); return; }
         var pos = suitBtn(ev.suit);
         S.flash = { s: ev.suit, hit: ev.hit };
         if (ev.hit) {
-          S.ticker.push({ i: ev.suit, text: 'Next-card hit ' + odds(ev.odds) + ' · ' + money(ev.net, true) + (ev.streak > 1 ? ' · streak ×' + ev.streak : '') });
+          S.ticker.push({ i: ev.suit, text: T('Next-card hit {o} · {m}', { o: odds(ev.odds), m: money(ev.net, true) }) + (ev.streak > 1 ? T(' · streak ×{n}', { n: ev.streak }) : '') });
           if (!quiet) {
             var tier = FX.win(ev.pay, pos.x, pos.y);
-            if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner('HOT STREAK ×' + ev.streak, null, 'big'); }
+            if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner(T('HOT STREAK ×{n}', { n: ev.streak }), null, 'big'); }
             var a = scene.anchor(R.me, R);
-            if (ev.streak >= 2) { scene.say(R.me, 'STREAK ×' + ev.streak, '#ffe07a'); scene.spur(R.me); }
+            if (ev.streak >= 2) { scene.say(R.me, T('STREAK ×{n}', { n: ev.streak }), '#ffe07a'); scene.spur(R.me); }
             FX.sparks(a.x, a.y, 10 + ev.streak * 3);
             $('#gcash').classList.remove('bump'); void $('#gcash').offsetWidth; $('#gcash').classList.add('bump');
           }
         } else {
-          S.ticker.push({ i: ev.suit, text: 'Next card was ' + SUITS[ev.suit].name + ' · ' + money(ev.net) });
+          S.ticker.push({ i: ev.suit, text: T('Next card was {s} · {m}', { s: sn(ev.suit), m: money(ev.net) }) });
         }
       } else if (ev.type === 'spur') {
         scene.spur(ev.horse);
-        if (ev.horse === R.me) { scene.say(R.me, 'SPUR +' + ev.power.toFixed(1), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: 'Spur at ' + Math.round(ev.pct) + '% stamina: surge +' + ev.power.toFixed(1) }); }
-        else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: 'unleashes a full-charge Spur' });
+        if (ev.horse === R.me) { scene.say(R.me, T('SPUR +{v}', { v: f1(ev.power) }), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: T('Spur at {p}% stamina: surge +{v}', { p: Math.round(ev.pct), v: f1(ev.power) }) }); }
+        else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: T('unleashes a full-charge Spur') });
       } else if (ev.type === 'hz') {
         var me = ev.horse === R.me;
-        if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: 'stumbles over the hazard' }); }
+        if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: T('stumbles over the hazard') }); }
         else if (ev.res === 'perfect') {
-          scene.say(ev.horse, me ? 'PERFECT +' + money(CFG.perfectCash) : 'PERFECT', '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
-          if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: 'perfect jump ' + money(CFG.perfectCash, true) }); }
-        } else if (me) scene.say(R.me, 'CLEAR', '#9ba593');
+          scene.say(ev.horse, me ? T('PERFECT +{m}', { m: money(CFG.perfectCash) }) : T('PERFECT'), '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
+          if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: T('perfect jump {m}', { m: money(CFG.perfectCash, true) }) }); }
+        } else if (me) scene.say(R.me, T('CLEAR'), '#9ba593');
       } else if (ev.type === 'luck') {
-        if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, 'HORSESHOE', '#ffe07a'); S.ticker.push({ i: R.me, text: 'Lucky Horseshoe: bonus surge' }); }
+        if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, T('HORSESHOE'), '#ffe07a'); S.ticker.push({ i: R.me, text: T('Lucky Horseshoe: bonus surge') }); }
         else if (ev.kind === 'jackpot') {
-          surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: 'JACKPOT ' + money(ev.cash, true) });
-          if (!quiet) FX.win(ev.cash, innerWidth / 2, innerHeight * 0.4, 'JACKPOT');
+          surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: T('JACKPOT {m}', { m: money(ev.cash, true) }) });
+          if (!quiet) FX.win(ev.cash, innerWidth / 2, innerHeight * 0.4, T('JACKPOT'));
         }
-        else if (ev.kind === 'coin') S.ticker.push({ i: R.me, text: 'Coin of Fate landed ' + ev.text + ': ' + (ev.text === 'heads' ? '+' + CFG.coinHeads : CFG.coinTails).toString().replace('-', '−') + ' cruising this lap' });
-        else if (ev.kind === 'dice') S.ticker.push({ i: R.me, text: 'Loaded Dice: ' + ev.n + ' extra cards this lap' });
+        else if (ev.kind === 'coin') S.ticker.push({ i: R.me, text: T('Coin of Fate landed {c}: {v} cruising this lap', { c: T(ev.text), v: I.n((ev.text === 'heads' ? '+' + CFG.coinHeads : CFG.coinTails).toString().replace('-', '−')) }) });
+        else if (ev.kind === 'dice') S.ticker.push({ i: R.me, text: T('Loaded Dice: {n} extra cards this lap', { n: ev.n }) });
       } else if (ev.type === 'sabotage') {
-        S.ticker.push({ i: ev.horse, text: 'is sabotaged and surges 40% less this lap' });
+        S.ticker.push({ i: ev.horse, text: T('is sabotaged and surges 40% less this lap') });
       } else if (ev.type === 'finish') {
-        S.ticker.push({ i: ev.horse, text: (ev.horse === R.me ? 'you finish ' : 'finishes ') + ord(ev.place) });
+        S.ticker.push({ i: ev.horse, text: T(ev.horse === R.me ? 'you finish {o}' : 'finishes {o}', { o: ord(ev.place) }) });
         scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
         if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
-        if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner('WINNER', null, 'big'); FX.shake(1); }
+        if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner(T('WINNER'), null, 'big'); FX.shake(1); }
         redraw = true;
       }
     });
@@ -337,9 +357,9 @@
     S.ticker = []; S.hist = []; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
     E.startLap(R);
     scene.setMe(R.me); scene.reset(); $('#hzcall').hidden = true;
-    $('#hist').innerHTML = ''; $('#dname').textContent = 'Shuffling'; $('#dline').textContent = 'First card comes out soon.';
+    $('#hist').innerHTML = ''; $('#dname').textContent = T('Shuffling'); $('#dline').textContent = T('First card comes out soon.');
     $('#face').className = 'face'; $('#cardin').style.transform = 'rotateY(180deg)';
-    $('#pause').textContent = 'Pause';
+    $('#pause').textContent = T('Pause');
     go('game');
     measure(); scene.setMe(R.me); scene.reset();
     handleEvents();
@@ -364,8 +384,8 @@
     if (b.dataset.sp) { S.speed = +b.dataset.sp; setSpeedUI(); }
     else if (b.id === 'pause') {
       if (S.gphase !== 'racing') return;
-      S.paused = !S.paused; b.textContent = S.paused ? 'Resume' : 'Pause';
-      $('#ovtxt').textContent = 'Paused'; $('#ovtxt').className = 'big sm'; $('#overlay').hidden = !S.paused;
+      S.paused = !S.paused; b.textContent = S.paused ? T('Resume') : T('Pause');
+      $('#ovtxt').textContent = T('Paused'); $('#ovtxt').className = 'big sm'; $('#overlay').hidden = !S.paused;
       renderBets(); renderActions();
     } else if (b.id === 'skip') {
       if (!R.horses[R.me].fin) return;
@@ -396,49 +416,49 @@
 
   $('#quit').addEventListener('click', function () {
     var b = $('#quit');
-    if (!S.quitArm) { S.quitArm = 1; b.textContent = 'Quit run?'; setTimeout(function () { S.quitArm = 0; b.textContent = 'Quit'; }, 3000); return; }
-    S.quitArm = 0; b.textContent = 'Quit'; S.run = null; S.gphase = 'idle'; go('menu');
+    if (!S.quitArm) { S.quitArm = 1; b.textContent = T('Quit run?'); setTimeout(function () { S.quitArm = 0; b.textContent = T('Quit'); }, 3000); return; }
+    S.quitArm = 0; b.textContent = T('Quit'); S.run = null; S.gphase = 'idle'; go('menu');
   });
 
   /* ---------- pit stop ---------- */
   function renderPit() {
     var R = S.run, res = S.lastRes, me = R.horses[R.me], prep = R.phase === 'prep';
-    $('#pit-title').textContent = prep ? 'Before lap 1' : 'Lap ' + res.lapNo + ' of ' + R.laps + ' complete';
-    $('#pit-stand-h').textContent = prep ? 'On the line' : 'Championship';
+    $('#pit-title').textContent = prep ? T('Before lap 1') : T('Lap {n} of {m} complete', { n: res.lapNo, m: R.laps });
+    $('#pit-stand-h').textContent = prep ? T('On the line') : T('Championship');
     var pl = $('#pit-place'), stmt = $('#pit-stmt');
     if (prep) {
-      pl.textContent = 'Level start'; pl.style.color = 'var(--ink)';
-      stmt.innerHTML = '<p class="note" style="margin:0">Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.</p>';
+      pl.textContent = T('Level start'); pl.style.color = 'var(--ink)';
+      stmt.innerHTML = '<p class="note" style="margin:0">' + T('Every suit has the same 10 cards and the same horse. Nobody has an upgrade yet, so the odds below are even. Call the order and place your first bets, then start the lap.') + '</p>';
     } else {
-      pl.textContent = ord(res.place) + ' this lap'; pl.style.color = res.place === 1 ? 'var(--gold)' : 'var(--ink)';
-      var rows = [['Prize', res.prize], [res.secs > 0 ? 'Speed bonus, ' + res.secs.toFixed(1) + 's under par' : 'Speed bonus, ' + Math.abs(res.secs).toFixed(1) + 's over par', res.bonus],
-        ['Dividends, ' + res.divCount + (res.divCount === 1 ? ' card' : ' cards'), res.divs]];
-      if (res.interest) rows.push(['Interest', res.interest]);
-      if (res.penny) rows.push(['Lucky Penny', res.penny]);
+      pl.textContent = T('{o} this lap', { o: ord(res.place) }); pl.style.color = res.place === 1 ? 'var(--gold)' : 'var(--ink)';
+      var rows = [[T('Prize'), res.prize], [res.secs > 0 ? T('Speed bonus, {s}s under par', { s: f1(res.secs) }) : T('Speed bonus, {s}s over par', { s: f1(Math.abs(res.secs)) }), res.bonus],
+        [TP(res.divCount, 'Dividends, {n} card', 'Dividends, {n} cards'), res.divs]];
+      if (res.interest) rows.push([T('Interest'), res.interest]);
+      if (res.penny) rows.push([T('Lucky Penny'), res.penny]);
       var hzCash = (res.hz ? res.hz.perfect : 0) * CFG.perfectCash;
-      if (res.hz && (res.hz.perfect + res.hz.clear + res.hz.stumble)) rows.push(['Hazards: ' + res.hz.perfect + ' perfect, ' + res.hz.clear + ' clear, ' + res.hz.stumble + ' stumbled', hzCash]);
-      if (res.windfall - hzCash > 0) rows.push(['Luck windfalls', res.windfall - hzCash]);
+      if (res.hz && (res.hz.perfect + res.hz.clear + res.hz.stumble)) rows.push([T('Hazards: {p} perfect, {c} clear, {s} stumbled', { p: res.hz.perfect, c: res.hz.clear, s: res.hz.stumble }), hzCash]);
+      if (res.windfall - hzCash > 0) rows.push([T('Luck windfalls'), res.windfall - hzCash]);
       var gm = res.gamble;
-      if (gm && gm.n) rows.push(['Next-card bets, ' + gm.hits + ' of ' + gm.n + ' hit' + (gm.best > 1 ? ' (best streak ' + gm.best + ')' : ''), gm.net]);
+      if (gm && gm.n) rows.push([T('Next-card bets, {h} of {n} hit', { h: gm.hits, n: gm.n }) + (gm.best > 1 ? T(' (best streak {n})', { n: gm.best }) : ''), gm.net]);
       var html = rows.map(function (r, k) { return '<div class="row' + (r[1] > 0 ? ' pop' : '') + '" style="animation-delay:' + (k * 0.08) + 's"><span>' + r[0] + '</span><b class="' + (r[1] > 0 ? 'pos' : r[1] < 0 ? 'neg' : 'dim') + '">' + money(r[1], true) + '</b></div>'; }).join('');
       if (res.calls.length) {
-        html += '<div class="row"><span>Bets, ' + res.hits + ' of ' + res.calls.length + ' right' + (res.combo > 1 ? ' (combo ×' + res.combo + ')' : '') + '</span><b class="' + (res.betNet >= 0 ? 'pos' : 'neg') + '">' + money(res.betNet, true) + '</b></div>';
+        html += '<div class="row"><span>' + T('Bets, {h} of {n} right', { h: res.hits, n: res.calls.length }) + (res.combo > 1 ? T(' (combo ×{c})', { c: I.n(String(res.combo)) }) : '') + '</span><b class="' + (res.betNet >= 0 ? 'pos' : 'neg') + '">' + money(res.betNet, true) + '</b></div>';
         html += res.calls.map(function (c) {
-          return '<div class="row sub"><span class="s' + c.horse + '">' + PLACES[c.place - 1] + ' <b style="color:var(--c)">' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' on ' + money(c.stake) + '</span><b class="' + (c.hit ? 'pos' : 'neg') + '">' + (c.hit ? money(c.win, true) : 'miss') + '</b></div>';
+          return '<div class="row sub"><span class="s' + c.horse + '">' + ord(c.place) + ' <b style="color:var(--c)">' + SUITS[c.horse].glyph + '</b> ' + odds(c.odds) + ' ' + T('on {m}', { m: money(c.stake) }) + '</span><b class="' + (c.hit ? 'pos' : 'neg') + '">' + (c.hit ? money(c.win, true) : T('miss')) + '</b></div>';
         }).join('');
       }
       var race = res.total - res.betReturn;
       res.net = race + res.betNet + (gm ? gm.net : 0);
-      html += '<div class="row total"><span>Net this lap</span><b class="gold" id="netb">' + money(res.net, true) + '</b></div>';
+      html += '<div class="row total"><span>' + T('Net this lap') + '</span><b class="gold" id="netb">' + money(res.net, true) + '</b></div>';
       stmt.innerHTML = html;
     }
     var order = E.runOrder(R);
     $('#pit-standings').innerHTML = order.map(function (i, k) {
       var h = R.horses[i], lp = res ? res.order.filter(function (o) { return o.i === i; })[0] : null;
-      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + SUITS[i].name + (i === R.me ? ' <span class="dim">(you)</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
+      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
     }).join('');
     renderRivals();
-    $('#nextLap').textContent = 'Start lap ' + (R.lapNo + 1) + ' of ' + R.laps;
+    $('#nextLap').textContent = T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
     $('#shopclosed').hidden = !prep;
     $('#offers').hidden = prep; $('#tiers').hidden = prep; $('#reroll').hidden = prep;
     renderPitState();
@@ -446,16 +466,16 @@
   function ufLine() {
     var res = S.lastRes;
     if (!res || !res.topUps || !res.topUps.length) return '';
-    return '<p class="uf"><b>Underdog fund</b> (no suit is starved out of the deck): ' + res.topUps.map(function (t) { return SUITS[t.horse].glyph + ' +' + t.n + ' card' + (t.n > 1 ? 's' : ''); }).join(', ') + '.</p>';
+    return '<p class="uf"><b>' + T('Underdog fund') + '</b> ' + T('(no suit is starved out of the deck):') + ' ' + res.topUps.map(function (u) { return SUITS[u.horse].glyph + ' ' + TP(u.n, '+{n} card', '+{n} cards'); }).join(', ') + '.</p>';
   }
   function renderRivals() {
     var R = S.run, box = $('#rivals');
     if (R.phase === 'prep' || !R.rivalLog.length) {
-      box.innerHTML = R.phase === 'prep' ? '' : '<h3 class="lbl">Rivals at the stop</h3><p class="note" style="margin:0">Nobody upgraded this time.</p>' + ufLine();
+      box.innerHTML = R.phase === 'prep' ? '' : '<h3 class="lbl">' + T('Rivals at the stop') + '</h3><p class="note" style="margin:0">' + T('Nobody upgraded this time.') + '</p>' + ufLine();
       return;
     }
-    box.innerHTML = '<h3 class="lbl">Rivals upgraded during the stop</h3><div class="rvlist">' + R.rivalLog.map(function (r) {
-      return '<span class="rv s' + r.horse + ' t-' + r.tier + '"><span class="g">' + SUITS[r.horse].glyph + '</span>' + r.name + ' <em>' + E.TIER_NAME[r.tier] + '</em></span>';
+    box.innerHTML = '<h3 class="lbl">' + T('Rivals upgraded during the stop') + '</h3><div class="rvlist">' + R.rivalLog.map(function (r) {
+      return '<span class="rv s' + r.horse + ' t-' + r.tier + '"><span class="g">' + SUITS[r.horse].glyph + '</span>' + T(r.name) + ' <em>' + T(E.TIER_NAME[r.tier]) + '</em></span>';
     }).join('') + '</div>' + ufLine();
   }
   // everything that changes when cash, odds, bets or offers change
@@ -463,7 +483,7 @@
     var R = S.run, prep = R.phase === 'prep';
     var av = E.spendable(R), rs = E.reserved(R);
     $('#pit-cash').textContent = money(av);
-    $('#pit-cash-sub').textContent = rs ? 'cash ' + money(R.cash) + ' · ' + money(rs) + ' on bets' : 'to spend';
+    $('#pit-cash-sub').textContent = rs ? T('cash {c} · {r} on bets', { c: money(R.cash), r: money(rs) }) : T('to spend');
     renderBoard();
     if (!prep) renderShop();
     renderTable();
@@ -477,20 +497,20 @@
     R.calls.forEach(function (c) { if (c) used[c.h] = true; });
     var ord4 = [R.me].concat([0, 1, 2, 3].filter(function (x) { return x !== R.me; }));
     var html = '<div class="brow bhead"><span></span>' + ord4.map(function (h) {
-      return '<span class="bh s' + h + (h === R.me ? ' you' : '') + '">' + (h === R.me ? 'You' : SUITS[h].name) + '</span>';
+      return '<span class="bh s' + h + (h === R.me ? ' you' : '') + '">' + (h === R.me ? T('You') : sn(h)) + '</span>';
     }).join('') + '<span></span></div>';
     for (var pl = 0; pl < 4; pl++) {
       var c = R.calls[pl];
-      html += '<div class="brow"><span class="bplace">' + PLACES[pl] + (pl === 0 ? '<i class="lockmark" title="Your horse is locked in for 1st">Locked</i>' : '') + '</span>';
+      html += '<div class="brow"><span class="bplace">' + ord(pl + 1) + (pl === 0 ? '<i class="lockmark" title="' + T('Your horse is locked in for 1st') + '">' + T('Locked') + '</i>' : '') + '</span>';
       for (var hi = 0; hi < 4; hi++) {
         var h = ord4[hi];
         var on = c && c.h === h, dis = pl === 0 ? true : (!on && used[h]);
         html += '<button type="button" class="cell s' + h + (on ? ' on' : '') + (h === R.me ? ' mine' : '') + (pl === 0 ? ' locked' : '') + '" data-cell="' + pl + ',' + h + '"' + (dis ? ' disabled' : '') +
-          ' title="' + SUITS[h].name + ' for ' + PLACES[pl] + ': ' + Math.round(q.p[h][pl] * 100) + '% chance"><span class="g">' + SUITS[h].glyph + '</span><span class="o">' + odds(q.o[h][pl]) + '</span></button>';
+          ' title="' + T('{s} for {o}: {p}% chance', { s: sn(h), o: ord(pl + 1), p: Math.round(q.p[h][pl] * 100) }) + '"><span class="g">' + SUITS[h].glyph + '</span><span class="o">' + odds(q.o[h][pl]) + '</span></button>';
       }
       if (c) {
         var win = Math.round(E.callPayout(R, { stake: c.stake, odds: q.o[c.h][pl], place: pl + 1 }, false));
-        html += '<button type="button" class="stakebtn on" data-stake="' + pl + '" title="Change stake">' + money(c.stake) + '<small>wins ' + money(win) + '</small></button>';
+        html += '<button type="button" class="stakebtn on" data-stake="' + pl + '" title="' + T('Change stake') + '">' + money(c.stake) + '<small>' + T('wins {m}', { m: money(win) }) + '</small></button>';
       } else html += '<button type="button" class="stakebtn" disabled>–</button>';
       html += '</div>';
     }
@@ -498,8 +518,8 @@
     var cm = CFG.combo, slam = E.cnt(R.horses[R.me], 'slam');
     if (slam) cm = CFG.comboSlam;
     var n = R.calls.filter(Boolean).length;
-    $('#boardfoot').innerHTML = (n ? '<b>' + money(E.reserved(R)) + '</b> staked on ' + n + ' call' + (n > 1 ? 's' : '') + '. ' : 'You are locked in for 1st. Tap a horse to call 2nd, 3rd and 4th. ') +
-      'A wrong call loses its stake. Combo on total winnings: 2 right ×' + cm[2] + ', 3 right ×' + cm[3] + ', 4 right ×' + cm[4] + '. Every correct call also earns 1 Stable Point. You are locked in for 1st, and your horse is the first column.';
+    $('#boardfoot').innerHTML = (n ? TP(n, '<b>{m}</b> staked on {n} call. ', '<b>{m}</b> staked on {n} calls. ', { m: money(E.reserved(R)) }) : T('You are locked in for 1st. Tap a horse to call 2nd, 3rd and 4th. ')) +
+      T('A wrong call loses its stake. Combo on total winnings: 2 right ×{a}, 3 right ×{b}, 4 right ×{c}. Every correct call also earns 1 Stable Point. You are locked in for 1st, and your horse is the first column.', { a: I.n(String(cm[2])), b: I.n(String(cm[3])), c: I.n(String(cm[4])) });
   }
   $('#board').addEventListener('click', function (e) {
     var R = S.run, b = e.target.closest('button'); if (!b) return;
@@ -513,25 +533,25 @@
   /* --- shop --- */
   function renderShop() {
     var R = S.run, me = R.horses[R.me], sp = E.spendable(R);
-    $('#tiers').innerHTML = 'Rarity odds this stop: ' + E.tierOdds(R).map(function (t) {
-      return '<span class="t-' + t.tier + '"><b>' + E.TIER_NAME[t.tier] + '</b> ' + Math.round(t.pct) + '%</span>';
+    $('#tiers').innerHTML = T('Rarity odds this stop: ') + E.tierOdds(R).map(function (o) {
+      return '<span class="t-' + o.tier + '"><b>' + T(E.TIER_NAME[o.tier]) + '</b> ' + Math.round(o.pct) + '%</span>';
     }).join('');
     $('#offers').innerHTML = R.shop.map(function (o, idx) {
       var u = E.upgradeById(o.id), price = E.priceOf(R, o.id), short = sp < price;
-      var own = 'Owned ' + E.owned(R, o.id) + '/' + u.max;
-      return '<article class="offer s' + R.me + ' t-' + u.tier + (o.sold ? ' sold' : '') + '"><div class="otop"><span class="tag">' + E.TIER_NAME[u.tier] + '</span><span class="own">' + own + '</span></div>' +
-        '<h4>' + u.name + '</h4><span class="kindlbl">' + E.KIND_LABEL[u.kind] + '</span><p>' + u.blurb + '</p><div class="obuy"><span class="price' + (short && !o.sold ? ' short' : '') + '">' + money(price) + '</span>' +
-        '<button type="button" class="btn small primary" data-buy="' + idx + '"' + (o.sold || short ? ' disabled' : '') + '>' + (o.sold ? 'Bought' : 'Buy') + '</button></div></article>';
+      var own = T('Owned {n}/{m}', { n: E.owned(R, o.id), m: u.max });
+      return '<article class="offer s' + R.me + ' t-' + u.tier + (o.sold ? ' sold' : '') + '"><div class="otop"><span class="tag">' + T(E.TIER_NAME[u.tier]) + '</span><span class="own">' + own + '</span></div>' +
+        '<h4>' + T(u.name) + '</h4><span class="kindlbl">' + T(E.KIND_LABEL[u.kind]) + '</span><p>' + T(u.blurb) + '</p><div class="obuy"><span class="price' + (short && !o.sold ? ' short' : '') + '">' + money(price) + '</span>' +
+        '<button type="button" class="btn small primary" data-buy="' + idx + '"' + (o.sold || short ? ' disabled' : '') + '>' + (o.sold ? T('Bought') : T('Buy')) + '</button></div></article>';
     }).join('');
     var rc = E.rerollCost(R), rb = $('#reroll');
-    rb.textContent = rc === 0 ? 'Reroll (free)' : 'Reroll ' + money(rc);
+    rb.textContent = rc === 0 ? T('Reroll (free)') : T('Reroll {m}', { m: money(rc) });
     rb.disabled = sp < rc;
   }
   function renderKit() {
     var R = S.run, me = R.horses[R.me], chips = [];
-    E.UPGRADES.forEach(function (u) { var n = E.cnt(me, u.id); if (n) chips.push('<span class="t-' + u.tier + '">' + u.name + (n > 1 ? ' ×' + n : '') + '</span>'); });
-    E.UPGRADES.forEach(function (u) { if (u.kind === 'lap' && R.queue[u.id]) chips.push('<span class="q t-' + u.tier + '">Next lap: ' + u.name + (R.queue[u.id] > 1 ? ' ×' + R.queue[u.id] : '') + '</span>'); });
-    $('#kit').innerHTML = chips.length ? chips.join('') : '<span class="dim">No upgrades yet.</span>';
+    E.UPGRADES.forEach(function (u) { var n = E.cnt(me, u.id); if (n) chips.push('<span class="t-' + u.tier + '">' + T(u.name) + (n > 1 ? ' ×' + n : '') + '</span>'); });
+    E.UPGRADES.forEach(function (u) { if (u.kind === 'lap' && R.queue[u.id]) chips.push('<span class="q t-' + u.tier + '">' + T('Next lap: ') + T(u.name) + (R.queue[u.id] > 1 ? ' ×' + R.queue[u.id] : '') + '</span>'); });
+    $('#kit').innerHTML = chips.length ? chips.join('') : '<span class="dim">' + T('No upgrades yet.') + '</span>';
   }
   $('#offers').addEventListener('click', function (e) {
     var b = e.target.closest('[data-buy]'); if (!b) return;
@@ -543,29 +563,29 @@
   /* --- card table: higher or lower --- */
   function mini(c, hidden) {
     if (hidden) return '<div class="mc q"></div>';
-    return '<div class="mc s' + c.s + '"><b>' + E.label({ r: c.r }) + '</b><i>' + SUITS[c.s].glyph + '</i></div>';
+    return '<div class="mc s' + c.s + '"><b>' + lab({ r: c.r }) + '</b><i>' + SUITS[c.s].glyph + '</i></div>';
   }
   var TSTAKES = [10, 25, 50];
   function renderTable() {
     var R = S.run, t = R.table, el = $('#table'), av = E.spendable(R);
-    $('#table-hint').textContent = 'Ties lose · ' + (CFG.tableLimit - t.hands) + ' hand' + (CFG.tableLimit - t.hands === 1 ? '' : 's') + ' left this stop';
+    $('#table-hint').textContent = T('Ties lose · ') + TP(CFG.tableLimit - t.hands, '{n} hand left this stop', '{n} hands left this stop');
     var html = '';
     if (t.cur) {
       var od = E.tableOdds(t.cur.r);
       html = '<div class="tcards">' + mini(t.cur) + mini(null, true) + '</div><div class="tctl">' +
-        '<button type="button" class="btn small primary" data-tg="higher"' + (od.higher ? '' : ' disabled') + '>Higher ' + (od.higher ? odds(od.higher) : '') + '</button>' +
-        '<button type="button" class="btn small primary" data-tg="lower"' + (od.lower ? '' : ' disabled') + '>Lower ' + (od.lower ? odds(od.lower) : '') + '</button>' +
-        '<span class="dim mono">' + money(t.cur.stake) + ' at stake</span></div>';
+        '<button type="button" class="btn small primary" data-tg="higher"' + (od.higher ? '' : ' disabled') + '>' + T('Higher') + ' ' + (od.higher ? odds(od.higher) : '') + '</button>' +
+        '<button type="button" class="btn small primary" data-tg="lower"' + (od.lower ? '' : ' disabled') + '>' + T('Lower') + ' ' + (od.lower ? odds(od.lower) : '') + '</button>' +
+        '<span class="dim mono">' + T('{m} at stake', { m: money(t.cur.stake) }) + '</span></div>';
     } else {
       var opts = TSTAKES.filter(function (s) { return s <= av; });
       if (opts.length && opts.indexOf(S.tstake) < 0) S.tstake = opts[opts.length - 1];
       var can = t.hands < CFG.tableLimit && opts.length > 0;
       html = '<div class="tcards">' + (t.last ? mini(t.last.first) + mini(t.last.second) : mini(null, true) + mini(null, true)) + '</div><div class="tctl">' +
-        '<button type="button" class="btn small" data-tstake' + (can && opts.length > 1 ? '' : ' disabled') + '>Stake ' + money(S.tstake) + '</button>' +
-        '<button type="button" class="btn small primary" data-deal' + (can ? '' : ' disabled') + '>Deal</button></div>';
-      if (t.last) html += '<div class="tmsg">Second card was ' + (t.last.second.r > t.last.first.r ? 'higher' : t.last.second.r < t.last.first.r ? 'lower' : 'a tie') + '. You called ' + t.last.dir + ': ' +
-        (t.last.win ? '<b class="win">won ' + money(t.last.pay - t.last.stake, true) + '</b>' : '<b class="lose">lost ' + money(t.last.stake) + '</b>') + '.</div>';
-      else html += '<div class="tmsg">A card is dealt face up. Call whether the next one is higher or lower. The payout follows the real chance.</div>';
+        '<button type="button" class="btn small" data-tstake' + (can && opts.length > 1 ? '' : ' disabled') + '>' + T('Stake {m}', { m: money(S.tstake) }) + '</button>' +
+        '<button type="button" class="btn small primary" data-deal' + (can ? '' : ' disabled') + '>' + T('Deal') + '</button></div>';
+      if (t.last) html += '<div class="tmsg">' + T('Second card was {w}. You called {d}: ', { w: T(t.last.second.r > t.last.first.r ? 'higher' : t.last.second.r < t.last.first.r ? 'lower' : 'a tie'), d: T(t.last.dir) }) +
+        (t.last.win ? '<b class="win">' + T('won {m}', { m: money(t.last.pay - t.last.stake, true) }) + '</b>' : '<b class="lose">' + T('lost {m}', { m: money(t.last.stake) }) + '</b>') + '.</div>';
+      else html += '<div class="tmsg">' + T('A card is dealt face up. Call whether the next one is higher or lower. The payout follows the real chance.') + '</div>';
     }
     el.innerHTML = html;
   }
@@ -586,12 +606,12 @@
     var nb = $('#netb'); if (nb) FX.countUp(nb, net, 1100, '$', true);
     if (res.place === 1) { FX.confetti(w / 2, h * 0.28, 90); FX.shake(1); }
     if (res.hits > 0) FX.coins(w * 0.3, h * 0.45, 8 + res.hits * 8);
-    if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? 'WINNER' : 'NICE LAP');
-    else if (res.place === 1) FX.banner('1ST PLACE', null, 'big');
+    if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? T('WINNER') : T('NICE LAP'));
+    else if (res.place === 1) FX.banner(T('1ST PLACE'), null, 'big');
   }
   function celebrateOver() {
     var r = S.run.result;
-    if (r.champion) { FX.banner('CHAMPION', null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
+    if (r.champion) { FX.banner(T('CHAMPION'), null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
     else if (r.rank === 2) FX.confetti(innerWidth / 2, innerHeight * 0.3, 50);
   }
 
@@ -599,35 +619,35 @@
   function renderOver() {
     var R = S.run, r = R.result;
     if (!S.recorded) { M.record(S.meta, r.sp, r.champion, r.points); M.save(S.meta); S.recorded = true; }
-    var t = $('#over-rank');
-    t.textContent = r.champion ? 'Champion' : ord(r.rank) + ' overall';
-    t.style.color = r.champion ? 'var(--gold)' : 'var(--ink)';
-    $('#over-sub').textContent = r.champion ? 'Your suit took the run after ' + R.laps + ' laps.' : SUITS[r.order[0]].name + ' took the run after ' + R.laps + ' laps.';
+    var ot = $('#over-rank');
+    ot.textContent = r.champion ? T('Champion') : T('{o} overall', { o: ord(r.rank) });
+    ot.style.color = r.champion ? 'var(--gold)' : 'var(--ink)';
+    $('#over-sub').textContent = r.champion ? T('Your suit took the run after {n} laps.', { n: R.laps }) : T('{s} took the run after {n} laps.', { s: sn(r.order[0]), n: R.laps });
     $('#over-standings').innerHTML = r.order.map(function (i, k) {
-      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + ord(k + 1) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + SUITS[i].name + (i === R.me ? ' <span class="dim">(you)</span>' : '') + '</td><td class="num">' + R.horses[i].points + '</td></tr>';
+      return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + ord(k + 1) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + '</td><td class="num">' + R.horses[i].points + '</td></tr>';
     }).join('');
-    var rows = [['Lap points', r.points]];
-    if (r.bonus) rows.push([r.rank === 1 ? 'Champion bonus' : 'Runner-up bonus', r.bonus]);
-    rows.push(['Correct calls', r.correct]);
+    var rows = [[T('Lap points'), r.points]];
+    if (r.bonus) rows.push([r.rank === 1 ? T('Champion bonus') : T('Runner-up bonus'), r.bonus]);
+    rows.push([T('Correct calls'), r.correct]);
     var extra = r.sp - (r.points + r.bonus + r.correct);
-    if (extra > 0) rows.push(['Winner’s Purse', extra]);
+    if (extra > 0) rows.push([T('Winner’s Purse'), extra]);
     $('#over-stmt').innerHTML = rows.map(function (x) { return '<div class="row"><span>' + x[0] + '</span><b class="pos">+' + x[1] + '</b></div>'; }).join('') +
-      '<div class="row total"><span>Stable Points</span><b class="gold">+' + r.sp + '</b></div>';
-    $('#over-forfeit').innerHTML = r.forfeited > 0 ? 'Unspent run cash <s>' + money(r.forfeited) + '</s> is lost. Run cash never carries over.' : 'Run cash never carries over.';
+      '<div class="row total"><span>' + T('Stable Points') + '</span><b class="gold">+' + r.sp + '</b></div>';
+    $('#over-forfeit').innerHTML = r.forfeited > 0 ? T('Unspent run cash <s>{m}</s> is lost. Run cash never carries over.', { m: money(r.forfeited) }) : T('Run cash never carries over.');
   }
 
   /* ---------- the Stable ---------- */
   function renderStable() {
-    $('#stable-sp').textContent = S.meta.sp + ' SP';
+    $('#stable-sp').textContent = T('{n} SP', { n: S.meta.sp });
     $('#perks').innerHTML = M.ITEMS.map(function (it) {
       var lv = M.level(S.meta, it.id), max = M.maxOf(it), cost = M.costOf(S.meta, it.id);
       var pips = ''; for (var k = 0; k < max; k++) pips += '<i class="' + (k < lv ? 'on' : '') + '"></i>';
-      return '<article class="perk"><h4>' + it.name + '</h4><p>' + it.blurb + '</p><div class="pips" aria-hidden="true">' + pips + '</div>' +
-        '<div class="row"><span class="lv">Level ' + lv + ' / ' + max + '</span>' +
-        (cost == null ? '<button type="button" class="btn small" disabled>Maxed</button>' :
-          '<button type="button" class="btn small primary" data-perk="' + it.id + '"' + (S.meta.sp < cost ? ' disabled' : '') + '>Buy · ' + cost + ' SP</button>') + '</div></article>';
+      return '<article class="perk"><h4>' + T(it.name) + '</h4><p>' + T(it.blurb) + '</p><div class="pips" aria-hidden="true">' + pips + '</div>' +
+        '<div class="row"><span class="lv">' + T('Level {n} / {m}', { n: lv, m: max }) + '</span>' +
+        (cost == null ? '<button type="button" class="btn small" disabled>' + T('Maxed') + '</button>' :
+          '<button type="button" class="btn small primary" data-perk="' + it.id + '"' + (S.meta.sp < cost ? ' disabled' : '') + '>' + T('Buy · {c} SP', { c: cost }) + '</button>') + '</div></article>';
     }).join('');
-    $('#resetMeta').textContent = S.resetArm ? 'Really reset everything?' : 'Reset all progress';
+    $('#resetMeta').textContent = S.resetArm ? T('Really reset everything?') : T('Reset all progress');
   }
   onEnter.stable = renderStable;
   $('#perks').addEventListener('click', function (e) {
@@ -642,6 +662,8 @@
   /* ---------- rules ---------- */
   function buildRules() {
     var C = CFG, tp = C.tierPrice;
+    var alt = I.rules[I.lang];
+    if (alt) { $('#rules').innerHTML = alt(C); return; }
     $('#rules').innerHTML =
       '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 10 cards per suit, identical horses, and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
       '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder, but each card is a small push, so races run about a minute. Horses that have finished ignore surges.</p>' +
@@ -665,7 +687,7 @@
       var R = S.run, L = R.lap, ov = $('#ovtxt');
       if (S.gphase === 'countdown') {
         S.cd -= dt;
-        var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : 'GO';
+        var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : T('GO');
         if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; }
         if (S.cd <= 0) { setGamePhase('racing'); S.goT = 0.6; }
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {

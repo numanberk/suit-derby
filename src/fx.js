@@ -103,7 +103,7 @@ const FX = (() => {
     f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
   }
   function countUp(el, to, dur, prefix, sign) {
-    const fmt = v => (v < 0 ? '−' : sign && v > 0 ? '+' : '') + prefix + Math.abs(Math.round(v)).toLocaleString('en-US');
+    const fmt = v => (v < 0 ? '−' : sign && v > 0 ? '+' : '') + prefix + Math.abs(Math.round(v)).toLocaleString(I18n.locale());
     if (reduce) { el.textContent = fmt(to); return; }
     const t0 = performance.now();
     (function step(now) {
@@ -138,7 +138,7 @@ const FX = (() => {
     ring(x, y, tier === 'nice' ? '#ffe07a' : '#ffd95a');
     if (tier !== 'nice') { confetti(x, y, tier === 'big' ? 40 : 90); shake(tier === 'big' ? 1 : tier === 'mega' ? 2 : 3); flash(); }
     if (tier === 'jackpot') confetti(0, 0, 120, { rain: true });
-    if (tier !== 'nice') banner(title || (tier === 'big' ? 'BIG WIN' : tier === 'mega' ? 'MEGA WIN' : 'JACKPOT'), amount, tier);
+    if (tier !== 'nice') banner(title || I18n.t(tier === 'big' ? 'BIG WIN' : tier === 'mega' ? 'MEGA WIN' : 'JACKPOT'), amount, tier);
     return tier;
   }
   return { coins, confetti, sparks, ring, shake, flash, banner, countUp, win, size };
