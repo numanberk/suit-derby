@@ -11,7 +11,7 @@
   var S = {
     screen: 'menu', me: 0, laps: 5, run: null, meta: M.load(),
     gphase: 'idle', speed: 1, paused: false, cd: 0, goT: 0, endDelay: 0,
-    hist: [], ticker: [], quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10
+    hist: [], ticker: [], quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
   };
 
   function money(n, sign) {
@@ -96,44 +96,22 @@
   };
   $('#startRun').addEventListener('click', function () {
     S.run = E.newRun({ me: S.me, laps: S.laps, meta: M.effects(S.meta) });
-    S.recorded = false; S.lastRes = null; S.tstake = 10;
+    S.recorded = false; S.lastRes = null; S.tstake = 10; S.cstake = 10; S.lastBets = null; S.roundBets = [];
     renderPit(); go('pit');
   });
 
-  /* ---------- track ---------- */
-  var lanesEl = $('#lanes'), lanes = [];
-  SUITS.forEach(function (s, i) {
-    var el = document.createElement('div');
-    el.className = 'lane s' + i;
-    el.innerHTML = '<div class="bib"><span class="g">' + s.glyph + '</span><span class="r"></span></div>' +
-      '<div class="run"><div class="finish"></div><div class="rider idle"><div class="aura"></div>' + horseSVG(i) + '</div></div>';
-    lanesEl.appendChild(el);
-    lanes.push({ el: el, run: el.querySelector('.run'), rider: el.querySelector('.rider'), aura: el.querySelector('.aura'), rank: el.querySelector('.r') });
-  });
-  var runW = 600, hw = 72;
-  function measure() { runW = lanes[0].run.clientWidth; hw = lanes[0].rider.offsetWidth || 72; }
+  /* ---------- track: the canvas scene ---------- */
+  var scene = Scene.create($('#stage'), { glyphs: SUITS.map(function (s) { return s.glyph; }), lapLen: CFG.lapLen, lapOrder: E.lapOrder });
+  function measure() { scene.resize(); }
   window.addEventListener('resize', measure);
-
-  function syncTrack() {
+  function renderScene(dt) {
     var R = S.run;
-    if (!R || !R.lap) { lanes.forEach(function (l) { l.rider.style.transform = 'translateX(0)'; }); return; }
-    var order = E.lapOrder(R), L = R.lap;
-    R.horses.forEach(function (h, i) {
-      var l = lanes[i];
-      l.rider.style.transform = 'translateX(' + ((h.pos / CFG.lapLen) * (runW - hw)).toFixed(1) + 'px)';
-      var sp = h.base + h.tb + h.ex;
-      var gp = h.fin ? 1.6 : 1.1 / (1 + (sp - 1.6) * 0.28);
-      gp = Math.max(0.14, gp / (S.gphase === 'racing' ? S.speed : 1));
-      l.rider.style.setProperty('--gp', gp.toFixed(2) + 's');
-      l.rank.textContent = L.t === 0 && h.pos === 0 ? '' : ord(order.indexOf(i) + 1);
-    });
+    scene.update(dt, R, { paused: S.paused, racing: S.gphase === 'racing' || S.gphase === 'ending' });
+    scene.draw(R, {});
   }
   function setGamePhase(p) {
     S.gphase = p;
-    lanes.forEach(function (l) {
-      l.rider.classList.toggle('idle', p !== 'racing' && p !== 'ending');
-      l.rider.classList.toggle('hold', S.paused);
-    });
+    if (S.run && S.run.lap) { renderBets(); renderActions(); }
   }
 
   /* ---------- game HUD ---------- */
@@ -146,26 +124,87 @@
       return '<span class="s' + i + (i === meIdx ? ' me' : '') + '"><b>' + SUITS[i].glyph + '</b> ' + n + ' · ' + Math.round(n / tot * 100) + '%</span>';
     }).join('') + '<span>' + tot + ' cards' + (chaos ? ' + ' + chaos + ' chaos' : '') + '</span>';
   }
-  function renderScout() {
-    var R = S.run, L = R.lap, el = $('#scout');
-    if (!L.scout) { el.hidden = true; return; }
-    el.hidden = false;
-    el.innerHTML = 'Next: ' + E.peek(R, L.scout).map(function (c) {
-      return c.chaos ? '<span class="chip" style="--c:var(--gold)">?</span>' : '<span class="chip s' + c.s + '">' + E.label(c) + SUITS[c.s].glyph + '</span>';
-    }).join('');
-  }
   function renderPts() {
     var R = S.run;
     $('#pts').innerHTML = R.horses.map(function (h) {
       return '<span class="s' + h.i + (h.i === R.me ? ' me' : '') + '"><b>' + SUITS[h.i].glyph + '</b>' + h.points + '</span>';
     }).join('') + '<span>pts</span>';
   }
-  function renderSpur() {
-    var R = S.run, L = R.lap, b = $('#spur');
-    b.hidden = !(L.spurs > 0);
-    $('#spurn').textContent = L.spurs;
-    b.disabled = S.gphase !== 'racing' || S.paused || R.horses[R.me].fin || L.spurs <= 0;
+  function openHazard() {
+    var R = S.run, me = R.horses[R.me], z = R.lap.hz[R.me][me.hzi];
+    return z && z.state === 'open' ? z : null;
   }
+  var lastSub = '', lastBsub = '';
+  function renderActions() {
+    var R = S.run, L = R.lap, me = R.horses[R.me];
+    var live = S.gphase === 'racing' && !S.paused && !me.fin && !L.done;
+    var sp = $('#spur'), pct = Math.max(0, Math.min(100, me.sta));
+    sp.disabled = !(live && me.sta >= CFG.spurMin);
+    $('#spfill').style.width = pct.toFixed(1) + '%';
+    sp.classList.toggle('full', live && pct >= 98);
+    var sub = me.fin ? 'home' : pct >= 98 ? 'FULL CHARGE · surge +' + E.spurPower(me).toFixed(1) : me.sta >= CFG.spurMin ? 'now +' + E.spurPower(me).toFixed(1) + ' · wait for more' : 'charging ' + Math.round(pct) + '%';
+    if (sub !== lastSub) { $('#spsub').textContent = sub; lastSub = sub; }
+    var nx = live ? openHazard() : null, br = $('#brace');
+    br.disabled = !nx; br.classList.toggle('hot', !!nx);
+    var bs = nx ? 'NOW!' : 'no hazard near';
+    if (bs !== lastBsub) { $('#bracesub').textContent = bs; lastBsub = bs; }
+    $('#hzcall').hidden = !nx;
+    if (nx) $('#hzfill').style.width = (Math.max(0, Math.min(1, 1 - (nx.x - me.pos) / CFG.hzWindow)) * 100).toFixed(1) + '%';
+  }
+
+  /* ---------- next-card bets ---------- */
+  var CHIPS = CFG.cardStakes;
+  function renderBets() {
+    var R = S.run, L = R.lap; if (!L) return;
+    var bo = E.betOdds(R), best = -1, bp = 0;
+    var canBet = (S.gphase === 'countdown' || S.gphase === 'racing') && !S.paused && !L.done;
+    bo.forEach(function (o) { if (o.open && o.p > bp) { bp = o.p; best = o.s; } });
+    if (bo.filter(function (o) { return o.open && o.p > bp - 0.001; }).length > 1) best = -1;
+    if (R.cash < S.cstake) { var aff = CHIPS.filter(function (c) { return c <= R.cash; }); if (aff.length) S.cstake = aff[aff.length - 1]; }
+    var box = $('#bets');
+    if (box.children.length !== 4) {
+      box.innerHTML = [0, 1, 2, 3].map(function (i) {
+        return '<button type="button" class="bbtn s' + i + '" data-bet="' + i + '"><span class="stk"></span><span class="tag"></span><span class="g">' + SUITS[i].glyph + '</span><span class="o"></span><span class="p"></span><i class="pb"></i></button>';
+      }).join('');
+      $('#chips').innerHTML = CHIPS.map(function (c) { return '<button type="button" class="sk" data-chip="' + c + '">' + money(c) + '</button>'; }).join('');
+    }
+    bo.forEach(function (o) {
+      var b = box.children[o.s], st = L.bets[o.s], pc = Math.round(o.p * 100);
+      b.disabled = !canBet || !o.open || R.cash < S.cstake;
+      b.classList.toggle('has', !!st); b.classList.toggle('out', !!o.out); b.classList.toggle('dry', !o.n);
+      b.querySelector('.stk').textContent = st ? money(st) : '';
+      b.querySelector('.tag').textContent = o.out ? 'not next' : (o.s === best && o.open ? 'likeliest' : '');
+      b.querySelector('.o').textContent = o.p > 0 ? odds(o.odds) : '–';
+      b.querySelector('.p').textContent = pc + '% · ' + o.n + ' left';
+      b.querySelector('.pb').style.setProperty('--p', pc + '%');
+    });
+    $$('#chips .sk').forEach(function (c) { var v = +c.dataset.chip; c.setAttribute('aria-pressed', String(v === S.cstake)); c.disabled = R.cash < v; });
+    if (S.flash) {
+      var fb = box.children[S.flash.s], cls = S.flash.hit ? 'win' : 'lose'; S.flash = null;
+      fb.classList.remove('win', 'lose'); void fb.offsetWidth; fb.classList.add(cls);
+      setTimeout(function () { fb.classList.remove(cls); }, 750);
+    }
+    var tot = L.bets.reduce(function (x, y) { return x + y; }, 0);
+    $('#betinfo').textContent = tot ? money(tot) + ' on the next card. Pays stake × odds if it lands.' : 'Odds are the exact chance from the cards left. A hit streak fills your Spur.';
+    var sk = $('#streak');
+    sk.textContent = L.streak ? 'Streak ×' + L.streak + ' · next hit +' + (Math.min(L.streak + 1, 5) * CFG.streakSta) + ' stamina' : 'Streak 0';
+    sk.classList.toggle('on', L.streak > 0);
+    $('#rebet').disabled = !canBet || !S.lastBets || !S.lastBets.length || tot > 0;
+  }
+  function placeBet(suit) {
+    var R = S.run;
+    if (S.screen !== 'game' || !R) return false;
+    if (S.gphase !== 'countdown' && S.gphase !== 'racing') return false;
+    if (S.paused) return false;
+    if (E.placeBet(R, suit, S.cstake)) { S.roundBets.push([suit, S.cstake]); renderBets(); syncHud(); return true; }
+    return false;
+  }
+  $('#bets').addEventListener('click', function (e) { var b = e.target.closest('[data-bet]'); if (b) placeBet(+b.dataset.bet); });
+  $('#chips').addEventListener('click', function (e) { var b = e.target.closest('[data-chip]'); if (b) { S.cstake = +b.dataset.chip; renderBets(); } });
+  $('#rebet').addEventListener('click', function () {
+    (S.lastBets || []).forEach(function (x) { S.cstake = x[1]; placeBet(x[0]); });
+  });
+
   function callState(c) {
     var R = S.run, h = R.horses[c.horse];
     if (h.fin) return h.place === c.place ? 'hit' : 'miss';
@@ -218,77 +257,104 @@
     S.hist = S.hist.slice(0, 10);
     $('#hist').innerHTML = S.hist.map(function (h) { return h.s < 0 ? '<span class="chip" style="--c:var(--gold)">?</span>' : '<span class="chip s' + h.s + '">' + h.lab + SUITS[h.s].glyph + '</span>'; }).join('');
   }
-  function surge(i) {
-    if (reduce || i < 0) return;
-    var a = lanes[i].aura;
-    if (a.animate) a.animate([{ opacity: 0.85, transform: 'scale(0.6)' }, { opacity: 0, transform: 'scale(1.9)' }], { duration: 700, easing: 'ease-out' });
-  }
-  function floatMoney(i, txt) {
-    var h = S.run.horses[i], f = document.createElement('div');
-    f.className = 'float'; f.textContent = txt;
-    f.style.left = ((h.pos / CFG.lapLen) * (runW - hw) + hw * 0.4) + 'px'; f.style.top = '2px';
-    lanes[i].run.appendChild(f);
-    var done = function () { if (f.parentNode) f.parentNode.removeChild(f); };
-    if (f.animate && !reduce) { var an = f.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-24px)', opacity: 0 }], { duration: 1200, easing: 'ease-out' }); an.onfinish = done; } else setTimeout(done, 1200);
-  }
+  function surge(i) { if (i >= 0) scene.surge(i); }
+  function floatMoney(i, txt) { scene.say(i, txt, '#e9cf73'); }
+  function suitBtn(s) { var b = document.querySelector('[data-bet="' + s + '"]'); if (!b) return { x: innerWidth / 2, y: innerHeight * 0.6 }; var r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
 
   function handleEvents() {
-    var R = S.run, evs = R.events.splice(0), lastCard = -1, needCalls = false;
+    var R = S.run, evs = R.events.splice(0), lastCard = -1, redraw = false, quiet = S.quiet;
     evs.forEach(function (ev, k) { if (ev.type === 'draw' || ev.type === 'chaos') lastCard = k; });
     evs.forEach(function (ev, k) {
       if (ev.type === 'draw') {
         if (k === lastCard) showCard(ev);
-        surge(ev.horse);
+        surge(ev.horse); scene.cheer(0.06 + ev.boost * 0.012);
         if (ev.div > 0) floatMoney(ev.horse, money(ev.div, true));
+        redraw = true;
       } else if (ev.type === 'chaos') {
         if (k === lastCard) showCard(ev);
         surge(ev.horse);
         floatMoney(R.me, money(ev.cash, true));
         S.ticker.push({ i: -1, text: 'Chaos card' + (ev.horse >= 0 ? ': ' + SUITS[ev.horse].name + ' surges' : '') + ', you collect ' + money(ev.cash) });
+        redraw = true;
+      } else if (ev.type === 'bet') {
+        S.lastBets = S.roundBets.length ? S.roundBets : S.lastBets; S.roundBets = [];
+        redraw = true;
+        if (ev.void) { S.ticker.push({ i: -1, text: 'Chaos card: your next-card bets are refunded' }); return; }
+        var pos = suitBtn(ev.suit);
+        S.flash = { s: ev.suit, hit: ev.hit };
+        if (ev.hit) {
+          S.ticker.push({ i: ev.suit, text: 'Next-card hit ' + odds(ev.odds) + ' · ' + money(ev.net, true) + (ev.streak > 1 ? ' · streak ×' + ev.streak : '') });
+          if (!quiet) {
+            var tier = FX.win(ev.pay, pos.x, pos.y);
+            if (!tier || tier === 'nice') { if (ev.streak >= 3) FX.banner('HOT STREAK ×' + ev.streak, null, 'big'); }
+            var a = scene.anchor(R.me, R);
+            if (ev.streak >= 2) { scene.say(R.me, 'STREAK ×' + ev.streak, '#ffe07a'); scene.spur(R.me); }
+            FX.sparks(a.x, a.y, 10 + ev.streak * 3);
+            $('#gcash').classList.remove('bump'); void $('#gcash').offsetWidth; $('#gcash').classList.add('bump');
+          }
+        } else {
+          S.ticker.push({ i: ev.suit, text: 'Next card was ' + SUITS[ev.suit].name + ' · ' + money(ev.net) });
+        }
+      } else if (ev.type === 'spur') {
+        scene.spur(ev.horse);
+        if (ev.horse === R.me) { scene.say(R.me, 'SPUR +' + ev.power.toFixed(1), '#ffe07a', true); if (!quiet) { var b2 = scene.anchor(R.me, R); FX.ring(b2.x, b2.y, '#ffe07a'); FX.sparks(b2.x, b2.y, 12); } S.ticker.push({ i: R.me, text: 'Spur at ' + Math.round(ev.pct) + '% stamina: surge +' + ev.power.toFixed(1) }); }
+        else if (ev.pct >= 85) S.ticker.push({ i: ev.horse, text: 'unleashes a full-charge Spur' });
+      } else if (ev.type === 'hz') {
+        var me = ev.horse === R.me;
+        if (ev.res === 'stumble') { scene.stumble(ev.horse); if (me) S.ticker.push({ i: R.me, text: 'stumbles over the hazard' }); }
+        else if (ev.res === 'perfect') {
+          scene.say(ev.horse, me ? 'PERFECT +' + money(CFG.perfectCash) : 'PERFECT', '#ffe07a'); scene.spark(ev.horse, '#ffe07a', 16);
+          if (me) { if (!quiet) { var a3 = scene.anchor(R.me, R); FX.win(CFG.perfectCash, a3.x, a3.y); } S.ticker.push({ i: R.me, text: 'perfect jump ' + money(CFG.perfectCash, true) }); }
+        } else if (me) scene.say(R.me, 'CLEAR', '#9ba593');
       } else if (ev.type === 'luck') {
-        if (ev.kind === 'horseshoe') { surge(R.me); S.ticker.push({ i: R.me, text: 'Lucky Horseshoe: bonus surge' }); }
-        else if (ev.kind === 'jackpot') { surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: 'JACKPOT ' + money(ev.cash, true) }); }
+        if (ev.kind === 'horseshoe') { surge(R.me); scene.say(R.me, 'HORSESHOE', '#ffe07a'); S.ticker.push({ i: R.me, text: 'Lucky Horseshoe: bonus surge' }); }
+        else if (ev.kind === 'jackpot') {
+          surge(R.me); floatMoney(R.me, money(ev.cash, true)); S.ticker.push({ i: -1, text: 'JACKPOT ' + money(ev.cash, true) });
+          if (!quiet) FX.win(ev.cash, innerWidth / 2, innerHeight * 0.4, 'JACKPOT');
+        }
         else if (ev.kind === 'coin') S.ticker.push({ i: R.me, text: 'Coin of Fate landed ' + ev.text + ': ' + (ev.text === 'heads' ? '+' + CFG.coinHeads : CFG.coinTails).toString().replace('-', '−') + ' cruising this lap' });
         else if (ev.kind === 'dice') S.ticker.push({ i: R.me, text: 'Loaded Dice: ' + ev.n + ' extra cards this lap' });
       } else if (ev.type === 'sabotage') {
         S.ticker.push({ i: ev.horse, text: 'is sabotaged and surges 40% less this lap' });
-      } else if (ev.type === 'spur') {
-        surge(R.me);
       } else if (ev.type === 'finish') {
         S.ticker.push({ i: ev.horse, text: (ev.horse === R.me ? 'you finish ' : 'finishes ') + ord(ev.place) });
-        needCalls = true;
+        scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
+        if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
+        if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner('WINNER', null, 'big'); FX.shake(1); }
+        redraw = true;
       }
     });
-    if (evs.some(function (e) { return e.type === 'draw' || e.type === 'chaos'; })) {
-      renderDeck('#deckbar', '#deckleg', E.deckCounts(R, true), R.me, E.chaosCount(R, true)); renderScout();
+    if (redraw) {
+      renderDeck('#deckbar', '#deckleg', E.deckCounts(R, true), R.me, E.chaosCount(R, true));
+      renderBets(); renderCalls(); syncHud();
     }
-    if (needCalls) renderCalls();
     renderTicker();
   }
 
   /* ---------- lap flow ---------- */
   function beginLap() {
     var R = S.run;
-    S.ticker = []; S.hist = []; S.paused = false; S.endDelay = 0;
+    S.ticker = []; S.hist = []; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
     E.startLap(R);
+    scene.setMe(R.me); scene.reset(); $('#hzcall').hidden = true;
     $('#hist').innerHTML = ''; $('#dname').textContent = 'Shuffling'; $('#dline').textContent = 'First card comes out soon.';
     $('#face').className = 'face'; $('#cardin').style.transform = 'rotateY(180deg)';
     $('#pause').textContent = 'Pause';
-    lanes.forEach(function (l, i) { l.el.classList.toggle('me', i === R.me); });
     go('game');
+    measure(); scene.setMe(R.me); scene.reset();
     handleEvents();
-    renderDeck('#deckbar', '#deckleg', E.deckCounts(R, true), R.me, E.chaosCount(R, true)); renderScout(); renderPts(); renderCalls(); renderTicker();
-    measure(); syncTrack(); syncHud(); setSpeedUI();
+    renderDeck('#deckbar', '#deckleg', E.deckCounts(R, true), R.me, E.chaosCount(R, true)); renderPts(); renderCalls(); renderTicker();
+    syncHud(); setSpeedUI();
     S.cd = 2.4; S.goT = 0;
     $('#overlay').hidden = false;
-    setGamePhase('countdown'); renderSpur();
+    setGamePhase('countdown'); renderBets(); renderActions();
   }
   function finishLap() {
     var R = S.run;
     S.lastRes = E.endLap(R);
     setGamePhase('idle');
-    if (R.phase === 'over') { renderOver(); go('over'); }
-    else { renderPit(); go('pit'); }
+    if (R.phase === 'over') { renderOver(); go('over'); celebrateOver(); }
+    else { renderPit(); go('pit'); celebrate(S.lastRes); }
   }
   function setSpeedUI() { $$('[data-sp]').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.sp === S.speed)); }); }
 
@@ -300,26 +366,38 @@
       if (S.gphase !== 'racing') return;
       S.paused = !S.paused; b.textContent = S.paused ? 'Resume' : 'Pause';
       $('#ovtxt').textContent = 'Paused'; $('#ovtxt').className = 'big sm'; $('#overlay').hidden = !S.paused;
-      lanes.forEach(function (l) { l.rider.classList.toggle('hold', S.paused); });
+      renderBets(); renderActions();
     } else if (b.id === 'skip') {
       if (!R.horses[R.me].fin) return;
       var g = 0; while (!R.lap.done && g++ < 5000) E.stepLap(R, 0.1);
-      handleEvents(); syncTrack(); syncHud(); renderCalls();
+      S.quiet = true; handleEvents(); S.quiet = false; syncHud(); renderCalls();
       S.endDelay = 0.4; setGamePhase('ending');
     }
   });
   function doSpur() {
     var R = S.run;
     if (S.screen !== 'game' || S.gphase !== 'racing' || S.paused) return;
-    if (E.spur(R)) { handleEvents(); renderSpur(); }
+    if (E.spur(R)) { handleEvents(); renderActions(); }
+  }
+  function doBrace() {
+    var R = S.run;
+    if (S.screen !== 'game' || S.gphase !== 'racing' || S.paused) return;
+    if (E.brace(R)) { handleEvents(); renderActions(); }
   }
   $('#spur').addEventListener('click', doSpur);
-  document.addEventListener('keydown', function (e) { if (e.code === 'Space' && S.screen === 'game') { e.preventDefault(); doSpur(); } });
+  $('#brace').addEventListener('click', doBrace);
+  document.addEventListener('keydown', function (e) {
+    if (S.screen !== 'game' || e.repeat) return;
+    if (e.code === 'Space') { e.preventDefault(); if (S.run && openHazard()) doBrace(); else doSpur(); }
+    else if (e.code === 'KeyB') doBrace();
+    else if (e.code === 'KeyS') doSpur();
+    else if (e.code >= 'Digit1' && e.code <= 'Digit4') placeBet(+e.code.slice(5) - 1);
+  });
 
   $('#quit').addEventListener('click', function () {
     var b = $('#quit');
     if (!S.quitArm) { S.quitArm = 1; b.textContent = 'Quit run?'; setTimeout(function () { S.quitArm = 0; b.textContent = 'Quit'; }, 3000); return; }
-    S.quitArm = 0; b.textContent = 'Quit'; S.run = null; setGamePhase('idle'); go('menu');
+    S.quitArm = 0; b.textContent = 'Quit'; S.run = null; S.gphase = 'idle'; go('menu');
   });
 
   /* ---------- pit stop ---------- */
@@ -337,8 +415,12 @@
         ['Dividends, ' + res.divCount + (res.divCount === 1 ? ' card' : ' cards'), res.divs]];
       if (res.interest) rows.push(['Interest', res.interest]);
       if (res.penny) rows.push(['Lucky Penny', res.penny]);
-      if (res.windfall) rows.push(['Luck windfalls', res.windfall]);
-      var html = rows.map(function (r) { return '<div class="row"><span>' + r[0] + '</span><b class="' + (r[1] ? 'pos' : 'dim') + '">' + money(r[1], true) + '</b></div>'; }).join('');
+      var hzCash = (res.hz ? res.hz.perfect : 0) * CFG.perfectCash;
+      if (res.hz && (res.hz.perfect + res.hz.clear + res.hz.stumble)) rows.push(['Hazards: ' + res.hz.perfect + ' perfect, ' + res.hz.clear + ' clear, ' + res.hz.stumble + ' stumbled', hzCash]);
+      if (res.windfall - hzCash > 0) rows.push(['Luck windfalls', res.windfall - hzCash]);
+      var gm = res.gamble;
+      if (gm && gm.n) rows.push(['Next-card bets, ' + gm.hits + ' of ' + gm.n + ' hit' + (gm.best > 1 ? ' (best streak ' + gm.best + ')' : ''), gm.net]);
+      var html = rows.map(function (r, k) { return '<div class="row' + (r[1] > 0 ? ' pop' : '') + '" style="animation-delay:' + (k * 0.08) + 's"><span>' + r[0] + '</span><b class="' + (r[1] > 0 ? 'pos' : r[1] < 0 ? 'neg' : 'dim') + '">' + money(r[1], true) + '</b></div>'; }).join('');
       if (res.calls.length) {
         html += '<div class="row"><span>Bets, ' + res.hits + ' of ' + res.calls.length + ' right' + (res.combo > 1 ? ' (combo ×' + res.combo + ')' : '') + '</span><b class="' + (res.betNet >= 0 ? 'pos' : 'neg') + '">' + money(res.betNet, true) + '</b></div>';
         html += res.calls.map(function (c) {
@@ -346,7 +428,8 @@
         }).join('');
       }
       var race = res.total - res.betReturn;
-      html += '<div class="row total"><span>Net this lap</span><b class="gold">' + money(race + res.betNet, true) + '</b></div>';
+      res.net = race + res.betNet + (gm ? gm.net : 0);
+      html += '<div class="row total"><span>Net this lap</span><b class="gold" id="netb">' + money(res.net, true) + '</b></div>';
       stmt.innerHTML = html;
     }
     var order = E.runOrder(R);
@@ -360,15 +443,20 @@
     $('#offers').hidden = prep; $('#tiers').hidden = prep; $('#reroll').hidden = prep;
     renderPitState();
   }
+  function ufLine() {
+    var res = S.lastRes;
+    if (!res || !res.topUps || !res.topUps.length) return '';
+    return '<p class="uf"><b>Underdog fund</b> (no suit is starved out of the deck): ' + res.topUps.map(function (t) { return SUITS[t.horse].glyph + ' +' + t.n + ' card' + (t.n > 1 ? 's' : ''); }).join(', ') + '.</p>';
+  }
   function renderRivals() {
     var R = S.run, box = $('#rivals');
     if (R.phase === 'prep' || !R.rivalLog.length) {
-      box.innerHTML = R.phase === 'prep' ? '' : '<h3 class="lbl">Rivals at the stop</h3><p class="note" style="margin:0">Nobody upgraded this time.</p>';
+      box.innerHTML = R.phase === 'prep' ? '' : '<h3 class="lbl">Rivals at the stop</h3><p class="note" style="margin:0">Nobody upgraded this time.</p>' + ufLine();
       return;
     }
     box.innerHTML = '<h3 class="lbl">Rivals upgraded during the stop</h3><div class="rvlist">' + R.rivalLog.map(function (r) {
       return '<span class="rv s' + r.horse + ' t-' + r.tier + '"><span class="g">' + SUITS[r.horse].glyph + '</span>' + r.name + ' <em>' + E.TIER_NAME[r.tier] + '</em></span>';
-    }).join('') + '</div>';
+    }).join('') + '</div>' + ufLine();
   }
   // everything that changes when cash, odds, bets or offers change
   function renderPitState() {
@@ -491,6 +579,22 @@
     renderPitState();
   });
 
+  /* ---------- the pop after a lap and after a run ---------- */
+  function celebrate(res) {
+    if (!res) return;
+    var net = res.net || 0, w = innerWidth, h = innerHeight;
+    var nb = $('#netb'); if (nb) FX.countUp(nb, net, 1100, '$', true);
+    if (res.place === 1) { FX.confetti(w / 2, h * 0.28, 90); FX.shake(1); }
+    if (res.hits > 0) FX.coins(w * 0.3, h * 0.45, 8 + res.hits * 8);
+    if (net >= 40) FX.win(net, w / 2, h * 0.3, res.place === 1 ? 'WINNER' : 'NICE LAP');
+    else if (res.place === 1) FX.banner('1ST PLACE', null, 'big');
+  }
+  function celebrateOver() {
+    var r = S.run.result;
+    if (r.champion) { FX.banner('CHAMPION', null, 'mega'); FX.confetti(0, 0, 160, { rain: true }); FX.confetti(innerWidth / 2, innerHeight * 0.35, 100); FX.shake(2); }
+    else if (r.rank === 2) FX.confetti(innerWidth / 2, innerHeight * 0.3, 50);
+  }
+
   /* ---------- run over ---------- */
   function renderOver() {
     var R = S.run, r = R.result;
@@ -540,12 +644,15 @@
     var C = CFG, tp = C.tierPrice;
     $('#rules').innerHTML =
       '<section><h3>A run</h3><p>Pick a suit and a length: <b>5 or 10 laps</b>. Every lap is one full race across the track between four horses, one per suit. Finishing 1st, 2nd, 3rd or 4th earns <b>' + C.points.join(', ') + ' points</b>. Whoever has the most points after the last lap is the champion.</p><p>Every run starts <b>level</b>: 10 cards per suit, identical horses, and no rival upgrades before lap 1. Your Stable perks are the only head start.</p></section>' +
-      '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder, but each card is a small push, so races run over a minute. Horses that have finished ignore surges.</p>' +
+      '<section><h3>The draw</h3><p>Every ' + C.drawEvery + ' seconds one card is drawn. The horse of that suit gets a <b>surge</b> that fades over a few seconds. Higher cards surge harder, but each card is a small push, so races run about a minute. Horses that have finished ignore surges.</p>' +
       '<div class="vals"><span>2–10 pips</span><span>J 11</span><span>Q 12</span><span>K 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
-      '<section><h3>The deck</h3><p>The deck is small: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' cards</b>, ' + (C.copies * (15 - C.minRank)) + ' per suit, ranks ' + C.minRank + ' to Ace. Cards are drawn without being put back, so a suit that has come up a lot runs low and the horses that have been unlucky become more likely to get the next cards. Leaders fade and losers get their chance. Upgrades change it for the <b>whole run</b>: add your cards, raise them, or burn and steal a rival’s (never below ' + C.minSuit + ' cards per suit). At the start of every lap all cards are gathered and <b>reshuffled</b>.</p><p>After every lap the rivals collect free upgrades too, and you can see which ones at the pit stop.</p></section>' +
+      '<section><h3>The deck</h3><p>The deck is small: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' cards</b>, ' + (C.copies * (15 - C.minRank)) + ' per suit, ranks ' + C.minRank + ' to Ace. Cards are drawn without being put back, so a suit that has come up a lot runs low and the horses that have been unlucky become more likely to get the next cards. Leaders fade and losers get their chance. Upgrades change it for the <b>whole run</b>: add your cards, raise them, or burn and steal a rival’s (never below ' + C.minSuit + ' cards per suit). At the start of every lap all cards are gathered and <b>reshuffled</b>.</p><p><b>Underdog fund:</b> at every pit stop, a suit holding less than ' + Math.round(C.underdog * 100) + '% of the deck gets free cards (up to ' + C.underdogMax + ') until it is back above that line, so no horse gets starved out of the run.</p><p>After every lap the rivals collect free upgrades too, and you can see which ones at the pit stop.</p></section>' +
+      '<section><h3>Stamina and the Spur</h3><p>Every horse, yours and the rivals’, has a <b>stamina</b> bar that refills all lap. A <b>Spur</b> (tap the button, or press <b>S</b>) spends all of it for an instant surge, and the surge grows much faster than the stamina: a full bar is worth about ' + Math.round(1 / Math.pow(0.5, C.spurCurve)) + ' times a half bar. Wait for more, or go early and go twice. Rivals spur too, some patiently, some at once, and all of them sprint in the last stretch. A full bar stops refilling, so do not sit on it forever.</p></section>' +
+      '<section><h3>Hazards</h3><p>Every horse meets ' + C.hazards + ' hazards per lap: hurdles and puddles in its own lane. When one comes within reach the game slows down and <b>BRACE</b> lights up (tap it, press <b>Space</b> or <b>B</b>). Tap in the gold end of the bar for a <b>perfect jump</b>: a small surge and ' + '$' + C.perfectCash + '. Tap early for a safe clear. Miss it and your horse <b>stumbles</b> and loses most of its speed for about ' + C.stumbleT + ' seconds. Rivals clear about ' + Math.round(C.aiClear * 100) + '% of theirs.</p></section>' +
+      '<section><h3>Next-card bets</h3><p>During the race you can bet on the <b>suit of the next card</b>. The odds are the exact chance from the cards still in the deck (shown as a percentage), so they change as the deck thins and you can play the numbers: back the likeliest suit for small wins, or a long shot for a big pop. Bet on several suits to hedge. The house keeps ' + Math.round((1 - C.cardEdge) * 100) + '%, but a <b>hit streak</b> refills your Spur stamina, and Scout Lens marks suits that will <b>not</b> come next. Stakes: ' + C.cardStakes.map(function (s) { return '$' + s; }).join(', ') + '. Press 1 to 4 to bet on a suit. A Chaos card refunds every bet.</p></section>' +
       '<section><h3>Calling the order</h3><p>Before every lap you call which horse finishes <b>1st, 2nd, 3rd and 4th</b>, and put a stake on each call. Your own horse is <b>locked in for 1st</b>: you always back yourself to win, and you can only change that stake. The other three places are yours to pick or skip. The bookie simulates the lap hundreds of times and shows odds for every horse in every place, so a longshot pays more. Odds move when you buy upgrades and <b>lock when the lap starts</b>.</p><p>A correct call pays stake × odds. A wrong call loses the stake. Get several right and the whole payout is multiplied by a <b>combo</b> (' + C.combo[2] + '× for two, ' + C.combo[3] + '× for three, ' + C.combo[4] + '× for all four). Every correct call also adds <b>1 Stable Point</b> to your run. The bookie does not price in your one-lap items, Spurs or luck upgrades, which is where an edge comes from.</p></section>' +
       '<section><h3>Money</h3><p>You earn <b>run cash</b> after every lap: a prize for your finishing place (' + C.prizes.map(function (p) { return '$' + p; }).join(', ') + '), a speed bonus of $' + C.bonusPerSec + ' for every second under ' + C.par + ' seconds, and <b>dividends</b>: once your horse has crossed the line, every card of your suit still drawn pays ' + C.divPerValue + '× its value. Bets are paid on top.</p><p>Spend cash on upgrades, rerolls, bets and the card table. <b>Whatever is left when the run ends is lost.</b></p></section>' +
-      '<section><h3>Pit shop and tiers</h3><p>The shop opens after lap 1 and offers ' + C.shopSlots + ' upgrades. Every upgrade belongs to a tier and <b>every upgrade of a tier costs the same</b>: Common $' + tp.common + ', Rare $' + tp.rare + ', Epic $' + tp.epic + ', Legendary $' + tp.legendary + '. The shop shows the chance of each rarity, and rarer upgrades show up more often as the run goes on. You can reroll for a fee.</p><p>Upgrade types: Deck, Horse, Money, Betting, Gear (like Spare Spur: tap <b>Spur</b> or press <b>Space</b> for an instant surge), Luck (random surges, cash windfalls, dice, a coin flip), and Next lap items that are used once.</p></section>' +
+      '<section><h3>Pit shop and tiers</h3><p>The shop opens after lap 1 and offers ' + C.shopSlots + ' upgrades. Every upgrade belongs to a tier and <b>every upgrade of a tier costs the same</b>: Common $' + tp.common + ', Rare $' + tp.rare + ', Epic $' + tp.epic + ', Legendary $' + tp.legendary + '. The shop shows the chance of each rarity, and rarer upgrades show up more often as the run goes on. You can reroll for a fee.</p><p>Upgrade types: Deck, Horse, Money, Betting, Gear (like Scout Lens and Hurdler), Luck (random surges, cash windfalls, dice, a coin flip), and Next lap items that are used once.</p></section>' +
       '<section><h3>Card table</h3><p>At every pit stop you can play up to ' + C.tableLimit + ' hands of <b>higher or lower</b>. A card is dealt, you call whether the next is higher or lower, and ties lose. The payout follows the true chance with a small house edge.</p></section>' +
       '<section><h3>The Stable</h3><p>At the end of a run you earn <b>Stable Points</b>: lap points, correct calls, and a bonus of 2 per lap for the champion or 1 per lap for the runner-up. Spend them in The Stable on permanent perks: starting cash, extra cards, faster cruising, cheaper shops, better rarity odds and better bet payouts. Progress is saved in this browser.</p></section>';
   }
@@ -560,28 +667,28 @@
         S.cd -= dt;
         var txt = S.cd > 0 ? String(Math.ceil(S.cd / 0.8)) : 'GO';
         if (ov.textContent !== txt) { ov.textContent = txt; ov.className = 'big'; }
-        if (S.cd <= 0) { setGamePhase('racing'); S.goT = 0.6; renderSpur(); }
+        if (S.cd <= 0) { setGamePhase('racing'); S.goT = 0.6; }
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {
         if (S.goT > 0) { S.goT -= dt; if (S.goT <= 0 && !S.paused) $('#overlay').hidden = true; }
         if (S.gphase === 'racing' && !S.paused) {
-          E.stepLap(R, dt * S.speed);
+          var mult = openHazard() ? Math.min(S.speed, 0.4) : S.speed;
+          E.stepLap(R, dt * mult);
           handleEvents();
           if (L.done) { S.endDelay = 1.4; setGamePhase('ending'); renderCalls(); }
         } else if (S.gphase === 'ending') {
           S.endDelay -= dt;
           if (S.endDelay <= 0) finishLap();
         }
-        if (S.gphase !== 'idle') renderSpur();
+        if (S.gphase !== 'idle') renderActions();
       }
-      if (S.screen === 'game') { syncTrack(); syncHud(); }
+      if (S.screen === 'game') { renderScene(dt); syncHud(); }
     }
     requestAnimationFrame(frame);
   }
 
   buildSetup(); buildRules();
   onEnter.menu();
-  measure();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   requestAnimationFrame(frame);
-  window.__derby = { S: S, E: E, M: M, go: go };
+  window.__derby = { S: S, E: E, M: M, go: go, scene: scene, FX: FX };
 })();

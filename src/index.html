@@ -45,23 +45,43 @@
       <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gclock mono" id="gclock">0:00.0</span></div>
       <div class="gcash" id="gcash" title="Run cash. Lost when the run ends.">$0</div>
     </div>
-    <div class="track">
-      <div class="lanes" id="lanes"></div>
-      <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
+    <div class="stage" id="stagebox">
+      <canvas id="stage" aria-label="Race track: four horses in four lanes"></canvas>
       <div class="overlay" id="overlay" hidden><div class="big" id="ovtxt"></div></div>
-    </div>
-    <div class="hud">
-      <div class="card" aria-hidden="true"><div class="cardin" id="cardin"><div class="face" id="face"></div><div class="back"></div></div></div>
-      <div class="hinfo">
-        <div class="dname" id="dname">Shuffling</div>
-        <div class="dline" id="dline">First card comes out soon.</div>
-        <div class="hist" id="hist" aria-label="Recent cards"></div>
+      <div class="hzcall" id="hzcall" hidden>
+        <b>BRACE!</b>
+        <div class="hzmeter" aria-hidden="true"><i id="hzfill"></i><u></u></div>
+        <small>Tap in the gold zone for a perfect jump</small>
       </div>
-      <button type="button" class="btn spur" id="spur" hidden>Spur <b id="spurn">2</b></button>
     </div>
-    <div class="scout" id="scout" hidden></div>
-    <div class="deckbar" id="deckbar" aria-label="Cards left in the deck"></div>
-    <div class="deckleg mono" id="deckleg"></div>
+    <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
+    <div class="actrow">
+      <button type="button" class="btn act brace" id="brace" disabled><span class="a-t">Brace</span><span class="a-s mono" id="bracesub">no hazard near</span></button>
+      <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
+    </div>
+    <div class="cockpit">
+      <div class="cp-card">
+        <div class="hud">
+          <div class="card" aria-hidden="true"><div class="cardin" id="cardin"><div class="face" id="face"></div><div class="back"></div></div></div>
+          <div class="hinfo">
+            <div class="dname" id="dname">Shuffling</div>
+            <div class="dline" id="dline">First card comes out soon.</div>
+            <div class="hist" id="hist" aria-label="Recent cards"></div>
+          </div>
+        </div>
+        <div class="deckbar" id="deckbar" aria-label="Cards left in the deck"></div>
+        <div class="deckleg mono" id="deckleg"></div>
+      </div>
+      <div class="cp-bets">
+        <div class="betshead"><h3 class="lbl">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
+        <div class="bets" id="bets"></div>
+        <div class="betctl">
+          <div class="chips" id="chips" role="radiogroup" aria-label="Stake"></div>
+          <button type="button" class="btn small" id="rebet">Rebet</button>
+          <span class="betinfo mono" id="betinfo"></span>
+        </div>
+      </div>
+    </div>
     <div class="calls mono" id="calls" hidden></div>
     <div class="glow">
       <div class="pts mono" id="pts" aria-label="Championship points"></div>
@@ -158,8 +178,12 @@
   </section>
 
 </div>
+<div id="flashfx" aria-hidden="true"></div>
+<div class="bigwin" id="bigwin" hidden aria-live="polite"><div class="bw-rays"></div><div class="bw-t">BIG WIN</div><div class="bw-a mono"></div></div>
 <script src="meta.js"></script>
 <script src="engine.js"></script>
+<script src="fx.js"></script>
+<script src="scene.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -32,7 +32,7 @@ function shopGreedy(run) {
 function playRun({ laps, buy, bet, metaLevels = {}, seed, me = 0 }) {
   E.CFG.quoteSims = bet ? 90 : 2;
   const meta = M.effects({ levels: metaLevels });
-  const run = E.newRun({ me, laps, meta, seed });
+  const run = E.newRun({ me, laps, meta, seed }); run.auto = true;
   const places = [];
   while (run.phase !== 'over') {
     if (bet) placeBets(run, bet); else run.calls = [null, null, null, null];
@@ -40,7 +40,6 @@ function playRun({ laps, buy, bet, metaLevels = {}, seed, me = 0 }) {
     let spent = 0;
     while (!run.lap.done) {
       E.stepLap(run, 0.05);
-      if (run.lap.spurs > 0 && run.lap.t > 1.0 + spent * 6) { E.spur(run); spent++; }
     }
     const res = E.endLap(run);
     places.push(res.place);
@@ -62,7 +61,10 @@ function stats(label, opt, n = opt.bet ? 100 : 250) {
     staked ? ('| bets hit ' + (hits / calls * 100).toFixed(0) + '% return/stake ' + (ret / staked).toFixed(2)) : '', '| ranks', rk.map(x => (x / n).toFixed(2)).join('/'));
 }
 const maxed = { deep: 5, winnings: 5, loaded: 5, training: 5, shrewd: 5, slots: 2, reroll: 2, owners: 1, purse: 3, lucky: 3, sharp: 4 };
-if (process.argv[2] !== 'iso') {
+if (process.argv[2] === 'quick') {
+  for (const laps of [5, 10]) { console.log('--- ' + laps + ' laps'); stats('greedy buy', { laps, buy: true }, 160); stats('no buy', { laps }, 100); }
+}
+if (process.argv[2] !== 'iso' && process.argv[2] !== 'quick') {
   for (const laps of [5, 10]) {
     console.log('--- ' + laps + ' laps');
     stats('no buy, no bets', { laps });
@@ -77,14 +79,14 @@ if (process.argv[2] === 'iso' || process.argv[2] === 'all') {
   // value of each permanent upgrade on its own: lap-place change vs. a bare horse, 5 laps, rivals upgrade as normal
   E.CFG.quoteSims = 2;
   console.log('--- isolated (one copy owned from lap 1, 5-lap runs); lower lapPlace is better');
-  const base = (() => { let pl = 0, lp = 0; for (let i = 0; i < 300; i++) { const run = E.newRun({ me: 0, laps: 5, seed: 7000 + i }); while (run.phase !== 'over') { E.startLap(run); while (!run.lap.done) E.stepLap(run, 0.5); pl += E.endLap(run).place; lp++; } } return pl / lp; })();
+  const base = (() => { let pl = 0, lp = 0; for (let i = 0; i < 300; i++) { const run = E.newRun({ me: 0, laps: 5, seed: 7000 + i }); run.auto = true; while (run.phase !== 'over') { E.startLap(run); while (!run.lap.done) E.stepLap(run, 0.5); pl += E.endLap(run).place; lp++; } } return pl / lp; })();
   console.log('bare'.padEnd(12), base.toFixed(3));
   for (const u of E.UPGRADES.filter(u => u.kind !== 'lap' && u.kind !== 'cash' && u.kind !== 'bet')) {
     let pl = 0, lp = 0;
     for (let i = 0; i < 300; i++) {
-      const run = E.newRun({ me: 0, laps: 5, seed: 7000 + i });
+      const run = E.newRun({ me: 0, laps: 5, seed: 7000 + i }); run.auto = true;
       const me = run.horses[0]; u.apply(run, me); me.up[u.id] = 1;
-      while (run.phase !== 'over') { E.startLap(run); while (!run.lap.done) { E.stepLap(run, 0.05); if (run.lap.spurs > 0 && run.lap.t > 1) E.spur(run); } pl += E.endLap(run).place; lp++; }
+      while (run.phase !== 'over') { E.startLap(run); while (!run.lap.done) { E.stepLap(run, 0.05); } pl += E.endLap(run).place; lp++; }
     }
     console.log((u.tier[0].toUpperCase() + ' ' + u.id).padEnd(14), (pl / lp).toFixed(3), 'delta', ((pl / lp) - base).toFixed(3));
   }

@@ -5,6 +5,13 @@ Every lap is a full race; you earn run cash, spend it on upgrades in a pit shop 
 and lose whatever is left when the run ends. Stable Points earned at the end of a run buy
 permanent perks in The Stable.
 
+### v5: a race you play, not just watch
+- **Stamina Spur for every horse.** Stamina refills all lap; a Spur spends it all and the surge grows faster than the stamina (full bar is about 3x a half bar), so waiting pays but going early works. Rivals spur too, each with its own patience.
+- **Hazards.** Every horse meets 3 per lap. Tap Brace (Space or B) when it lights up: gold zone = perfect jump (surge and $8), miss = stumble. The game slows while a hazard is open.
+- **Next-card bets.** Bet on the suit of the next card at the exact odds of the cards left. Hit streaks refill your stamina. Scout Lens marks suits that will not come next.
+- **Underdog fund.** At every pit stop a suit under 22% of the deck gets free cards, so no horse is starved out of a run.
+- **Stadium view and win effects.** Canvas race scene with a following camera, crowd, hazards, dust and speed lines; coins, confetti, shockwaves, a BIG WIN banner and screen shake (`src/scene.js`, `src/fx.js`).
+
 ### v4: longer races, small deck
 - The deck is 40 cards (10 per suit, ranks 5 to Ace) and cards are drawn without being put back, so a suit that has come up a lot runs dry and trailing horses get the next cards.
 - Each card is a small push (`surgeBase` + rank x `surgeVal`), draws come every 2.4 s, and a lap takes about a minute.
@@ -29,7 +36,9 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/style.css    all styling
     src/engine.js    game rules: deck, laps, upgrades, cash, shop (no DOM, runs in Node)
     src/meta.js      Stable perks and saved progress (localStorage)
-    src/app.js       screens, race rendering, input
+    src/scene.js     the canvas race scene (camera, crowd, horses, hazards)
+    src/fx.js        win effects: coins, confetti, banner, shake
+    src/app.js       screens, input, HUD, bets
     build.py         inlines everything into dist/suit-derby.html
     sim.js           balance simulation:  node sim.js
     playtest.py      headless full-run test (calls, shop, card table) (needs python playwright + chromium)
