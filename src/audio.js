@@ -236,7 +236,7 @@ const Sfx = (() => {
 
   /* ---------- the crowd and the hoofbeats under the race ---------- */
   let crowdSrc = null, crowdGain = null, hoof = null, hv = 0, nextBeat = 0, step = 0;
-  const CROWD = 0.034;
+  const CROWD = 0.017;
   function crowd(run) {
     if (!run && !crowdSrc) return;
     if (!go()) { if (!on && crowdSrc) crowdOff(); return; }
@@ -246,7 +246,7 @@ const Sfx = (() => {
         const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = 0.35;
         const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
         crowdGain = ctx.createGain(); crowdGain.gain.value = 0.0001;
-        const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.35; lg.gain.value = 0.008;
+        const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.35; lg.gain.value = 0.004;
         lfo.connect(lg); lg.connect(crowdGain.gain);
         crowdSrc.connect(bp); bp.connect(lp); lp.connect(crowdGain); crowdGain.connect(bus);
         crowdSrc.start(); lfo.start(); crowdSrc._lfo = lfo;
@@ -267,7 +267,7 @@ const Sfx = (() => {
     try {
       const t = ctx.currentTime;
       crowdGain.gain.cancelScheduledValues(t);
-      crowdGain.gain.setTargetAtTime(CROWD + 0.05 * Math.min(1.5, a), t, 0.05);
+      crowdGain.gain.setTargetAtTime(CROWD + 0.026 * Math.min(1.5, a), t, 0.05);
       crowdGain.gain.setTargetAtTime(CROWD, t + 0.45, 0.35);
     } catch (e) {}
   }

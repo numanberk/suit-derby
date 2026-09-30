@@ -328,7 +328,8 @@ h1, h2, h3, p { margin: 0; }
 .hzcall b { font: 900 30px/1 var(--f-display); color: #ff8a76; letter-spacing: 0.1em; animation: hotpulse 0.4s infinite alternate; display: inline-block; }
 .hzmeter { position: relative; width: min(260px, 62vw); height: 10px; background: #2a1512; border-radius: 5px; margin: 6px auto 5px; overflow: hidden; }
 .hzmeter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #ff5a46, #ffb347); }
-.hzmeter u { position: absolute; right: 0; top: 0; bottom: 0; width: 29%; background: rgba(233, 207, 115, 0.4); border-left: 2px solid var(--gold); }
+.hzmeter s { position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: repeating-linear-gradient(135deg, rgba(0,0,0,.5) 0 4px, transparent 4px 8px); border-right: 2px solid #6b2a22; z-index: 1; }
+.hzmeter u { position: absolute; right: 0; top: 0; bottom: 0; width: 19%; background: rgba(233, 207, 115, 0.4); border-left: 2px solid var(--gold); }
 .hzcall small { font-size: 11px; color: #f4b9ac; }
 .actrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 10px; margin-top: 8px; }
 .btn.act { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 68px; padding: 10px; }

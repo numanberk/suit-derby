@@ -338,7 +338,8 @@ h1, h2, h3, p { margin: 0; }
 .hzcall b { font: 900 30px/1 var(--f-display); color: #ff8a76; letter-spacing: 0.1em; animation: hotpulse 0.4s infinite alternate; display: inline-block; }
 .hzmeter { position: relative; width: min(260px, 62vw); height: 10px; background: #2a1512; border-radius: 5px; margin: 6px auto 5px; overflow: hidden; }
 .hzmeter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #ff5a46, #ffb347); }
-.hzmeter u { position: absolute; right: 0; top: 0; bottom: 0; width: 29%; background: rgba(233, 207, 115, 0.4); border-left: 2px solid var(--gold); }
+.hzmeter s { position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: repeating-linear-gradient(135deg, rgba(0,0,0,.5) 0 4px, transparent 4px 8px); border-right: 2px solid #6b2a22; z-index: 1; }
+.hzmeter u { position: absolute; right: 0; top: 0; bottom: 0; width: 19%; background: rgba(233, 207, 115, 0.4); border-left: 2px solid var(--gold); }
 .hzcall small { font-size: 11px; color: #f4b9ac; }
 .actrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 10px; margin-top: 8px; }
 .btn.act { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 68px; padding: 10px; }
@@ -544,8 +545,8 @@ h1, h2, h3, p { margin: 0; }
       <div class="overlay" id="overlay" hidden><div class="big" id="ovtxt"></div></div>
       <div class="hzcall" id="hzcall" hidden>
         <b data-i18n="BRACE!">BRACE!</b>
-        <div class="hzmeter" aria-hidden="true"><i id="hzfill"></i><u></u></div>
-        <small data-i18n="Tap in the gold zone for a perfect jump">Tap in the gold zone for a perfect jump</small>
+        <div class="hzmeter" aria-hidden="true"><i id="hzfill"></i><s></s><u></u></div>
+        <small data-i18n="Wait for the gold zone. Too early is a stumble.">Wait for the gold zone. Too early is a stumble.</small>
       </div>
     </div>
     <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
@@ -799,7 +800,7 @@ if (typeof module !== 'undefined') module.exports = I18n;
     'Quit': 'Çık',
     'Quit run?': 'Koşudan çık?',
     'BRACE!': 'ATLA!',
-    'Tap in the gold zone for a perfect jump': 'Kusursuz atlayış için altın bölgeye dokun',
+    'Wait for the gold zone. Too early is a stumble.': 'Altın bölgeyi bekle. Erken basmak tökezletir.',
     'Brace': 'Atla',
     'Spur': 'Mahmuz',
     'no hazard near': 'yakında engel yok',
@@ -1186,7 +1187,7 @@ if (typeof module !== 'undefined') module.exports = I18n;
       '<div class="vals"><span>2–10 sayı</span><span>V 11</span><span>K 12</span><span>P 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
       '<section><h3>Deste</h3><p>Deste küçüktür: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' kart</b>, renk başına ' + (C.copies * (15 - C.minRank)) + ', dereceler ' + C.minRank + ' ile As arası. Kartlar geri konmadan çekilir; bu yüzden çok çıkan bir renk azalır ve şanssız kalan atların sıradaki kartları alma ihtimali artar. Liderler söner, geride kalanlar şansını bulur. Geliştirmeler bunu <b>tüm koşu</b> için değiştirir: kendi kartlarını ekle, yükselt ya da bir rakibinkini yak ve çal (renk başına asla ' + C.minSuit + ' kartın altına inmez). Her turun başında tüm kartlar toplanır ve <b>yeniden karıştırılır</b>.</p><p><b>Zayıflara destek fonu:</b> her molada, destenin %' + Math.round(C.underdog * 100) + '’inden azına sahip bir renk, bu çizgiyi aşana kadar bedava kart alır (en fazla ' + C.underdogMax + '), böylece hiçbir at koşudan silinmez.</p><p>Her turdan sonra rakipler de bedava geliştirme alır; hangilerini aldıklarını molada görebilirsin.</p></section>' +
       '<section><h3>Dayanıklılık ve Mahmuz</h3><p>Senin ve rakiplerin her atın, tur boyunca dolan bir <b>dayanıklılık</b> çubuğu vardır. <b>Mahmuz</b> (butona dokun ya da <b>S</b> tuşuna bas) hepsini anlık bir atılım için harcar ve atılım dayanıklılıktan çok daha hızlı büyür: dolu bir çubuk, yarım çubuğun yaklaşık ' + Math.round(1 / Math.pow(0.5, C.spurCurve)) + ' katı değerindedir. Daha fazlası için bekle ya da erken git ve iki kez kullan. Rakipler de mahmuzlar; kimi sabırla, kimi hemen, hepsi son düzlükte sprint atar. Dolu çubuk dolmayı bırakır, o yüzden sonsuza dek bekleme.</p></section>' +
-      '<section><h3>Engeller</h3><p>Her at tur başına ' + C.hazards + ' engelle karşılaşır: kendi şeridinde çitler ve su birikintileri. Biri erişim mesafesine girdiğinde oyun yavaşlar ve <b>ATLA</b> yanar (dokun, <b>Boşluk</b> ya da <b>B</b> tuşuna bas). <b>Kusursuz atlayış</b> için çubuğun altın ucuna dokun: küçük bir atılım ve $' + C.perfectCash + '. Erken dokunursan güvenle geçersin. Kaçırırsan atın <b>tökezler</b> ve yaklaşık ' + n(C.stumbleT) + ' saniye hızının çoğunu kaybeder. Rakipler engellerinin yaklaşık %' + Math.round(C.aiClear * 100) + '’ini geçer.</p></section>' +
+      '<section><h3>Engeller</h3><p>Her at tur başına ' + C.hazards + ' engelle karşılaşır: kendi şeridinde çitler ve su birikintileri. Biri erişim mesafesine girdiğinde oyun yavaşlar ve <b>ATLA</b> yanar (dokun, <b>Boşluk</b> ya da <b>B</b> tuşuna bas). <b>Kusursuz atlayış</b> için çubuğun altın ucuna dokun: küçük bir atılım ve $' + C.perfectCash + '. Turuncu ortada dokunursan güvenle geçersin, ama çok erken olmasın: çubuğun ilk %' + Math.round(C.hzEarly * 100) + '’unda at kötü atlar ve tökezler. Kaçırırsan atın <b>tökezler</b> ve yaklaşık ' + n(C.stumbleT) + ' saniye hızının çoğunu kaybeder. Rakipler engellerinin yaklaşık %' + Math.round(C.aiClear * 100) + '’ini geçer.</p></section>' +
       '<section><h3>Sıradaki kart bahisleri</h3><p>Yarış sırasında <b>sıradaki kartın rengine</b> bahis oynayabilirsin. Oranlar, destede kalan kartlardan hesaplanan kesin şanstır (yüzde olarak gösterilir); deste inceldikçe değişir ve rakamlarla oynayabilirsin: küçük kazançlar için en olası rengi, büyük bir patlama için düşük ihtimalli rengi seç. Korunmak için birkaç renge birden bahis oyna. Kasa %' + Math.round((1 - C.cardEdge) * 100) + ' alır, ama bir <b>isabet serisi</b> Mahmuz dayanıklılığını doldurur ve Gözcü Merceği sıradaki kartta <b>gelmeyecek</b> renkleri işaretler. Bahisler: ' + C.cardStakes.map(m).join(', ') + '. Bir renge bahis için 1–4 tuşlarına bas. Kaos kartı tüm bahisleri iade eder.</p></section>' +
       '<section><h3>Sıralamayı tahmin etme</h3><p>Her turdan önce hangi atın <b>1., 2., 3. ve 4.</b> bitireceğini tahmin eder ve her tahmine bahis koyarsın. Kendi atın <b>1. sıraya kilitlidir</b>: her zaman kendine oynarsın ve yalnızca bahis miktarını değiştirebilirsin. Diğer üç sırayı seçmek ya da atlamak sana kalmış. Bahisçi turu yüzlerce kez simüle eder ve her atın her sıradaki oranını gösterir; yani sürpriz at daha çok öder. Geliştirme aldıkça oranlar değişir ve <b>tur başlayınca kilitlenir</b>.</p><p>Doğru tahmin bahis × oran öder. Yanlış tahmin bahsi kaybettirir. Birkaçını doğru bilirsen toplam ödeme bir <b>kombo</b> ile çarpılır (ikisi için ' + n(C.combo[2]) + '×, üçü için ' + n(C.combo[3]) + '×, dördü için ' + n(C.combo[4]) + '×). Her doğru tahmin ayrıca koşuna <b>1 Ahır Puanı</b> ekler. Bahisçi tek turluk eşyalarını, Mahmuzları ve şans geliştirmelerini hesaba katmaz; avantaj da buradan gelir.</p></section>' +
       '<section><h3>Para</h3><p>Her turdan sonra <b>koşu parası</b> kazanırsın: bitirdiğin sıraya göre bir ödül (' + C.prizes.map(m).join(', ') + '), ' + C.par + ' saniyenin altındaki her saniye için $' + n(C.bonusPerSec) + ' hız bonusu ve <b>temettüler</b>: atın çizgiyi geçtikten sonra çekilen, rengindeki her kart değerinin ' + n(C.divPerValue) + ' katını öder. Bahisler bunların üstüne ödenir.</p><p>Parayı geliştirmelere, yenilemelere, bahislere ve kart masasına harca. <b>Koşu bittiğinde kalan her şey kaybolur.</b></p></section>' +
@@ -1441,7 +1442,7 @@ const Sfx = (() => {
 
   /* ---------- the crowd and the hoofbeats under the race ---------- */
   let crowdSrc = null, crowdGain = null, hoof = null, hv = 0, nextBeat = 0, step = 0;
-  const CROWD = 0.034;
+  const CROWD = 0.017;
   function crowd(run) {
     if (!run && !crowdSrc) return;
     if (!go()) { if (!on && crowdSrc) crowdOff(); return; }
@@ -1451,7 +1452,7 @@ const Sfx = (() => {
         const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = 0.35;
         const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
         crowdGain = ctx.createGain(); crowdGain.gain.value = 0.0001;
-        const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.35; lg.gain.value = 0.008;
+        const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.35; lg.gain.value = 0.004;
         lfo.connect(lg); lg.connect(crowdGain.gain);
         crowdSrc.connect(bp); bp.connect(lp); lp.connect(crowdGain); crowdGain.connect(bus);
         crowdSrc.start(); lfo.start(); crowdSrc._lfo = lfo;
@@ -1472,7 +1473,7 @@ const Sfx = (() => {
     try {
       const t = ctx.currentTime;
       crowdGain.gain.cancelScheduledValues(t);
-      crowdGain.gain.setTargetAtTime(CROWD + 0.05 * Math.min(1.5, a), t, 0.05);
+      crowdGain.gain.setTargetAtTime(CROWD + 0.026 * Math.min(1.5, a), t, 0.05);
       crowdGain.gain.setTargetAtTime(CROWD, t + 0.45, 0.35);
     } catch (e) {}
   }
@@ -1812,7 +1813,7 @@ const Engine = (() => {
     spurBoost: 6.5,     // surge of a Spur at full stamina; less stamina, much less surge (see spurCurve)
     staStart: 25, staRate: 2.5, spurMin: 15, spurCurve: 1.7,
     // hazards: every horse meets this many per lap
-    hazards: 3, hzWindow: 9, hzPerfect: 2.6, hzBoost: 1.0, perfectCash: 8, stumbleT: 3.0, stumbleF: 0.25,
+    hazards: 3, hzWindow: 7.5, hzPerfect: 1.4, hzEarly: 0.3, hzBoost: 1.0, perfectCash: 8, stumbleT: 3.0, stumbleF: 0.25,
     aiClear: 0.6, aiPerfect: 0.12, autoClear: 0.8, autoPerfect: 0.3,
     // next-card bets (live, during the race)
     cardStakes: [5, 10, 25], cardEdge: 0.92, cardRound: 60, streakSta: 4,
@@ -2222,7 +2223,8 @@ const Engine = (() => {
     if (!L || L.done || h.fin) return null;
     const nx = L.hz[h.i][h.hzi];
     if (!nx || nx.state !== 'open') return null;
-    const res = h.pos >= nx.x - CFG.hzPerfect ? 'perfect' : 'clear';
+    const early = 1 - (nx.x - h.pos) / CFG.hzWindow < CFG.hzEarly;   // too soon: the horse jumps badly
+    const res = early ? 'stumble' : h.pos >= nx.x - CFG.hzPerfect ? 'perfect' : 'clear';
     resolveHz(run, h, nx, res);
     h.hzi++;
     return res;
@@ -4142,7 +4144,7 @@ const Scene = (() => {
       '<div class="vals"><span>2–10 pips</span><span>J 11</span><span>Q 12</span><span>K 13</span><span>A 14</span><span>Joker 17</span></div></section>' +
       '<section><h3>The deck</h3><p>The deck is small: <b>' + (C.copies * 4 * (15 - C.minRank)) + ' cards</b>, ' + (C.copies * (15 - C.minRank)) + ' per suit, ranks ' + C.minRank + ' to Ace. Cards are drawn without being put back, so a suit that has come up a lot runs low and the horses that have been unlucky become more likely to get the next cards. Leaders fade and losers get their chance. Upgrades change it for the <b>whole run</b>: add your cards, raise them, or burn and steal a rival’s (never below ' + C.minSuit + ' cards per suit). At the start of every lap all cards are gathered and <b>reshuffled</b>.</p><p><b>Underdog fund:</b> at every pit stop, a suit holding less than ' + Math.round(C.underdog * 100) + '% of the deck gets free cards (up to ' + C.underdogMax + ') until it is back above that line, so no horse gets starved out of the run.</p><p>After every lap the rivals collect free upgrades too, and you can see which ones at the pit stop.</p></section>' +
       '<section><h3>Stamina and the Spur</h3><p>Every horse, yours and the rivals’, has a <b>stamina</b> bar that refills all lap. A <b>Spur</b> (tap the button, or press <b>S</b>) spends all of it for an instant surge, and the surge grows much faster than the stamina: a full bar is worth about ' + Math.round(1 / Math.pow(0.5, C.spurCurve)) + ' times a half bar. Wait for more, or go early and go twice. Rivals spur too, some patiently, some at once, and all of them sprint in the last stretch. A full bar stops refilling, so do not sit on it forever.</p></section>' +
-      '<section><h3>Hazards</h3><p>Every horse meets ' + C.hazards + ' hazards per lap: hurdles and puddles in its own lane. When one comes within reach the game slows down and <b>BRACE</b> lights up (tap it, press <b>Space</b> or <b>B</b>). Tap in the gold end of the bar for a <b>perfect jump</b>: a small surge and ' + '$' + C.perfectCash + '. Tap early for a safe clear. Miss it and your horse <b>stumbles</b> and loses most of its speed for about ' + C.stumbleT + ' seconds. Rivals clear about ' + Math.round(C.aiClear * 100) + '% of theirs.</p></section>' +
+      '<section><h3>Hazards</h3><p>Every horse meets ' + C.hazards + ' hazards per lap: hurdles and puddles in its own lane. When one comes within reach the game slows down and <b>BRACE</b> lights up (tap it, press <b>Space</b> or <b>B</b>). Tap in the gold end of the bar for a <b>perfect jump</b>: a small surge and ' + '$' + C.perfectCash + '. Tap in the orange middle for a safe clear, but not too soon: the first ' + Math.round(C.hzEarly * 100) + '% of the bar makes the horse jump badly and stumble. Miss it and your horse <b>stumbles</b> and loses most of its speed for about ' + C.stumbleT + ' seconds. Rivals clear about ' + Math.round(C.aiClear * 100) + '% of theirs.</p></section>' +
       '<section><h3>Next-card bets</h3><p>During the race you can bet on the <b>suit of the next card</b>. The odds are the exact chance from the cards still in the deck (shown as a percentage), so they change as the deck thins and you can play the numbers: back the likeliest suit for small wins, or a long shot for a big pop. Bet on several suits to hedge. The house keeps ' + Math.round((1 - C.cardEdge) * 100) + '%, but a <b>hit streak</b> refills your Spur stamina, and Scout Lens marks suits that will <b>not</b> come next. Stakes: ' + C.cardStakes.map(function (s) { return '$' + s; }).join(', ') + '. Press 1 to 4 to bet on a suit. A Chaos card refunds every bet.</p></section>' +
       '<section><h3>Calling the order</h3><p>Before every lap you call which horse finishes <b>1st, 2nd, 3rd and 4th</b>, and put a stake on each call. Your own horse is <b>locked in for 1st</b>: you always back yourself to win, and you can only change that stake. The other three places are yours to pick or skip. The bookie simulates the lap hundreds of times and shows odds for every horse in every place, so a longshot pays more. Odds move when you buy upgrades and <b>lock when the lap starts</b>.</p><p>A correct call pays stake × odds. A wrong call loses the stake. Get several right and the whole payout is multiplied by a <b>combo</b> (' + C.combo[2] + '× for two, ' + C.combo[3] + '× for three, ' + C.combo[4] + '× for all four). Every correct call also adds <b>1 Stable Point</b> to your run. The bookie does not price in your one-lap items, Spurs or luck upgrades, which is where an edge comes from.</p></section>' +
       '<section><h3>Money</h3><p>You earn <b>run cash</b> after every lap: a prize for your finishing place (' + C.prizes.map(function (p) { return '$' + p; }).join(', ') + '), a speed bonus of $' + C.bonusPerSec + ' for every second under ' + C.par + ' seconds, and <b>dividends</b>: once your horse has crossed the line, every card of your suit still drawn pays ' + C.divPerValue + '× its value. Bets are paid on top.</p><p>Spend cash on upgrades, rerolls, bets and the card table. <b>Whatever is left when the run ends is lost.</b></p></section>' +
@@ -4170,7 +4172,7 @@ const Scene = (() => {
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {
         if (S.goT > 0) { S.goT -= dt; if (S.goT <= 0 && !S.paused) $('#overlay').hidden = true; }
         if (S.gphase === 'racing' && !S.paused) {
-          var mult = openHazard() ? Math.min(S.speed, 0.4) : S.speed;
+          var mult = openHazard() ? Math.min(S.speed, 0.6) : S.speed;
           E.stepLap(R, dt * mult);
           handleEvents();
           if (L.done) { S.endDelay = 1.4; setGamePhase('ending'); renderCalls(); }

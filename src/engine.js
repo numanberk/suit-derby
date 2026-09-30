@@ -25,7 +25,7 @@ const Engine = (() => {
     spurBoost: 6.5,     // surge of a Spur at full stamina; less stamina, much less surge (see spurCurve)
     staStart: 25, staRate: 2.5, spurMin: 15, spurCurve: 1.7,
     // hazards: every horse meets this many per lap
-    hazards: 3, hzWindow: 9, hzPerfect: 2.6, hzBoost: 1.0, perfectCash: 8, stumbleT: 3.0, stumbleF: 0.25,
+    hazards: 3, hzWindow: 7.5, hzPerfect: 1.4, hzEarly: 0.3, hzBoost: 1.0, perfectCash: 8, stumbleT: 3.0, stumbleF: 0.25,
     aiClear: 0.6, aiPerfect: 0.12, autoClear: 0.8, autoPerfect: 0.3,
     // next-card bets (live, during the race)
     cardStakes: [5, 10, 25], cardEdge: 0.92, cardRound: 60, streakSta: 4,
@@ -435,7 +435,8 @@ const Engine = (() => {
     if (!L || L.done || h.fin) return null;
     const nx = L.hz[h.i][h.hzi];
     if (!nx || nx.state !== 'open') return null;
-    const res = h.pos >= nx.x - CFG.hzPerfect ? 'perfect' : 'clear';
+    const early = 1 - (nx.x - h.pos) / CFG.hzWindow < CFG.hzEarly;   // too soon: the horse jumps badly
+    const res = early ? 'stumble' : h.pos >= nx.x - CFG.hzPerfect ? 'perfect' : 'clear';
     resolveHz(run, h, nx, res);
     h.hzi++;
     return res;

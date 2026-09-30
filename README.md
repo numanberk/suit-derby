@@ -29,6 +29,7 @@ the speaker button (menu and race screen) or the **M** key mutes it, and the cho
 - **Peek and burn.** $10 shows the next card (bets close until it is drawn), $25 discards it.
 - **Horse traits** (one per suit), **set bonuses** for owning several upgrade types, and new upgrades: Underdog Sponsor, Grit Amplifier, Trap Master, Echo Chamber, Phoenix.
 - **Trophies** (saved in the Stable) unlock four of those upgrades; **stakes** levels 0 to 4 open by winning; a **Daily Derby** on a date seed with a shareable result; a **first-run guide**; a **race recap** ("Why 3rd?") and a **run stats** screen.
+- **Brace is harder:** the window is shorter (7.5 units), the gold zone narrower (19% of the bar), and a tap in the first 30% of the bar (hatched) stumbles. The slow-motion during a hazard is 0.6x instead of 0.4x. The crowd is half as loud.
 - Balance tools: `node sim.js quick`, and `node sim_catchup.js` for seat fairness, comeback rate and income gap.
 
 ### v6: Turkish language
