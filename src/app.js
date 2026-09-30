@@ -748,6 +748,7 @@
     Sfx.music.dim(S.screen === 'game' && S.paused ? 0.25 : 1);
     var mp = live && S.gphase !== 'countdown' ? S.run.horses[S.run.me].pos / CFG.lapLen : 0;
     Sfx.music.level(mp > 0.85 ? 3 : mp > 0.55 ? 2 : mp > 0.18 ? 1 : 0);
+    Sfx.music.swell(1 + 0.35 * Math.max(0, Math.min(1, (mp - 0.25) / 0.65)));
     Sfx.hooves(mh && !mh.fin ? (mh.base + mh.tb + mh.ex) * (mh.slowT > 0 ? 0.4 : 1) * (openHazard() ? 0.5 : 1) * (1 + (S.speed - 1) * 0.3) : 0);
     requestAnimationFrame(frame);
   }

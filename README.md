@@ -9,7 +9,7 @@ permanent perks in The Stable.
 Two generated tracks (no audio files). A relaxed one plays on the menu, setup, pit stop and results screens
 (warm keys, soft beat, a small hook that arrives on the second pass). The race has a driving track that starts
 with kick, bass and hats, then adds a plucked arpeggio and clap, then a pad and a lead hook as your horse gets
-further along the lap, and gets busier in the last stretch. It dips under big wins and when you pause.
+further along the lap, and gets busier in the last stretch. It swells as the lap runs out (about +5 dB in the last stretch) and dips under big wins and when you pause.
 Music has its own on/off button (note icon, next to the speaker) and the **N** key; **M** still mutes effects.
 Both choices are saved separately.
 

@@ -12,7 +12,7 @@ const Sfx = (() => {
   const SUIT_NOTE = [0, 2, 3, 4];          // hearts C, diamonds E, clubs G, spades A
   let ctx = null, bus = null, comp = null, master = null, noiseBuf = null, on = true, offline = false;
   const listeners = [];
-  const KEY_M = 'suitderby.mus', MUS = 0.3;
+  const KEY_M = 'suitderby.mus', MUS = 0.4;
   let mon = true, musBus = null, musOut = null;
   try { mon = localStorage.getItem(KEY_M) !== '0'; } catch (e) {}
   try { on = localStorage.getItem(KEY) !== '0'; } catch (e) {}
@@ -275,7 +275,7 @@ const Sfx = (() => {
      chill: the menu, setup, pit stop and results. Warm keys, a soft beat, a little hook that comes in on the second pass.
      race:  driving pulse. It starts with kick, bass and hats, then adds a plucked arpeggio, a clap, a pad and a lead hook
             as the lap goes on, and gets busier in the last stretch. */
-  let mWant = null, mMode = null, mLevel = 0, mDim = 1, mStep = 0, mNext = 0, mTimer = null;
+  let mWant = null, mMode = null, mLevel = 0, mDim = 1, mSwell = 1, mStep = 0, mNext = 0, mTimer = null;
   const mt = o => tone(Object.assign({ dest: musBus }, o));
   const mn = o => noise(Object.assign({ dest: musBus }, o));
   const hz = (root, semi) => root * Math.pow(2, semi / 12);
@@ -318,6 +318,7 @@ const Sfx = (() => {
         if (L >= 2 && s === 0) [0, 1, 2].forEach(k => pad(hz(root * 2, CH[q][k]), at, 1.9, 1));
         if (L >= 2 && RACE_LEAD[bar][s]) { lead(RACE_LEAD[bar][s], at, 1); lead(RACE_LEAD[bar][s], at + 3 * sp, 0.35); }
         if (L >= 3 && s === 8) pluck(hz(root * 8, CH[q][3]), at, 0.9);
+        if (L >= 3 && RACE_LEAD[bar][s]) lead(RACE_LEAD[bar][s] * 2, at, 0.45);
       }
     },
     chill: {
@@ -335,7 +336,7 @@ const Sfx = (() => {
       }
     }
   };
-  function mGain(mult, tc) { if (musBus) musBus.gain.setTargetAtTime(Math.max(0.0001, MUS * mDim * (mult || 1)), ctx.currentTime, tc || 0.15); }
+  function mGain(mult, tc) { if (musBus) musBus.gain.setTargetAtTime(Math.max(0.0001, MUS * mDim * mSwell * (mult || 1)), ctx.currentTime, tc || 0.15); }
   function mSched() {
     if (!ctx || !mMode || !mon) return;
     if (!offline && ctx.state !== 'running') return;
@@ -376,13 +377,15 @@ const Sfx = (() => {
   const music = {
     mode(m) { mWant = m; mApply(); },
     level(n) { mLevel = n; },
+    /* the race track gets louder as the lap runs out: 1 = normal, up to about 1.35 in the last stretch */
+    swell(v) { v = Math.round(v * 20) / 20; if (v !== mSwell) { mSwell = v; if (ctx && mMode) mGain(1, 0.3); } },
     dim(v) { if (v !== mDim) { mDim = v; if (ctx && mMode) mGain(1, 0.12); } },
     duck(amt, dur) {
       if (!ctx || !mMode || !mon) return;
       const t = ctx.currentTime;
       musBus.gain.cancelScheduledValues(t);
-      musBus.gain.setTargetAtTime(MUS * mDim * amt, t, 0.03);
-      musBus.gain.setTargetAtTime(MUS * mDim, t + dur, 0.4);
+      musBus.gain.setTargetAtTime(MUS * mDim * mSwell * amt, t, 0.03);
+      musBus.gain.setTargetAtTime(MUS * mDim * mSwell, t + dur, 0.4);
     },
     set(v) {
       mon = !!v;
@@ -415,7 +418,7 @@ const Sfx = (() => {
     finally { ({ ctx, bus, comp, master, noiseBuf, offline, on } = keep); }
   }
 
-  async function renderMusic(mode, level, secs) {
+  async function renderMusic(mode, level, secs, gainMult) {
     const oc = new OfflineAudioContext(1, Math.floor(44100 * secs), 44100);
     const keep = { ctx, bus, comp, master, noiseBuf, offline, on, musBus, musOut, mon, mMode, mLevel, mStep, mNext };
     ctx = oc; offline = true; on = true; mon = true; init(); mMode = mode; mLevel = level;
@@ -423,7 +426,7 @@ const Sfx = (() => {
       const m = MODES[mode], sp = 60 / m.bpm / 4;
       let i = 0, t = 0.05;
       while (t < secs) { m.step(i, t + ((i & 1) ? m.swing * sp : 0), level); i++; t += sp; }
-      musBus.gain.value = MUS;
+      musBus.gain.value = MUS * (gainMult || 1);
       return (await oc.startRendering()).getChannelData(0);
     } finally { ({ ctx, bus, comp, master, noiseBuf, offline, on, musBus, musOut, mon, mMode, mLevel, mStep, mNext } = keep); }
   }
