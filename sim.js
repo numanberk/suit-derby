@@ -34,6 +34,7 @@ function playRun({ laps, buy, bet, metaLevels = {}, seed, me = 0 }) {
   const meta = M.effects({ levels: metaLevels });
   const run = E.newRun({ me, laps, meta, seed }); run.auto = true;
   const places = [];
+  if (run.startPicks) E.pickStart(run, 0);
   while (run.phase !== 'over') {
     if (bet) placeBets(run, bet); else run.calls = [null, null, null, null];
     E.startLap(run);
@@ -44,7 +45,7 @@ function playRun({ laps, buy, bet, metaLevels = {}, seed, me = 0 }) {
     }
     const res = E.endLap(run);
     places.push(res.place);
-    if (run.phase === 'shop' && buy) shopGreedy(run);
+    if (run.phase === 'shop' && buy) { if (run.crews) E.chooseCrew(run, 'shop'); shopGreedy(run); }
   }
   return { run, places };
 }

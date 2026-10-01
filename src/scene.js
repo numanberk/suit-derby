@@ -17,6 +17,21 @@ const Scene = (() => {
   } : null;
   const LEGS = [['legBF', 36, 52, 0.75, true], ['legFF', 76, 52, 0, true], ['legBN', 44, 52, 0.5, false], ['legFN', 84, 52, 0.25, false]];
   const CROWD = ['#f0525e', '#ff9a3d', '#3fc48a', '#8092ff', '#ece8da', '#e9cf73'];
+  /* track themes (a palette each) and coats for your own horse; picked at the setup screen */
+  const THEMES = {
+    stadium: { sky: ['#04060c', '#0d1322', '#1a2034'], stars: 1, flood: true, stand: ['#10141f', '#1b2233'], fog: '10,14,22', lane: ['33271b', '3a2c1f'], grain: 'rgba(255,230,190,.045)', line: 'rgba(255,255,255,.14)' },
+    dusk: { sky: ['#2b1038', '#a8454a', '#f2a65a'], stars: 0.15, flood: false, sun: { x: 0.7, y: 0.9, r: 0.2, c: 'rgba(255,214,140,.9)' }, stand: ['#2a1a2a', '#4a2c38'], fog: '60,30,40', lane: ['4a3320', '56392a'], grain: 'rgba(255,200,150,.07)', line: 'rgba(255,230,200,.22)' },
+    turf: { sky: ['#5c9fd8', '#8fc2ea', '#cfe8f7'], stars: 0, flood: false, sun: { x: 0.2, y: 0.35, r: 0.08, c: 'rgba(255,248,210,.95)' }, stand: ['#37507a', '#5b79a8'], fog: '120,170,200', lane: ['2f6b3a', '37783f'], grain: 'rgba(210,255,200,.07)', line: 'rgba(255,255,255,.3)' },
+    snow: { sky: ['#9fb3c8', '#c9d6e3', '#eef3f8'], stars: 0, flood: false, stand: ['#6d7f93', '#a6b5c5'], fog: '200,214,228', lane: ['b7c4d1', 'c4d0db'], grain: 'rgba(255,255,255,.35)', line: 'rgba(70,90,110,.35)' },
+    neon: { sky: ['#12002b', '#3b0a5e', '#c2287f'], stars: 0.9, flood: false, sun: { x: 0.5, y: 0.95, r: 0.22, c: 'rgba(255,90,170,.85)' }, stand: ['#16062e', '#2d0d56'], fog: '40,10,70', lane: ['1a1030', '221540'], grain: 'rgba(80,240,255,.09)', line: 'rgba(80,240,255,.55)' }
+  };
+  const SKINS = {
+    gold: { coat: '#e2bb52', mane: '#fff1b0', glow: '#ffd75e' },
+    midnight: { coat: '#1f2a52', mane: '#8fa4ff', glow: null },
+    neon: { coat: '#2a1148', mane: '#5ef0ff', glow: '#5ef0ff', legs: '#ff4fd8' },
+    ghost: { coat: '#dfe8f2', mane: '#9fb2c8', glow: '#bcd6ff', alpha: 0.72 },
+    candy: { coat: '#ff9ec7', mane: '#ffffff', legs: '#8fe8c8', glow: null }
+  };
 
   function shade(hex, f) {
     const n = parseInt(hex.slice(1), 16);
@@ -34,8 +49,9 @@ const Scene = (() => {
     const sc = {
       W: 600, H: 300, dpr: 1, cam: -6, ppu: 8, t: 0, crowd: 0.3, flash: 0, photo: 0, photoV: 0, flashCol: '#fff',
       phase: [0, 0, 0, 0], lines: [0, 0, 0, 0], aura: [0, 0, 0, 0], tilt: [0, 0, 0, 0],
-      parts: [], texts: [], rows: [0, 1, 2, 3], me: 0, stars: [], hzPulse: 0
+      parts: [], texts: [], rows: [0, 1, 2, 3], me: 0, stars: [], hzPulse: 0, theme: 'stadium', skin: 'classic'
     };
+    sc.setStyle = (skin, theme) => { sc.skin = SKINS[skin] ? skin : 'classic'; sc.theme = THEMES[theme] ? theme : 'stadium'; };
     for (let i = 0; i < 70; i++) sc.stars.push({ x: Math.random(), y: Math.random() * 0.3, s: Math.random() * 1.4 + 0.3, p: Math.random() * 6 });
 
     function resize() {
@@ -114,8 +130,11 @@ const Scene = (() => {
 
     /* ---------- drawing ---------- */
     function drawHorse(x, y, k, i, phase, o) {
-      const c = col[i], far = shade(c, 0.55);
+      const sk = i === sc.me ? SKINS[sc.skin] : null;
+      const c = sk ? sk.coat : col[i], far = shade(sk && sk.legs ? sk.legs : c, 0.55), legC = sk && sk.legs ? sk.legs : c;
       ctx.save();
+      if (sk && sk.alpha) ctx.globalAlpha = sk.alpha;
+      if (sk && sk.glow) { ctx.shadowColor = sk.glow; ctx.shadowBlur = 16; }
       ctx.translate(x - 58 * k, y - 82 * k + (o.bob || 0) * k);
       if (o.tilt) { ctx.translate(58 * k, 82 * k); ctx.rotate(-o.tilt * 0.22); ctx.translate(-58 * k, -82 * k); }
       ctx.scale(k, k);
@@ -125,17 +144,18 @@ const Scene = (() => {
       const leg = L => {
         const a = Math.sin((phase + L[3]) * Math.PI * 2) * 0.49;
         ctx.save(); ctx.translate(L[1], L[2]); ctx.rotate(a); ctx.translate(-L[1], -L[2]);
-        ctx.strokeStyle = L[4] ? far : c; ctx.stroke(P[L[0]]); ctx.restore();
+        ctx.strokeStyle = L[4] ? far : legC; ctx.stroke(P[L[0]]); ctx.restore();
       };
       leg(LEGS[0]); leg(LEGS[1]);
       ctx.fillStyle = c; ctx.fill(P.body); ctx.fill(P.neck);
       ctx.save(); ctx.translate(104, 22); ctx.rotate(0.66); ctx.beginPath(); ctx.ellipse(0, 0, 13, 6.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       ctx.fill(P.ear);
       ctx.fillStyle = DARK; ctx.beginPath(); ctx.arc(101, 17, 1.7, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(13,17,12,.35)'; ctx.lineWidth = 4; ctx.stroke(P.mane);
+      ctx.strokeStyle = sk ? sk.mane : 'rgba(13,17,12,.35)'; ctx.lineWidth = 4; ctx.stroke(P.mane);
       ctx.lineWidth = 6;
       leg(LEGS[2]); leg(LEGS[3]);
-      ctx.fillStyle = INK;
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = sk ? col[i] : INK;
       ctx.beginPath(); ctx.roundRect ? ctx.roundRect(50, 31, 20, 17, 3) : ctx.rect(50, 31, 20, 17); ctx.fill();
       ctx.fillStyle = DARK; ctx.font = '700 14px Hanken Grotesk, system-ui, sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(glyph[i], 60, 44.5);
@@ -146,16 +166,22 @@ const Scene = (() => {
     }
 
     function drawSky(W, H, yT) {
+      const TH = THEMES[sc.theme];
       const g = ctx.createLinearGradient(0, 0, 0, yT);
-      g.addColorStop(0, '#04060c'); g.addColorStop(0.65, '#0d1322'); g.addColorStop(1, '#1a2034');
+      g.addColorStop(0, TH.sky[0]); g.addColorStop(0.65, TH.sky[1]); g.addColorStop(1, TH.sky[2]);
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, yT);
-      sc.stars.forEach(s => {
-        ctx.globalAlpha = 0.35 + 0.35 * Math.sin(sc.t * 1.3 + s.p);
+      if (TH.sun) {
+        const sx0 = W * TH.sun.x, sy0 = yT * TH.sun.y, sr = Math.min(W, yT * 2) * TH.sun.r;
+        ctx.fillStyle = TH.sun.c; ctx.beginPath(); ctx.arc(sx0, sy0, sr, 0, Math.PI * 2); ctx.fill();
+        if (sc.theme === 'neon') { ctx.fillStyle = TH.sky[1]; for (let k = 1; k < 5; k++) ctx.fillRect(sx0 - sr, sy0 + k * sr * 0.2 - sr * 0.1, sr * 2, k * 1.4); }
+      }
+      if (TH.stars) sc.stars.forEach(s => {
+        ctx.globalAlpha = TH.stars * (0.35 + 0.35 * Math.sin(sc.t * 1.3 + s.p));
         ctx.fillStyle = '#fff'; ctx.fillRect(s.x * W, s.y * H, s.s, s.s);
       });
       ctx.globalAlpha = 1;
       // floodlight cones
-      [[0.12, 1], [0.88, -1]].forEach(f => {
+      if (TH.flood) [[0.12, 1], [0.88, -1]].forEach(f => {
         const x = f[0] * W, gr = ctx.createLinearGradient(x, 0, x + f[1] * W * 0.22, yT);
         gr.addColorStop(0, 'rgba(255,244,200,0.30)'); gr.addColorStop(1, 'rgba(255,244,200,0)');
         ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x - 6, 0); ctx.lineTo(x + 6, 0); ctx.lineTo(x + f[1] * W * 0.36, yT); ctx.lineTo(x - f[1] * W * 0.05, yT); ctx.closePath(); ctx.fill();
@@ -164,8 +190,9 @@ const Scene = (() => {
     }
     function drawStand(W, H, yT) {
       const top = yT - H * 0.23;
-      ctx.fillStyle = '#10141f'; ctx.fillRect(0, top, W, yT - top);
-      ctx.fillStyle = '#1b2233'; ctx.fillRect(0, top, W, 3);
+      const TH = THEMES[sc.theme];
+      ctx.fillStyle = TH.stand[0]; ctx.fillRect(0, top, W, yT - top);
+      ctx.fillStyle = TH.stand[1]; ctx.fillRect(0, top, W, 3);
       const off = sc.cam * sc.ppu * 0.22, step = 11, rows = 5, rh = (yT - top - 8) / rows;
       const cols = Math.ceil(W / step) + 2;
       for (let r = 0; r < rows; r++) {
@@ -187,7 +214,7 @@ const Scene = (() => {
       }
       ctx.globalAlpha = 1;
       const fog = ctx.createLinearGradient(0, yT - 18, 0, yT);
-      fog.addColorStop(0, 'rgba(10,14,22,0)'); fog.addColorStop(1, 'rgba(10,14,22,.8)');
+      fog.addColorStop(0, 'rgba(' + TH.fog + ',0)'); fog.addColorStop(1, 'rgba(' + TH.fog + ',.8)');
       ctx.fillStyle = fog; ctx.fillRect(0, yT - 18, W, 18);
     }
 
@@ -203,14 +230,15 @@ const Scene = (() => {
       // track lanes
       for (let r = 0; r < 4; r++) {
         const L = g[r], gr = ctx.createLinearGradient(0, L.top, 0, L.top + L.h);
-        const a = r % 2 ? '#3a2c1f' : '#33271b';
-        gr.addColorStop(0, shade('#' + (r % 2 ? '3a2c1f' : '33271b'), 0.85 + r * 0.06)); gr.addColorStop(1, a);
+        const TH = THEMES[sc.theme], lc = TH.lane[r % 2];
+        const a = '#' + lc;
+        gr.addColorStop(0, shade('#' + lc, 0.85 + r * 0.06)); gr.addColorStop(1, a);
         ctx.fillStyle = gr; ctx.fillRect(0, L.top, W, L.h);
         // scrolling dirt grain
-        ctx.fillStyle = 'rgba(255,230,190,.045)';
+        ctx.fillStyle = TH.grain;
         const gs = 34 + r * 6, go = (cam * ppu * (0.9 + r * 0.05)) % gs;
         for (let x = -go; x < W; x += gs) ctx.fillRect(x, L.top + L.h * (0.25 + (Math.floor((x + go) / gs) % 3) * 0.22), 14 + r * 3, 2);
-        ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(0, L.top, W, 1);
+        ctx.fillStyle = TH.line; ctx.fillRect(0, L.top, W, sc.theme === 'neon' ? 2 : 1);
       }
       // furlong posts
       ctx.fillStyle = 'rgba(255,255,255,.12)';
@@ -405,5 +433,5 @@ const Scene = (() => {
     resize(); setMe(0);
     return Object.assign(sc, { resize, reset, setMe, update, draw, anchor });
   }
-  return { create };
+  return { create, THEMES, SKINS };
 })();

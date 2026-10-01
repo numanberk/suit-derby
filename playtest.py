@@ -20,19 +20,31 @@ async def leak_modal(pg):
     print('LEAK-CHECK guide', sorted(set(WORDS.findall(txt))) or 'clean')
 
 async def pit_actions(pg, lap):
+    # starting pick (before lap 1) or one pit crew per stop: cycle through the crews so every pane gets used
+    if await pg.locator('[data-spick]').count():
+        await pg.click('[data-ptab="crew"]'); await pg.locator('[data-spick]').nth(lap % 3).click()
+    elif lap > 0:
+        await pg.click('[data-ptab="crew"]')
+        n = await pg.locator('[data-crewpick]:not([disabled])').count()
+        if n:
+            await pg.locator('[data-crewpick]:not([disabled])').nth(lap % n).click()
+            for _ in range(3):
+                for sel in ('[data-buy]:not([disabled]):visible', '[data-mbuy]:not([disabled]):visible', '[data-drill]:not([disabled]):visible', '[data-spin]:not([disabled]):visible'):
+                    btn = pg.locator(sel).first
+                    if await btn.count():
+                        try: await btn.click(timeout=1500)
+                        except Exception: pass
+            if await pg.locator('[data-evt]:not([disabled]):visible').count():
+                await pg.locator('[data-evt]:not([disabled]):visible').first.click()
+            if await pg.locator('[data-deal]:not([disabled]):visible').count():
+                await pg.click('[data-deal]')
+                if await pg.locator('[data-tg="higher"]:not([disabled]):visible').count(): await pg.click('[data-tg="higher"]')
     await pg.click('[data-ptab="bets"]')
     for pl in range(1, 4):
         h = (pl + lap) % 4
         loc = pg.locator(f'[data-cell="{pl},{h}"]:not([disabled])')
         if await loc.count(): await loc.click()
     if await pg.locator('[data-stake]').count(): await pg.locator('[data-stake]').first.click()
-    if await pg.locator('[data-deal]:not([disabled])').count():
-        await pg.click('[data-deal]')
-        if await pg.locator('[data-tg="higher"]:not([disabled])').count(): await pg.click('[data-tg="higher"]')
-    await pg.click('[data-ptab="shop"]')
-    for _ in range(4):
-        btn = pg.locator('[data-buy]:not([disabled])').first
-        if await btn.count(): await btn.click()
 
 async def play_lap(pg, stats):
     """One lap: brace every hazard, bet on the likeliest suit now and then, spur at full stamina."""
@@ -57,6 +69,10 @@ async def play_lap(pg, stats):
                 await pg.wait_for_timeout(100)
                 if tick % 74 == 0 and await pg.locator('#burn:not([disabled])').count():
                     await pg.click('#burn', timeout=1500); stats['burn'] += 1
+            except Exception: pass
+        if tick % 23 == 0 and await pg.locator('[data-ab]:not([disabled])').count():
+            try:
+                await pg.locator('[data-ab]:not([disabled])').first.click(timeout=1200); stats['ab'] = stats.get('ab', 0) + 1
             except Exception: pass
         if await pg.locator('#spur.full:not([disabled])').count():
             try:
@@ -87,17 +103,19 @@ async def main():
         assert await pg.locator('#guide:not([hidden])').count() == 1, 'guide shows on first run'
         await pg.screenshot(path=shot('guide.png'))
         await leak_modal(pg)
-        for _ in range(4): await pg.click('#gnext')
+        for _ in range(8):
+            if await pg.locator('#guide:not([hidden])').count(): await pg.click('#gnext')
         assert await pg.locator('#guide:not([hidden])').count() == 0, 'guide closes'
         await pg.screenshot(path=shot('setup.png'), full_page=True)
         await pg.click('#startRun'); await pg.wait_for_timeout(300)
         print('start screen', await pg.evaluate('__derby.S.screen'))
         await pit_actions(pg, 0)
+        await pg.evaluate("['banana','draftg','cutg'].forEach(i=>__derby.E.grant(__derby.S.run,i)); ['veto','wild','dupe'].forEach(i=>__derby.E.grant(__derby.S.run,i))")
         assert await pg.locator('[data-cell^="0,"]:not([disabled])').count() == 0, 'first place must be locked'
         await pg.screenshot(path=shot('prep.png'), full_page=True)
         await leak(pg, 'prep')
         await pg.click('#nextLap')
-        stats = {'brace': 0, 'spur': 0, 'bets': 0, 'trap': 0, 'peek': 0, 'burn': 0}
+        stats = {'brace': 0, 'spur': 0, 'bets': 0, 'trap': 0, 'peek': 0, 'burn': 0, 'ab': 0}
         laps = 0
         await pg.wait_for_timeout(3000)
         await leak(pg, 'game')
@@ -111,10 +129,10 @@ async def main():
                 if laps == 2: await leak(pg, 'pit')
                 if laps == 2: await pg.screenshot(path=shot('pit.png'), full_page=True)
                 if laps == 2:
-                    await pg.click('[data-ptab="shop"]'); await pg.screenshot(path=shot('pit-shop.png'), full_page=True)
+                    await pg.click('[data-ptab="crew"]'); await pg.screenshot(path=shot('pit-crew.png'), full_page=True)
                     await pg.click('[data-ptab="bets"]'); await pg.screenshot(path=shot('pit-bets.png'), full_page=True)
                 await pit_actions(pg, laps)
-                await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
+                await pg.click('#nextLap'); await pg.wait_for_timeout(300); await (pg.click('#nextLap') if await pg.evaluate('__derby.S.screen') == 'pit' else pg.wait_for_timeout(1)); await pg.wait_for_timeout(2500)
             elif sc == 'over': break
         print('laps at pit', laps, 'screen', await pg.evaluate('__derby.S.screen'), stats)
         await pg.wait_for_timeout(500)
@@ -123,7 +141,9 @@ async def main():
         print('over', await pg.evaluate('JSON.stringify(__derby.S.run.result)'))
         await pg.click('#s-over [data-go="stable"]')
         await leak(pg, 'stable')
-        if await pg.locator('[data-perk]:not([disabled])').count(): await pg.click('[data-perk]:not([disabled]) >> nth=0')
+        if await pg.locator('.nd.st-aff').count():
+            await pg.locator('.nd.st-aff').first.click()
+            if await pg.locator('[data-buynode]:not([disabled])').count(): await pg.click('[data-buynode]')
         await pg.click('#s-stable [data-go="menu"]')
         await pg.click('#s-menu [data-go="rules"]')
         await leak(pg, 'rules')
@@ -134,7 +154,7 @@ async def main():
         await pg.screenshot(path=shot('menu2.png'), full_page=True)
         await pg.click('#dailyBtn'); await pg.wait_for_timeout(300)
         print('daily', await pg.evaluate('JSON.stringify([__derby.S.daily, __derby.S.run.me, __derby.S.run.laps])'))
-        await pit_actions(pg, 0); await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
+        await pit_actions(pg, 0); await pg.click('#nextLap'); await pg.wait_for_timeout(300); await (pg.click('#nextLap') if await pg.evaluate('__derby.S.screen') == 'pit' else pg.wait_for_timeout(1)); await pg.wait_for_timeout(2500)
         st2 = {'brace': 0, 'spur': 0, 'bets': 0, 'trap': 0, 'peek': 0, 'burn': 0}
         for lap in range(6):
             await play_lap(pg, st2)
@@ -142,7 +162,7 @@ async def main():
             if sc == 'pit':
                 await pg.wait_for_timeout(300)
                 if lap == 1: await pg.screenshot(path=shot('pit-daily.png'), full_page=True)
-                await pit_actions(pg, lap + 1); await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
+                await pit_actions(pg, lap + 1); await pg.click('#nextLap'); await pg.wait_for_timeout(300); await (pg.click('#nextLap') if await pg.evaluate('__derby.S.screen') == 'pit' else pg.wait_for_timeout(1)); await pg.wait_for_timeout(2500)
             elif sc == 'over': break
         await pg.wait_for_timeout(600)
         print('daily over', await pg.evaluate('__derby.S.screen'), st2)
@@ -157,7 +177,9 @@ async def main():
         await pg2.click('#s-menu [data-go="setup"]'); await pg2.screenshot(path=shot('phone-guide.png')); await pg2.keyboard.press('Escape'); await pg2.screenshot(path=shot('phone-setup.png'), full_page=True); await pg2.click('#startRun'); await pg2.wait_for_timeout(300)
         await pg2.screenshot(path=shot('phone-pit.png'), full_page=True)
         print('phone prep scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
-        await pg2.click('#nextLap'); await pg2.wait_for_timeout(5000)
+        await pg2.locator('[data-spick]').first.click(); await pg2.wait_for_timeout(300)
+        print('phone state', await pg2.evaluate('JSON.stringify([__derby.S.pitTab, !!__derby.S.run.startPicks, __derby.S.run.startPick, document.querySelector("#nextLap").disabled, document.querySelectorAll("[data-spick]").length])'))
+        await pg2.click('#nextLap', timeout=5000); await pg2.wait_for_timeout(5000)
         await pg2.screenshot(path=shot('phone-game.png'))
         print('phone game scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
         print('errors', errs)

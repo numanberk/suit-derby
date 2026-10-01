@@ -4,11 +4,11 @@ E.CFG.quoteSims=2;
 const PRI=['flush','takeover','jackpot','ticket','fake','joker','aces','court','stack','draft','sling','stride','wind','marked','retread','horseshoe','dice','chaos','sand','rich','interest','penny','spare','lens','insure','haggler','bookie','roller','coin','slam','sabotage','headstart','cut','double','slip','allin','sponsor'];
 function shop(run){let g=0;while(g++<40){let b=null;run.shop.forEach((o,i)=>{if(o.sold||E.priceOf(run,o.id)>E.spendable(run))return;const p=PRI.indexOf(o.id);if(!b||p<b.p)b={i,p};});if(!b)break;E.buy(run,b.i);}}
 function play(seed,me,laps,{buy,traps,diff=0}){
-  const run=E.newRun({me,laps,seed,meta:M.effects(M.fresh()),diff});run.auto=true;const places=[];let lastAt2=false,income=[0,0,0,0,0];
+  const run=E.newRun({me,laps,seed,meta:M.effects(M.fresh()),diff});run.auto=true;if(run.startPicks)E.pickStart(run,0);const places=[];let lastAt2=false,income=[0,0,0,0,0];
   while(run.phase!=='over'){run.calls=[null,null,null,null];E.startLap(run);let n=0;
     while(!run.lap.done){E.stepLap(run,0.05);n++;if(traps&&run.lap.traps>0&&n%60===30)E.trap(run);}
     const r=E.endLap(run);places.push(r.place);income[r.place]+=r.total;
-    if(run.phase==='shop'&&buy)shop(run);
+    if(run.phase==='shop'&&buy){if(run.crews)E.chooseCrew(run,'shop');shop(run);}
     if(run.lapNo===2&&run.phase==='shop'&&E.runOrder(run).indexOf(me)===3)lastAt2=true;}
   return {run,places,lastAt2,income};
 }

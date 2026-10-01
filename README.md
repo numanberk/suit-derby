@@ -21,6 +21,16 @@ crowd and a galloping hoofbeat sit under the race and swell when something happe
 buying goes cha-ching, and the lap payout counts up with rising ticks. Sound starts after your first tap,
 the speaker button (menu and race screen) or the **M** key mutes it, and the choice is saved.
 
+### v11: gadgets, round cards, pit crews, rivals, skill tree
+- **Gadgets** (permanent, 2 slots, charges refill each lap): Banana (slows the leader), Draft (surge your horse when it is close behind another), Cut (skip a rival card in the deck window). Keys **Q / W / E**.
+- **Round cards** (one-time, hand of 3, carry over): Veto (throw away the next rival card), Wild (turn the next rival card into your suit), Double Up (double your next card). Keys **R / T / Y**.
+- **Starting pick:** one of three free upgrades before lap 1.
+- **Pit crews:** each stop you choose one of three crews: the Shop (always) plus two of Black Market, Training Gallop, Gambler's Den, Trackside Event. Every crew has a gold sink.
+- **Named rival jockeys** (Rosa Valentine, Duke Carat, Clover Quinn, Silas Vane) with their own quirks and taunts. The old "Owner's Pick" perk was removed (Stable Points refunded).
+- **Player jockeys, coats and track themes** picked at Setup (unlocked in the Stable).
+- **The Stable is a skill tree:** start at the centre and branch out (treasury, yard, ring, shop, codex, club, paddock, luck). Codex nodes unlock new upgrades.
+- Saves are v2: old v10 runs in progress are not resumable. Balance: `node sim11.js quick|crews|jockeys|abilities`.
+
 ### v10: saving, offline, calmer pit stop, finish drama
 - **Save and resume.** The whole run (including the random generator) is saved after every pit action and every 3 seconds in a lap, so closing the tab loses nothing. Menu: **Continue run**. A run resumes exactly where it stopped (mid-lap too, paused).
 - **Offline.** `dist/suit-derby.html` embeds its fonts (latin and latin-ext, so Turkish too), so the single file works with no network. `dist/site/` is the same page plus `sw.js`, a web manifest and icons: host that folder (GitHub Pages) and the game installs as an app and opens offline after one visit. The service worker is only registered over http(s). (The claude.ai artifact copy needs the page itself to load, so it is online only.)
@@ -86,6 +96,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     fonts/           woff2 files and fonts.css that build.py embeds
     icons/           app icons (make_icons.py redraws them)
     sim.js           balance simulation:  node sim.js
+    sim11.js         crews, jockeys and abilities:  node sim11.js crews
     sim_catchup.js   seat fairness and comeback checks:  node sim_catchup.js
     playtest.py      headless full-run test (calls, shop, card table) (needs python playwright + chromium)
 

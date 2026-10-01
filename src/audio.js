@@ -160,6 +160,21 @@ const Sfx = (() => {
   const burn = S(() => {            // whoosh and a low thud: the card is gone
     noise({ type: 'bandpass', f: 2500, to: 350, q: 0.7, dur: 0.34, vol: 0.16 }); tone({ f: 170, to: 55, dur: 0.3, type: 'triangle', vol: 0.14, at: 0.04 });
   });
+  const gadget = S(k => {           // gadgets: a slip, a gust, a riffle
+    if (k === 'banana') { tone({ f: 950, to: 180, dur: 0.38, type: 'sine', vol: 0.1 }); noise({ type: 'lowpass', f: 700, dur: 0.14, vol: 0.16, at: 0.32 }); }
+    else if (k === 'draftg') { noise({ type: 'bandpass', f: 500, to: 3200, q: 0.8, dur: 0.42, vol: 0.12 }); tone({ f: 260, to: 640, dur: 0.38, type: 'triangle', vol: 0.09 }); }
+    else { for (let i = 0; i < 6; i++) noise({ type: 'highpass', f: 3500 + i * 200, dur: 0.03, vol: 0.1, at: i * 0.04 }); ping(SC[7], 0.08, 0.26, 0.3); }
+  });
+  const card = S(k => {             // round cards: a rip, a shimmer, a double chime
+    if (k === 'veto') { noise({ type: 'bandpass', f: 2200, to: 300, q: 0.7, dur: 0.28, vol: 0.15 }); tone({ f: 200, to: 80, dur: 0.22, type: 'square', lp: 600, vol: 0.08, at: 0.05 }); }
+    else if (k === 'wild') { [4, 6, 8, 9].forEach((j, i) => ping(SC[j], 0.09, i * 0.05, 0.4)); noise({ type: 'highpass', f: 6500, dur: 0.3, vol: 0.05 }); }
+    else { ping(SC[5], 0.1, 0, 0.3); ping(SC[8], 0.1, 0.09, 0.4); ping(SC[9], 0.1, 0.18, 0.5); }
+  });
+  const wheel = S(win => {          // the Wheel of Fortune: ticks that slow down, then the result
+    for (let i = 0; i < 12; i++) noise({ type: 'bandpass', f: 2600, q: 5, dur: 0.02, vol: 0.12, at: 0.012 * i * i * 0.7 });
+    const at = 1.05;
+    if (win) { [2, 4, 6, 9].forEach((k, i) => ping(SC[k], 0.1, at + i * 0.06, 0.5)); } else tone({ f: 200, to: 90, dur: 0.3, type: 'triangle', vol: 0.1, at });
+  });
   const achieve = S(() => {         // trophy
     [0, 2, 4, 5, 7, 9].forEach((k, i) => ping(SC[k], 0.1, i * 0.07, 0.5)); noise({ type: 'highpass', f: 7500, dur: 0.4, vol: 0.05, at: 0.25 });
   });
@@ -484,7 +499,7 @@ const Sfx = (() => {
 
   const api = {
     click, pick, chip, shuffle, flip, buy, deny, count, draw, chaos, surge, spur, warn, perfect, clear, stumble,
-    trap, trapHit, peek, burn, achieve, final, phoenix, photo, shutter,
+    trap, trapHit, peek, burn, gadget, card, wheel, achieve, final, phoenix, photo, shutter,
     lucky, coinFlip, dice, hit, miss, refund, win, tally, finish, champion, podium, settle, pit,
     crowd, cheer, hooves, set, unlock, render, renderMusic, music,
     toggle: () => set(!on),
