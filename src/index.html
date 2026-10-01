@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="theme-color" content="#0d110c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Suit Derby</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +22,7 @@
     </div>
     <div class="lineup" id="lineup" aria-hidden="true"></div>
     <nav class="menu-list" data-i18n-label="Main menu" aria-label="Main menu">
+      <button type="button" class="mrow resume" id="resumeBtn" hidden><span class="mt" data-i18n="Continue run">Continue run</span><span class="md" id="resume-sub"></span></button>
       <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
       <button type="button" class="mrow daily" id="dailyBtn"><span class="mt" data-i18n="Daily Derby">Daily Derby</span><span class="md" id="daily-sub"></span></button>
       <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
@@ -38,6 +40,7 @@
     <div class="pills" role="radiogroup" data-i18n-label="Number of laps" aria-label="Number of laps" id="lapPills"></div>
     <div id="stakeBox"><h3 class="lbl" data-i18n="Stakes">Stakes</h3>
     <div class="pills" role="radiogroup" data-i18n-label="Stakes" aria-label="Stakes" id="stakePills"></div></div>
+    <p class="note warn" id="setup-save" hidden data-i18n="Starting a new run replaces your saved run.">Starting a new run replaces your saved run.</p>
     <p class="note" id="setup-perks"></p>
     <div class="actions"><button type="button" class="btn primary" id="startRun" data-i18n="Start run">Start run</button></div>
   </section>
@@ -115,42 +118,54 @@
       <h2 id="pit-title">Lap 1 complete</h2>
       <div class="cashwrap"><div class="cashchip" id="pit-cash">$0</div><div class="cashsub mono" id="pit-cash-sub"></div></div>
     </header>
-    <div class="pit-top">
-      <div class="pit-res">
-        <div class="bigplace" id="pit-place">1st</div>
-        <div class="stmt" id="pit-stmt"></div>
+    <div class="nextstrip" id="nextstrip"></div>
+    <div class="ptabs" id="ptabs" role="tablist" data-i18n-label="Pit stop sections" aria-label="Pit stop sections">
+      <button type="button" role="tab" data-ptab="result" id="tab-result"><span data-i18n="Result">Result</span></button>
+      <button type="button" role="tab" data-ptab="shop" id="tab-shop"><span data-i18n="Shop">Shop</span><i class="tbadge" id="badge-shop" hidden></i></button>
+      <button type="button" role="tab" data-ptab="bets" id="tab-bets"><span data-i18n="Bets">Bets</span><i class="tbadge" id="badge-bets" hidden></i></button>
+    </div>
+
+    <div class="pane" data-pane="result" role="tabpanel">
+      <div class="pit-top">
+        <div class="pit-res">
+          <div class="bigplace" id="pit-place">1st</div>
+          <div class="stmt" id="pit-stmt"></div>
+        </div>
+        <div class="pit-stand">
+          <h3 class="lbl" id="pit-stand-h">Championship</h3>
+          <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
+          <div class="deckbar sm" id="pit-deckbar"></div>
+          <div class="deckleg mono" id="pit-deckleg"></div>
+        </div>
       </div>
-      <div class="pit-stand">
-        <h3 class="lbl" id="pit-stand-h">Championship</h3>
-        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
-        <div class="deckbar sm" id="pit-deckbar"></div>
-        <div class="deckleg mono" id="pit-deckleg"></div>
+      <div class="rivals" id="rivals"></div>
+      <div class="intel" id="intel"></div>
+      <div class="recap" id="recap" hidden></div>
+    </div>
+
+    <div class="pane" data-pane="shop" role="tabpanel" hidden>
+      <div class="sect first" id="shopsect">
+        <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
+        <div class="tiers mono" id="tiers"></div>
+        <div class="offers" id="offers"></div>
+        <p class="note" id="shopclosed" hidden data-i18n="The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.">The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.</p>
+      </div>
+      <div class="sets" id="sets"></div>
+      <div class="kit" id="kit"></div>
+    </div>
+
+    <div class="pane" data-pane="bets" role="tabpanel" hidden>
+      <div class="sect first">
+        <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
+        <div class="board" id="board"></div>
+        <p class="boardfoot" id="boardfoot"></p>
+      </div>
+      <div class="sect">
+        <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
+        <div class="table" id="table"></div>
       </div>
     </div>
-    <div class="rivals" id="rivals"></div>
-    <div class="intel" id="intel"></div>
-    <div class="recap" id="recap" hidden></div>
 
-    <div class="sect">
-      <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
-      <div class="board" id="board"></div>
-      <p class="boardfoot" id="boardfoot"></p>
-    </div>
-
-    <div class="sect" id="shopsect">
-      <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
-      <div class="tiers mono" id="tiers"></div>
-      <div class="offers" id="offers"></div>
-      <p class="note" id="shopclosed" hidden data-i18n="The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.">The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.</p>
-    </div>
-
-    <div class="sect">
-      <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
-      <div class="table" id="table"></div>
-    </div>
-
-    <div class="sets" id="sets"></div>
-    <div class="kit" id="kit"></div>
     <div class="pitbar"><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
   </section>
 

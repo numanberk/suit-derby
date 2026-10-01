@@ -100,13 +100,18 @@ const Engine = (() => {
   const UNLOCK = { echo: 'streak', trapper: 'saboteur', phoenix: 'comeback', grit: 'perfectionist' };
 
   function mulberry32(a) {
-    return function () {
+    const f = function () {
       a |= 0; a = (a + 0x6D2B79F5) | 0;
       let t = Math.imul(a ^ (a >>> 15), 1 | a);
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
+    f.state = () => a | 0;   // the whole generator is this one number, so a run can be saved and resumed exactly
+    return f;
   }
+  /* save / resume: a run is plain data except its random generator */
+  function pack(run) { const o = JSON.parse(JSON.stringify(run)); o.rngState = run.rng.state(); return o; }
+  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); return run; }
   const val = c => (c.joker ? 17 : c.r);
   const label = c => (c.chaos ? '?' : c.joker ? '★' : ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' })[c.r] || String(c.r));
   const boostOf = (c, h) => (CFG.surgeBase + val(c) * CFG.surgeVal) * h.mult * h.temp * (1 + setBonus(h, 'deck'));
@@ -241,7 +246,7 @@ const Engine = (() => {
 
   /* ---------- run ---------- */
   function newRun({ me = 0, laps = 5, meta = {}, seed, diff = 0 } = {}) {
-    const rng = seed == null ? Math.random : mulberry32(seed);
+    const rng = mulberry32(seed == null ? (Math.random() * 4294967296) >>> 0 : seed);   // always seeded, so a run can be saved
     const fx = Object.assign({ startCash: 90, cashMult: 1, loaded: 0, baseSpeed: 0, discount: 0, slots: 0, freeRerolls: 0, owners: 0, spMult: 1, luck: 0, sharp: 0, unlocked: [] }, meta);
     const run = {
       rng, me, laps, fx,
@@ -906,6 +911,6 @@ const Engine = (() => {
     quote, setCall, lockSelf, cycleStake, placeBet, betOdds, brace, spurPower, topUp, reserved, spendable, comboOf, callPayout,
     owned, available, priceOf, shopSlots, makeShop, reroll, rerollCost, freeRerolls, buy, cnt, fxCash,
     tierOdds, tableOdds, tableDeal, tableGuess,
-    trap, peek, burn, MODS, TRAITS, SETS, UNLOCK, setLevel, setTier, setBonus, modOf, isUnlocked };
+    pack, unpack, trap, peek, burn, MODS, TRAITS, SETS, UNLOCK, setLevel, setTier, setBonus, modOf, isUnlocked };
 })();
 if (typeof module !== 'undefined') module.exports = Engine;

@@ -20,6 +20,7 @@ async def leak_modal(pg):
     print('LEAK-CHECK guide', sorted(set(WORDS.findall(txt))) or 'clean')
 
 async def pit_actions(pg, lap):
+    await pg.click('[data-ptab="bets"]')
     for pl in range(1, 4):
         h = (pl + lap) % 4
         loc = pg.locator(f'[data-cell="{pl},{h}"]:not([disabled])')
@@ -28,6 +29,7 @@ async def pit_actions(pg, lap):
     if await pg.locator('[data-deal]:not([disabled])').count():
         await pg.click('[data-deal]')
         if await pg.locator('[data-tg="higher"]:not([disabled])').count(): await pg.click('[data-tg="higher"]')
+    await pg.click('[data-ptab="shop"]')
     for _ in range(4):
         btn = pg.locator('[data-buy]:not([disabled])').first
         if await btn.count(): await btn.click()
@@ -108,6 +110,9 @@ async def main():
                 await pg.wait_for_timeout(300)
                 if laps == 2: await leak(pg, 'pit')
                 if laps == 2: await pg.screenshot(path=shot('pit.png'), full_page=True)
+                if laps == 2:
+                    await pg.click('[data-ptab="shop"]'); await pg.screenshot(path=shot('pit-shop.png'), full_page=True)
+                    await pg.click('[data-ptab="bets"]'); await pg.screenshot(path=shot('pit-bets.png'), full_page=True)
                 await pit_actions(pg, laps)
                 await pg.click('#nextLap'); await pg.wait_for_timeout(2800)
             elif sc == 'over': break
@@ -150,6 +155,7 @@ async def main():
         if LANG_ID != 'en': await pg2.click(f'[data-lang="{LANG_ID}"]')
         await pg2.screenshot(path=shot('phone-menu.png'))
         await pg2.click('#s-menu [data-go="setup"]'); await pg2.screenshot(path=shot('phone-guide.png')); await pg2.keyboard.press('Escape'); await pg2.screenshot(path=shot('phone-setup.png'), full_page=True); await pg2.click('#startRun'); await pg2.wait_for_timeout(300)
+        await pg2.screenshot(path=shot('phone-pit.png'), full_page=True)
         print('phone prep scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
         await pg2.click('#nextLap'); await pg2.wait_for_timeout(5000)
         await pg2.screenshot(path=shot('phone-game.png'))

@@ -21,6 +21,13 @@ crowd and a galloping hoofbeat sit under the race and swell when something happe
 buying goes cha-ching, and the lap payout counts up with rising ticks. Sound starts after your first tap,
 the speaker button (menu and race screen) or the **M** key mutes it, and the choice is saved.
 
+### v10: saving, offline, calmer pit stop, finish drama
+- **Save and resume.** The whole run (including the random generator) is saved after every pit action and every 3 seconds in a lap, so closing the tab loses nothing. Menu: **Continue run**. A run resumes exactly where it stopped (mid-lap too, paused).
+- **Offline.** `dist/suit-derby.html` embeds its fonts (latin and latin-ext, so Turkish too), so the single file works with no network. `dist/site/` is the same page plus `sw.js`, a web manifest and icons: host that folder (GitHub Pages) and the game installs as an app and opens offline after one visit. The service worker is only registered over http(s). (The claude.ai artifact copy needs the page itself to load, so it is online only.)
+- **Pit stop in tabs.** Result, Shop and Bets, with a one-line strip for the next-lap modifier, draft and trap tokens. Badges show affordable offers and calls made.
+- **Photo finish.** When two horses reach the line almost together the game drops into slow motion with cinema bars, a heartbeat riser, a camera flash and a "wins by 0.04s" banner (about 15% of laps).
+- **Derby Day music.** A faster, fuller final-lap track, plus new sounds (photo finish, shutter).
+
 ### v9: comeback and depth
 - **Trap tokens.** Finish 3rd (1) or 4th (2) and keep tokens (cap 3). **Trap** (X) drops a bear-trap in front of the leading rival (70% trip chance).
 - **Grit.** The further a horse trails the leader, the faster its stamina refills, up to +90%.
@@ -75,7 +82,9 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/scene.js     the canvas race scene (camera, crowd, horses, hazards)
     src/fx.js        win effects: coins, confetti, banner, shake
     src/app.js       screens, input, HUD, bets
-    build.py         inlines everything into dist/suit-derby.html
+    build.py         inlines everything into dist/suit-derby.html, dist/artifact.html and dist/site/ (offline-installable)
+    fonts/           woff2 files and fonts.css that build.py embeds
+    icons/           app icons (make_icons.py redraws them)
     sim.js           balance simulation:  node sim.js
     sim_catchup.js   seat fairness and comeback checks:  node sim_catchup.js
     playtest.py      headless full-run test (calls, shop, card table) (needs python playwright + chromium)

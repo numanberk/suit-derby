@@ -431,4 +431,13 @@
       '<section><h3>Rozetler, zorluk ve Günlük Derbi</h3><p><b>Rozetler</b>, üst üste üç kart bahsi tutmak, üç rakibi tuzağa düşürmek ya da geri dönüp kazanmak gibi başarılar için bir kez verilir ve bazıları yeni geliştirmelerin (Yankı Odası, Tuzak Ustası, Anka, Azim Yükselteci) kilidini açar. Bir sonraki <b>zorluk</b> seviyesini açmak için bir koşu kazan: rakipler daha çok geliştirme alır ve ödüller küçülür, ama Ahır Puanı seviye başına %' + Math.round(C.diffSp * 100) + ' artar. <b>Günlük Derbi</b>, o gün herkes için aynı tohum ve aynı atla, Ahır geliştirmesiz beş turluk bir koşudur ve kopyalayıp paylaşabileceğin bir sonuç verir.</p></section>' +
       '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Bunları Ahır’da kalıcı geliştirmelere harca: başlangıç parası, ekstra kartlar, daha hızlı seyir, daha ucuz dükkanlar, daha iyi nadirlik şansı ve daha iyi bahis ödemeleri. İlerleme bu tarayıcıda saklanır.</p></section>';
   };
+
+  Object.assign(I18n.dict.tr, {
+    'Continue run': 'Koşuya devam et', 'Starting a new run replaces your saved run.': 'Yeni bir koşu başlatmak kayıtlı koşunu siler.',
+    'Daily': 'Günlük', 'Lap {n} of {m} in progress': '{n}/{m}. tur sürüyor', 'Pit stop after lap {n} of {m}': '{n}/{m}. turdan sonra mola',
+    'Back on the track': 'Yeniden pistte', 'Press Resume to carry on.': 'Devam etmek için Devam’a bas.', 'Save and quit?': 'Kaydet ve çık?',
+    'Result': 'Sonuç', 'Shop': 'Dükkan', 'Bets': 'Bahisler', 'Pit stop sections': 'Mola bölümleri',
+    'Final lap': 'Son tur', 'Next lap': 'Sonraki tur',
+    'PHOTO FINISH': 'FOTO FİNİŞ', '{s} wins by {t}s': '{s} {t} sn farkla kazandı', 'photo finish: {t}s apart': 'foto finiş: aradaki fark {t} sn'
+  });
 })();

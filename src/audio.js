@@ -170,6 +170,15 @@ const Sfx = (() => {
   const phoenix = S(() => {         // rising sweep and a bright chord
     tone({ f: 220, to: 1100, dur: 0.6, type: 'sawtooth', lp: 2400, vol: 0.09 }); [4, 6, 8].forEach((k, i) => ping(SC[k], 0.11, 0.5 + i * 0.03, 0.8));
   });
+  const photo = S(() => {           // slow motion into a close finish: a riser and two heartbeats
+    noise({ type: 'bandpass', f: 500, to: 5200, q: 0.9, dur: 1.5, vol: 0.09 });
+    tone({ f: 180, to: 520, dur: 1.5, type: 'sawtooth', lp: 1400, vol: 0.05, atk: 0.4 });
+    [0, 0.5, 1.0].forEach(at => { tone({ f: 70, to: 38, dur: 0.16, vol: 0.2, at }); tone({ f: 62, to: 36, dur: 0.14, vol: 0.14, at: at + 0.16 }); });
+  });
+  const shutter = S(() => {         // camera click and a low boom: the photo is taken
+    noise({ type: 'highpass', f: 3500, dur: 0.03, vol: 0.2 }); noise({ type: 'bandpass', f: 1800, q: 2, dur: 0.05, vol: 0.14, at: 0.06 });
+    tone({ f: 120, to: 40, dur: 0.5, vol: 0.2, at: 0.05 });
+  });
   const lucky = S(() => { [6, 8, 9].forEach((k, i) => ping(SC[k], 0.09, i * 0.06, 0.4)); });
   const coinFlip = S(() => { ping(2100, 0.08, 0, 0.5); ping(2600, 0.05, 0.12, 0.4); });
   const dice = S(() => { for (let i = 0; i < 5; i++) noise({ type: 'bandpass', f: rnd(900, 1800), q: 3, dur: 0.03, vol: 0.15, at: i * 0.05 + rnd(0, 0.02) }); });
@@ -360,6 +369,18 @@ const Sfx = (() => {
       }
     }
   };
+  /* Derby Day: the same pulse, faster and fuller from the first bar */
+  MODES.final = {
+    bpm: 144, swing: 0,
+    step(i, at, L) {
+      const bar = (i >> 4) & 3, s = i & 15, sp = 60 / 144 / 4, [root, q] = RACE_CH[bar];
+      MODES.race.step(i, at, Math.min(3, L + 1));
+      if (s % 2 === 1) bass(root * 2, at, 0.12, 0.45);
+      if (s % 2 === 0) hat(at, 0.45, false);
+      if (s === 0) { mn({ type: 'highpass', f: 6000, dur: 0.5, vol: 0.07, at }); [0, 1, 2].forEach(k => pad(hz(root, CH[q][k]), at, 1.9, 0.9)); }
+      if (s % 4 === 0) pluck(hz(root * 8, CH[q][ARP[(s + 4) & 15]]), at + sp, 0.8);
+    }
+  };
   function mGain(mult, tc) { if (musBus) musBus.gain.setTargetAtTime(Math.max(0.0001, MUS * mDim * mSwell * (mult || 1)), ctx.currentTime, tc || 0.15); }
   function mSched() {
     if (!ctx || !mMode || !mon) return;
@@ -463,7 +484,7 @@ const Sfx = (() => {
 
   const api = {
     click, pick, chip, shuffle, flip, buy, deny, count, draw, chaos, surge, spur, warn, perfect, clear, stumble,
-    trap, trapHit, peek, burn, achieve, final, phoenix,
+    trap, trapHit, peek, burn, achieve, final, phoenix, photo, shutter,
     lucky, coinFlip, dice, hit, miss, refund, win, tally, finish, champion, podium, settle, pit,
     crowd, cheer, hooves, set, unlock, render, renderMusic, music,
     toggle: () => set(!on),

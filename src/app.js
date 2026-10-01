@@ -13,8 +13,27 @@
   var S = {
     screen: 'menu', me: 0, laps: 5, run: null, meta: M.load(),
     gphase: 'idle', speed: 1, paused: false, cd: 0, goT: 0, endDelay: 0,
-    hist: [], ticker: [], diff: 0, daily: 0, peekCard: null, newStuff: null, guideAt: 0, quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
+    hist: [], ticker: [], diff: 0, daily: 0, photoState: 0, photoT: 0, slowV: 1, finT: {}, peekCard: null, newStuff: null, guideAt: 0, quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
   };
+
+  /* ---------- save and resume: the run is stored after every pit action and every few seconds in a lap ---------- */
+  var RK = 'suitderby.run', SAVE_V = 1;
+  function saveRun() {
+    var R = S.run;
+    if (!R || R.phase === 'over' || (S.screen !== 'game' && S.screen !== 'pit')) return;
+    try {
+      var d = E.pack(R);
+      if (R.phase !== 'lap') d.lap = null;
+      localStorage.setItem(RK, JSON.stringify({ v: SAVE_V, run: d, res: S.lastRes, daily: S.daily, cs: S.cstake, ts: S.tstake }));
+    } catch (e) {}
+  }
+  function clearSave() { try { localStorage.removeItem(RK); } catch (e) {} }
+  function loadSave() {
+    try { var d = JSON.parse(localStorage.getItem(RK)); if (d && d.v === SAVE_V && d.run && d.run.phase !== 'over' && d.run.horses) return d; } catch (e) {}
+    return null;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) saveRun(); });
+  window.addEventListener('pagehide', saveRun);
 
   function money(n, sign) {
     var a = Math.abs(Math.round(n)).toLocaleString(I.locale());
@@ -28,6 +47,7 @@
   function odds(o) { return '×' + I.n(o.toFixed(2)); }
   function mname(id) { return T(E.MODS[id].name); }
   function cardTxt(c) { return c.chaos ? '★' : lab(c) + SUITS[c.s].glyph; }
+  var PHOTO = { gap: 0.4, zone: 7, slow: 0.35, max: 5 };
   var STAKE_NAMES = ['Standard', 'Tough', 'Hard', 'Brutal', 'Legend'];
   function dailySeed() { var d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
   function dailyLabel(seed) { var t = String(seed); return t.slice(6) + '.' + t.slice(4, 6) + '.' + t.slice(0, 4); }
@@ -60,7 +80,7 @@
     S.screen = name;
     $$('.screen').forEach(function (el) { el.hidden = el.id !== 's-' + name; });
     window.scrollTo(0, 0);
-    Sfx.music.mode(name === 'game' ? 'race' : 'chill');
+    Sfx.music.mode(name === 'game' ? (S.run && S.run.mod === 'derby' ? 'final' : 'race') : 'chill');
     if (onEnter[name]) onEnter[name]();
   }
   document.addEventListener('click', function (e) {
@@ -101,6 +121,12 @@
     $('#menu-stats').textContent = S.meta.runs
       ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
       : T('No runs yet.');
+    var sv = loadSave(), rb = $('#resumeBtn');
+    rb.hidden = !sv;
+    if (sv) {
+      var sr = sv.run;
+      $('#resume-sub').textContent = (sv.daily ? T('Daily') + ' · ' : '') + (sr.phase === 'lap' ? T('Lap {n} of {m} in progress', { n: sr.lapNo, m: sr.laps }) : sr.phase === 'prep' ? T('Before lap 1') : T('Pit stop after lap {n} of {m}', { n: sr.lapNo, m: sr.laps })) + ' · ' + sn(sr.me) + ' · ' + money(sr.cash);
+    }
     var ds = dailySeed(), dd = S.meta.daily;
     $('#daily-sub').textContent = dd && dd.date === ds
       ? T('Today: {o} overall, {p} pts. Ride again?', { o: dd.champion ? T('Champion') : ord(dd.rank), p: dd.pts })
@@ -157,14 +183,36 @@
     if (fx.owners) bits.push(T('a free starting upgrade'));
     if (fx.luck) bits.push(T('better shop rarity'));
     if (fx.sharp) bits.push(T('+{p}% bet payouts', { p: Math.round(fx.sharp * 100) }));
+    $('#setup-save').hidden = !loadSave();
     $('#setup-perks').textContent = T('Every run starts level: 10 cards per suit and no rival upgrades before lap 1. Each horse has its own trait.') + ' ' +
       (bits.length ? T('Your Stable perks: {list}.', { list: bits.join(', ') }) : T('No Stable perks yet. Finish a run to earn Stable Points.'));
   };
   function begin(opts) {
     S.run = E.newRun(opts);
     S.recorded = false; S.lastRes = null; S.tstake = 10; S.cstake = 10; S.lastBets = null; S.roundBets = []; S.newStuff = null; S.peekCard = null;
-    renderPit(); go('pit');
+    renderPit(); go('pit'); saveRun();
   }
+  function resumeRun() {
+    var d = loadSave(); if (!d) return;
+    try {
+      S.run = E.unpack(d.run); S.lastRes = d.res || null; S.daily = d.daily || 0; S.me = S.run.me;
+      S.recorded = false; S.newStuff = null; S.peekCard = null; S.cstake = d.cs || 10; S.tstake = d.ts || 10; S.lastBets = null; S.roundBets = [];
+      var R = S.run;
+      if (R.phase === 'lap' && R.lap) {
+        if (R.lap.done) { finishLap(); return; }
+        S.ticker = []; S.hist = []; lastMod = ''; S.endDelay = 0; S.quiet = false; S.photoState = 0; S.slowV = 1; S.finT = {};
+        go('game'); measure(); scene.setMe(R.me); scene.reset();
+        $('#hzcall').hidden = true; $('#hist').innerHTML = ''; $('#dname').textContent = T('Back on the track'); $('#dline').textContent = T('Press Resume to carry on.');
+        $('#face').className = 'face'; $('#cardin').style.transform = 'rotateY(180deg)';
+        renderDeck('#deckbar', '#deckleg', E.deckCounts(R, true), R.me, E.chaosCount(R, true)); renderPts(); renderCalls(); renderTicker();
+        syncHud(); setSpeedUI();
+        S.gphase = 'racing'; S.paused = true;
+        $('#ovtxt').textContent = T('Paused'); $('#ovtxt').className = 'big sm'; $('#overlay').hidden = false; $('#pause').textContent = T('Resume');
+        renderBets(); renderActions();
+      } else { renderPit(); go('pit'); }
+    } catch (e) { clearSave(); S.run = null; go('menu'); }
+  }
+  $('#resumeBtn').addEventListener('click', function () { Sfx.click(); resumeRun(); });
   $('#startRun').addEventListener('click', function () {
     S.daily = 0;
     begin({ me: S.me, laps: S.laps, meta: M.effects(S.meta), diff: S.diff });
@@ -349,6 +397,22 @@
   function floatMoney(i, txt) { scene.say(i, txt, '#e9cf73'); }
   function suitBtn(s) { var b = document.querySelector('[data-bet="' + s + '"]'); if (!b) return { x: innerWidth / 2, y: innerHeight * 0.6 }; var r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
 
+  /* a photo finish: when two horses reach the line almost together, the game drops into slow motion */
+  function photoCheck(dt) {
+    var R = S.run, L = R.lap;
+    if (S.photoState === 0 && !L.done && L.placeCount === 0) {
+      var u = R.horses.filter(function (h) { return !h.fin; }).sort(function (a, b) { return b.pos - a.pos; });
+      if (u.length > 1 && u[0].pos >= CFG.lapLen - PHOTO.zone && u[0].pos - u[1].pos < PHOTO.gap) {
+        S.photoState = 1; S.photoT = 0; scene.photo = 1;
+        Sfx.photo(); scene.cheer(0.6);
+        FX.banner(T('PHOTO FINISH'), null, 'big');
+      }
+    } else if (S.photoState === 1) {
+      S.photoT += dt;
+      if (L.placeCount >= 2 || L.done || S.photoT > PHOTO.max) { S.photoState = 2; scene.photo = 0; }
+    }
+    S.slowV += ((S.photoState === 1 ? PHOTO.slow : 1) - S.slowV) * Math.min(1, dt * 6);
+  }
   function handleEvents() {
     var R = S.run, evs = R.events.splice(0), lastCard = -1, redraw = false, quiet = S.quiet;
     evs.forEach(function (ev, k) { if (ev.type === 'draw' || ev.type === 'chaos') lastCard = k; });
@@ -442,6 +506,12 @@
       } else if (ev.type === 'finish') {
         S.ticker.push({ i: ev.horse, text: T(ev.horse === R.me ? 'you finish {o}' : 'finishes {o}', { o: ord(ev.place) }) });
         if (!quiet) { Sfx.finish(ev.place, ev.horse === R.me); Sfx.cheer(ev.place === 1 ? 1.2 : 0.6); }
+        S.finT[ev.place] = ev.time;
+        if (ev.place === 1 && S.photoState === 1 && !quiet) { Sfx.shutter(); FX.flash('#ffffff'); }
+        if (ev.place === 2 && S.finT[1] != null && ev.time - S.finT[1] < 0.6 && !quiet) {
+          var wh = R.horses.filter(function (h) { return h.place === 1; })[0];
+          if (wh) { FX.banner(T('{s} wins by {t}s', { s: sn(wh.i), t: I.n((ev.time - S.finT[1]).toFixed(2)) }), null, 'big'); S.ticker.push({ i: wh.i, text: T('photo finish: {t}s apart', { t: I.n((ev.time - S.finT[1]).toFixed(2)) }) }); scene.cheer(0.8); }
+        }
         scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
         if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
         if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner(T('WINNER'), null, 'big'); FX.shake(1); }
@@ -458,7 +528,7 @@
   /* ---------- lap flow ---------- */
   function beginLap() {
     var R = S.run;
-    S.ticker = []; S.hist = []; S.peekCard = null; lastMod = ''; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
+    S.ticker = []; S.hist = []; S.peekCard = null; lastMod = ''; S.photoState = 0; S.slowV = 1; S.finT = {}; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
     E.startLap(R);
     scene.setMe(R.me); scene.reset(); $('#hzcall').hidden = true;
     $('#hist').innerHTML = ''; $('#dname').textContent = T('Shuffling'); $('#dline').textContent = T('First card comes out soon.');
@@ -472,6 +542,7 @@
     S.cd = 2.4; S.goT = 0;
     $('#overlay').hidden = false;
     setGamePhase('countdown'); renderBets(); renderActions();
+    saveRun();
   }
   function finishLap() {
     var R = S.run;
@@ -530,8 +601,8 @@
 
   $('#quit').addEventListener('click', function () {
     var b = $('#quit');
-    if (!S.quitArm) { S.quitArm = 1; b.textContent = T('Quit run?'); setTimeout(function () { S.quitArm = 0; b.textContent = T('Quit'); }, 3000); return; }
-    S.quitArm = 0; b.textContent = T('Quit'); S.run = null; S.gphase = 'idle'; go('menu');
+    if (!S.quitArm) { S.quitArm = 1; b.textContent = T('Save and quit?'); setTimeout(function () { S.quitArm = 0; b.textContent = T('Quit'); }, 3000); return; }
+    S.quitArm = 0; b.textContent = T('Quit'); saveRun(); S.run = null; S.gphase = 'idle'; go('menu');
   });
 
   /* ---------- pit stop ---------- */
@@ -573,6 +644,7 @@
       return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] * res.pm + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
     }).join('');
     renderRivals(); renderIntel(); renderRecap();
+    setPitTab(prep ? 'bets' : 'result');
     $('#nextLap').textContent = R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
     $('#shopclosed').hidden = !prep;
     $('#offers').hidden = prep; $('#tiers').hidden = prep; $('#reroll').hidden = prep;
@@ -583,13 +655,39 @@
     if (!res || !res.topUps || !res.topUps.length) return '';
     return '<p class="uf"><b>' + T('Underdog fund') + '</b> ' + T('(no suit is starved out of the deck):') + ' ' + res.topUps.map(function (u) { return SUITS[u.horse].glyph + ' ' + TP(u.n, '+{n} card', '+{n} cards'); }).join(', ') + '.</p>';
   }
+  var PTABS = ['result', 'shop', 'bets'];
+  function setPitTab(t) {
+    S.pitTab = t;
+    PTABS.forEach(function (k) {
+      var on = k === t;
+      $('#tab-' + k).setAttribute('aria-selected', String(on));
+      $('[data-pane="' + k + '"]').hidden = !on;
+    });
+    renderPitTabs();
+  }
+  function renderPitTabs() {
+    var R = S.run; if (!R) return;
+    var n = 0, sh = $('#badge-shop'), bb = $('#badge-bets');
+    if (R.phase !== 'prep' && R.shop) R.shop.forEach(function (o) { if (!o.sold && E.available(R, o.id) && E.priceOf(R, o.id) <= E.spendable(R)) n++; });
+    sh.hidden = !n || S.pitTab === 'shop'; sh.textContent = n;
+    var c = R.calls.filter(Boolean).length;
+    bb.hidden = S.pitTab === 'bets'; bb.textContent = c + '/4';
+  }
+  $('#ptabs').addEventListener('click', function (e) { var b = e.target.closest('[data-ptab]'); if (b) { Sfx.pick(); setPitTab(b.dataset.ptab); } });
+  function renderStrip() {
+    var R = S.run, res = S.lastRes, h = '';
+    if (R.phase !== 'prep' && res) {
+      if (R.nextMod) { var m = E.MODS[R.nextMod]; h += '<span class="nchip mod' + (m.final ? ' derby' : '') + '" title="' + T(m.blurb) + '"><b>' + (m.final ? T('Final lap') : T('Next lap')) + '</b>' + T(m.name) + ' · ' + T(m.blurb) + '</span>'; }
+      var d = res.draft;
+      if (d && (d.slots || d.rerolls)) h += '<span class="nchip draft"><b>' + T('Underdog draft') + '</b>' + [d.slots ? TP(d.slots, '{n} extra shop slot', '{n} extra shop slots') : '', d.rerolls ? TP(d.rerolls, '{n} free reroll', '{n} free rerolls') : ''].filter(Boolean).join(' + ') + '</span>';
+      if (R.traps > 0) h += '<span class="nchip trapc"><b>' + T('Trap tokens') + '</b>' + R.traps + '</span>';
+    }
+    $('#nextstrip').innerHTML = h;
+  }
   function renderIntel() {
     var R = S.run, res = S.lastRes, h = '', box = $('#intel');
+    renderStrip();
     if (R.phase === 'prep' || !res) { box.innerHTML = ''; return; }
-    if (R.nextMod) {
-      var m = E.MODS[R.nextMod];
-      h += '<div class="card2 mod' + (m.final ? ' derby' : '') + '"><h4>' + (m.final ? T('Next: the final lap') : T('Next lap modifier')) + '</h4><p><b>' + T(m.name) + '</b>: ' + T(m.blurb) + '</p></div>';
-    }
     var d = res.draft;
     if (d && (d.slots || d.rerolls)) {
       var bits = [];
@@ -649,8 +747,9 @@
     renderBoard();
     if (!prep) renderShop();
     renderTable();
-    renderKit(); renderSets();
+    renderKit(); renderSets(); renderPitTabs();
     renderDeck('#pit-deckbar', '#pit-deckleg', E.deckCounts(R, false), R.me, E.chaosCount(R, false));
+    saveRun();
   }
 
   /* --- call the order --- */
@@ -785,7 +884,7 @@
       M.record(S.meta, r.sp, r.champion, r.points);
       S.newStuff = M.evaluate(S.meta, r, { daily: !!S.daily, maxDiff: CFG.maxDiff });
       if (S.daily) { var od = S.meta.daily; if (!od || od.date !== S.daily || r.points >= od.pts) S.meta.daily = { date: S.daily, pts: r.points, rank: r.rank, champion: r.champion }; }
-      M.save(S.meta); S.recorded = true;
+      M.save(S.meta); S.recorded = true; clearSave();
     }
     var ot = $('#over-rank');
     ot.textContent = r.champion ? T('Champion') : T('{o} overall', { o: ord(r.rank) });
@@ -920,7 +1019,8 @@
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {
         if (S.goT > 0) { S.goT -= dt; if (S.goT <= 0 && !S.paused) $('#overlay').hidden = true; }
         if (S.gphase === 'racing' && !S.paused) {
-          var mult = openHazard() ? Math.min(S.speed, 0.6) : S.speed;
+          photoCheck(dt);
+          var mult = (openHazard() ? Math.min(S.speed, 0.6) : S.speed) * S.slowV;
           E.stepLap(R, dt * mult);
           handleEvents();
           if (L.done) { S.endDelay = 1.4; setGamePhase('ending'); renderCalls(); }
@@ -929,6 +1029,7 @@
           if (S.endDelay <= 0) finishLap();
         }
         if (S.gphase !== 'idle') renderActions();
+        S.saveT = (S.saveT || 0) + dt; if (S.saveT > 3 && S.gphase === 'racing' && !S.paused) { S.saveT = 0; saveRun(); }
       }
       if (S.screen === 'game') { renderScene(dt); syncHud(); }
     }

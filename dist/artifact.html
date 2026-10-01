@@ -251,6 +251,7 @@ h1, h2, h3, p { margin: 0; }
 .cashwrap { text-align: right; }
 .cashsub { font-size: 11px; color: var(--ink-dim); min-height: 14px; }
 .sect { margin-top: 30px; }
+.sect.first { margin-top: 18px; }
 .hint { font-size: 11px; color: var(--ink-dim); text-align: right; }
 .rivals { margin-bottom: 4px; }
 .rivals .lbl { margin-bottom: 8px; }
@@ -460,6 +461,9 @@ h1, h2, h3, p { margin: 0; }
 .sets .set.on b { color: var(--gold); }
 .sets .set small { color: var(--ink-dim); font-size: 12px; flex: 1 1 200px; }
 .mrow.daily { border-color: #6b5d20; }
+.mrow.resume { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--track)); }
+.mrow.resume .mt { color: var(--good); }
+.note.warn { color: var(--gold); }
 .mrow.daily .mt { color: var(--gold); }
 .pick .trait { font-size: 11px; color: var(--ink-dim); text-align: center; line-height: 1.25; padding: 0 4px; }
 .pick .trait b { color: var(--ink); font-weight: 700; display: block; font: 700 11px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -493,6 +497,23 @@ h1, h2, h3, p { margin: 0; }
 .mnav { display: flex; justify-content: space-between; margin-top: 14px; }
 .mglyph { font-size: 38px; letter-spacing: 6px; margin-bottom: 6px; }
 
+/* pit stop tabs */
+.nextstrip { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.nextstrip:empty { display: none; }
+.nchip { max-width: 100%; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--track); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nchip b { font: 700 10px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-right: 6px; }
+.nchip.mod { border-color: var(--ink-dim); }
+.nchip.derby { border-color: var(--gold); color: var(--gold); background: color-mix(in srgb, var(--gold) 10%, var(--track)); }
+.nchip.derby b { color: var(--gold); }
+.nchip.draft { border-color: #3a6a4c; }
+.nchip.trapc { border-color: #6a3a32; }
+.ptabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 12px -2px 0; padding: 8px 2px; background: linear-gradient(to bottom, var(--ground) 82%, transparent); }
+.ptabs button { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); font: 800 20px/1 var(--f-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); }
+.ptabs button[aria-selected="true"] { background: var(--gold); color: var(--gold-ink); border-color: transparent; }
+.tbadge { font: 700 11px/1 var(--f-mono); font-style: normal; padding: 3px 7px; border-radius: 999px; background: var(--good); color: #0b1a10; letter-spacing: 0; }
+.ptabs button[aria-selected="true"] .tbadge { background: var(--gold-ink); color: var(--gold); }
+.pane { padding-top: 6px; }
+
 </style>
 
 <div class="app">
@@ -506,6 +527,7 @@ h1, h2, h3, p { margin: 0; }
     </div>
     <div class="lineup" id="lineup" aria-hidden="true"></div>
     <nav class="menu-list" data-i18n-label="Main menu" aria-label="Main menu">
+      <button type="button" class="mrow resume" id="resumeBtn" hidden><span class="mt" data-i18n="Continue run">Continue run</span><span class="md" id="resume-sub"></span></button>
       <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
       <button type="button" class="mrow daily" id="dailyBtn"><span class="mt" data-i18n="Daily Derby">Daily Derby</span><span class="md" id="daily-sub"></span></button>
       <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
@@ -523,6 +545,7 @@ h1, h2, h3, p { margin: 0; }
     <div class="pills" role="radiogroup" data-i18n-label="Number of laps" aria-label="Number of laps" id="lapPills"></div>
     <div id="stakeBox"><h3 class="lbl" data-i18n="Stakes">Stakes</h3>
     <div class="pills" role="radiogroup" data-i18n-label="Stakes" aria-label="Stakes" id="stakePills"></div></div>
+    <p class="note warn" id="setup-save" hidden data-i18n="Starting a new run replaces your saved run.">Starting a new run replaces your saved run.</p>
     <p class="note" id="setup-perks"></p>
     <div class="actions"><button type="button" class="btn primary" id="startRun" data-i18n="Start run">Start run</button></div>
   </section>
@@ -600,42 +623,54 @@ h1, h2, h3, p { margin: 0; }
       <h2 id="pit-title">Lap 1 complete</h2>
       <div class="cashwrap"><div class="cashchip" id="pit-cash">$0</div><div class="cashsub mono" id="pit-cash-sub"></div></div>
     </header>
-    <div class="pit-top">
-      <div class="pit-res">
-        <div class="bigplace" id="pit-place">1st</div>
-        <div class="stmt" id="pit-stmt"></div>
+    <div class="nextstrip" id="nextstrip"></div>
+    <div class="ptabs" id="ptabs" role="tablist" data-i18n-label="Pit stop sections" aria-label="Pit stop sections">
+      <button type="button" role="tab" data-ptab="result" id="tab-result"><span data-i18n="Result">Result</span></button>
+      <button type="button" role="tab" data-ptab="shop" id="tab-shop"><span data-i18n="Shop">Shop</span><i class="tbadge" id="badge-shop" hidden></i></button>
+      <button type="button" role="tab" data-ptab="bets" id="tab-bets"><span data-i18n="Bets">Bets</span><i class="tbadge" id="badge-bets" hidden></i></button>
+    </div>
+
+    <div class="pane" data-pane="result" role="tabpanel">
+      <div class="pit-top">
+        <div class="pit-res">
+          <div class="bigplace" id="pit-place">1st</div>
+          <div class="stmt" id="pit-stmt"></div>
+        </div>
+        <div class="pit-stand">
+          <h3 class="lbl" id="pit-stand-h">Championship</h3>
+          <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
+          <div class="deckbar sm" id="pit-deckbar"></div>
+          <div class="deckleg mono" id="pit-deckleg"></div>
+        </div>
       </div>
-      <div class="pit-stand">
-        <h3 class="lbl" id="pit-stand-h">Championship</h3>
-        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
-        <div class="deckbar sm" id="pit-deckbar"></div>
-        <div class="deckleg mono" id="pit-deckleg"></div>
+      <div class="rivals" id="rivals"></div>
+      <div class="intel" id="intel"></div>
+      <div class="recap" id="recap" hidden></div>
+    </div>
+
+    <div class="pane" data-pane="shop" role="tabpanel" hidden>
+      <div class="sect first" id="shopsect">
+        <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
+        <div class="tiers mono" id="tiers"></div>
+        <div class="offers" id="offers"></div>
+        <p class="note" id="shopclosed" hidden data-i18n="The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.">The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.</p>
+      </div>
+      <div class="sets" id="sets"></div>
+      <div class="kit" id="kit"></div>
+    </div>
+
+    <div class="pane" data-pane="bets" role="tabpanel" hidden>
+      <div class="sect first">
+        <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
+        <div class="board" id="board"></div>
+        <p class="boardfoot" id="boardfoot"></p>
+      </div>
+      <div class="sect">
+        <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
+        <div class="table" id="table"></div>
       </div>
     </div>
-    <div class="rivals" id="rivals"></div>
-    <div class="intel" id="intel"></div>
-    <div class="recap" id="recap" hidden></div>
 
-    <div class="sect">
-      <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
-      <div class="board" id="board"></div>
-      <p class="boardfoot" id="boardfoot"></p>
-    </div>
-
-    <div class="sect" id="shopsect">
-      <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
-      <div class="tiers mono" id="tiers"></div>
-      <div class="offers" id="offers"></div>
-      <p class="note" id="shopclosed" hidden data-i18n="The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.">The shop opens after lap 1. Every horse starts level: 10 cards per suit and no upgrades.</p>
-    </div>
-
-    <div class="sect">
-      <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
-      <div class="table" id="table"></div>
-    </div>
-
-    <div class="sets" id="sets"></div>
-    <div class="kit" id="kit"></div>
     <div class="pitbar"><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
   </section>
 
@@ -1194,6 +1229,15 @@ if (typeof module !== 'undefined') module.exports = I18n;
       '<section><h3>Rozetler, zorluk ve Günlük Derbi</h3><p><b>Rozetler</b>, üst üste üç kart bahsi tutmak, üç rakibi tuzağa düşürmek ya da geri dönüp kazanmak gibi başarılar için bir kez verilir ve bazıları yeni geliştirmelerin (Yankı Odası, Tuzak Ustası, Anka, Azim Yükselteci) kilidini açar. Bir sonraki <b>zorluk</b> seviyesini açmak için bir koşu kazan: rakipler daha çok geliştirme alır ve ödüller küçülür, ama Ahır Puanı seviye başına %' + Math.round(C.diffSp * 100) + ' artar. <b>Günlük Derbi</b>, o gün herkes için aynı tohum ve aynı atla, Ahır geliştirmesiz beş turluk bir koşudur ve kopyalayıp paylaşabileceğin bir sonuç verir.</p></section>' +
       '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Bunları Ahır’da kalıcı geliştirmelere harca: başlangıç parası, ekstra kartlar, daha hızlı seyir, daha ucuz dükkanlar, daha iyi nadirlik şansı ve daha iyi bahis ödemeleri. İlerleme bu tarayıcıda saklanır.</p></section>';
   };
+
+  Object.assign(I18n.dict.tr, {
+    'Continue run': 'Koşuya devam et', 'Starting a new run replaces your saved run.': 'Yeni bir koşu başlatmak kayıtlı koşunu siler.',
+    'Daily': 'Günlük', 'Lap {n} of {m} in progress': '{n}/{m}. tur sürüyor', 'Pit stop after lap {n} of {m}': '{n}/{m}. turdan sonra mola',
+    'Back on the track': 'Yeniden pistte', 'Press Resume to carry on.': 'Devam etmek için Devam’a bas.', 'Save and quit?': 'Kaydet ve çık?',
+    'Result': 'Sonuç', 'Shop': 'Dükkan', 'Bets': 'Bahisler', 'Pit stop sections': 'Mola bölümleri',
+    'Final lap': 'Son tur', 'Next lap': 'Sonraki tur',
+    'PHOTO FINISH': 'FOTO FİNİŞ', '{s} wins by {t}s': '{s} {t} sn farkla kazandı', 'photo finish: {t}s apart': 'foto finiş: aradaki fark {t} sn'
+  });
 })();
 
 </script>
@@ -1369,6 +1413,15 @@ const Sfx = (() => {
   });
   const phoenix = S(() => {         // rising sweep and a bright chord
     tone({ f: 220, to: 1100, dur: 0.6, type: 'sawtooth', lp: 2400, vol: 0.09 }); [4, 6, 8].forEach((k, i) => ping(SC[k], 0.11, 0.5 + i * 0.03, 0.8));
+  });
+  const photo = S(() => {           // slow motion into a close finish: a riser and two heartbeats
+    noise({ type: 'bandpass', f: 500, to: 5200, q: 0.9, dur: 1.5, vol: 0.09 });
+    tone({ f: 180, to: 520, dur: 1.5, type: 'sawtooth', lp: 1400, vol: 0.05, atk: 0.4 });
+    [0, 0.5, 1.0].forEach(at => { tone({ f: 70, to: 38, dur: 0.16, vol: 0.2, at }); tone({ f: 62, to: 36, dur: 0.14, vol: 0.14, at: at + 0.16 }); });
+  });
+  const shutter = S(() => {         // camera click and a low boom: the photo is taken
+    noise({ type: 'highpass', f: 3500, dur: 0.03, vol: 0.2 }); noise({ type: 'bandpass', f: 1800, q: 2, dur: 0.05, vol: 0.14, at: 0.06 });
+    tone({ f: 120, to: 40, dur: 0.5, vol: 0.2, at: 0.05 });
   });
   const lucky = S(() => { [6, 8, 9].forEach((k, i) => ping(SC[k], 0.09, i * 0.06, 0.4)); });
   const coinFlip = S(() => { ping(2100, 0.08, 0, 0.5); ping(2600, 0.05, 0.12, 0.4); });
@@ -1560,6 +1613,18 @@ const Sfx = (() => {
       }
     }
   };
+  /* Derby Day: the same pulse, faster and fuller from the first bar */
+  MODES.final = {
+    bpm: 144, swing: 0,
+    step(i, at, L) {
+      const bar = (i >> 4) & 3, s = i & 15, sp = 60 / 144 / 4, [root, q] = RACE_CH[bar];
+      MODES.race.step(i, at, Math.min(3, L + 1));
+      if (s % 2 === 1) bass(root * 2, at, 0.12, 0.45);
+      if (s % 2 === 0) hat(at, 0.45, false);
+      if (s === 0) { mn({ type: 'highpass', f: 6000, dur: 0.5, vol: 0.07, at }); [0, 1, 2].forEach(k => pad(hz(root, CH[q][k]), at, 1.9, 0.9)); }
+      if (s % 4 === 0) pluck(hz(root * 8, CH[q][ARP[(s + 4) & 15]]), at + sp, 0.8);
+    }
+  };
   function mGain(mult, tc) { if (musBus) musBus.gain.setTargetAtTime(Math.max(0.0001, MUS * mDim * mSwell * (mult || 1)), ctx.currentTime, tc || 0.15); }
   function mSched() {
     if (!ctx || !mMode || !mon) return;
@@ -1663,7 +1728,7 @@ const Sfx = (() => {
 
   const api = {
     click, pick, chip, shuffle, flip, buy, deny, count, draw, chaos, surge, spur, warn, perfect, clear, stumble,
-    trap, trapHit, peek, burn, achieve, final, phoenix,
+    trap, trapHit, peek, burn, achieve, final, phoenix, photo, shutter,
     lucky, coinFlip, dice, hit, miss, refund, win, tally, finish, champion, podium, settle, pit,
     crowd, cheer, hooves, set, unlock, render, renderMusic, music,
     toggle: () => set(!on),
@@ -1882,13 +1947,18 @@ const Engine = (() => {
   const UNLOCK = { echo: 'streak', trapper: 'saboteur', phoenix: 'comeback', grit: 'perfectionist' };
 
   function mulberry32(a) {
-    return function () {
+    const f = function () {
       a |= 0; a = (a + 0x6D2B79F5) | 0;
       let t = Math.imul(a ^ (a >>> 15), 1 | a);
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
+    f.state = () => a | 0;   // the whole generator is this one number, so a run can be saved and resumed exactly
+    return f;
   }
+  /* save / resume: a run is plain data except its random generator */
+  function pack(run) { const o = JSON.parse(JSON.stringify(run)); o.rngState = run.rng.state(); return o; }
+  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); return run; }
   const val = c => (c.joker ? 17 : c.r);
   const label = c => (c.chaos ? '?' : c.joker ? '★' : ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' })[c.r] || String(c.r));
   const boostOf = (c, h) => (CFG.surgeBase + val(c) * CFG.surgeVal) * h.mult * h.temp * (1 + setBonus(h, 'deck'));
@@ -2023,7 +2093,7 @@ const Engine = (() => {
 
   /* ---------- run ---------- */
   function newRun({ me = 0, laps = 5, meta = {}, seed, diff = 0 } = {}) {
-    const rng = seed == null ? Math.random : mulberry32(seed);
+    const rng = mulberry32(seed == null ? (Math.random() * 4294967296) >>> 0 : seed);   // always seeded, so a run can be saved
     const fx = Object.assign({ startCash: 90, cashMult: 1, loaded: 0, baseSpeed: 0, discount: 0, slots: 0, freeRerolls: 0, owners: 0, spMult: 1, luck: 0, sharp: 0, unlocked: [] }, meta);
     const run = {
       rng, me, laps, fx,
@@ -2688,7 +2758,7 @@ const Engine = (() => {
     quote, setCall, lockSelf, cycleStake, placeBet, betOdds, brace, spurPower, topUp, reserved, spendable, comboOf, callPayout,
     owned, available, priceOf, shopSlots, makeShop, reroll, rerollCost, freeRerolls, buy, cnt, fxCash,
     tierOdds, tableOdds, tableDeal, tableGuess,
-    trap, peek, burn, MODS, TRAITS, SETS, UNLOCK, setLevel, setTier, setBonus, modOf, isUnlocked };
+    pack, unpack, trap, peek, burn, MODS, TRAITS, SETS, UNLOCK, setLevel, setTier, setBonus, modOf, isUnlocked };
 })();
 if (typeof module !== 'undefined') module.exports = Engine;
 
@@ -2877,7 +2947,7 @@ const Scene = (() => {
     const col = ['--hearts', '--diamonds', '--clubs', '--spades'].map((v, i) => (css.getPropertyValue(v).trim() || ['#f0525e', '#ff9a3d', '#3fc48a', '#8092ff'][i]));
     const glyph = cfg.glyphs, lapLen = cfg.lapLen;
     const sc = {
-      W: 600, H: 300, dpr: 1, cam: -6, ppu: 8, t: 0, crowd: 0.3, flash: 0, flashCol: '#fff',
+      W: 600, H: 300, dpr: 1, cam: -6, ppu: 8, t: 0, crowd: 0.3, flash: 0, photo: 0, photoV: 0, flashCol: '#fff',
       phase: [0, 0, 0, 0], lines: [0, 0, 0, 0], aura: [0, 0, 0, 0], tilt: [0, 0, 0, 0],
       parts: [], texts: [], rows: [0, 1, 2, 3], me: 0, stars: [], hzPulse: 0
     };
@@ -2906,7 +2976,7 @@ const Scene = (() => {
       return g;
     }
     function reset() {
-      sc.ppu = 15; sc.cam = -120 / sc.ppu; sc.parts = []; sc.texts = []; sc.phase = [0, 0, 0, 0]; sc.lines = [0, 0, 0, 0]; sc.aura = [0, 0, 0, 0]; sc.tilt = [0, 0, 0, 0]; sc.flash = 0;
+      sc.ppu = 15; sc.cam = -120 / sc.ppu; sc.parts = []; sc.texts = []; sc.phase = [0, 0, 0, 0]; sc.lines = [0, 0, 0, 0]; sc.aura = [0, 0, 0, 0]; sc.tilt = [0, 0, 0, 0]; sc.flash = 0; sc.photo = 0; sc.photoV = 0;
     }
 
     /* ---------- events from the game ---------- */
@@ -2926,6 +2996,7 @@ const Scene = (() => {
       sc.t += dt;
       sc.crowd = Math.max(0.22, sc.crowd - dt * 0.35);
       sc.flash = Math.max(0, sc.flash - dt * 2.4);
+      sc.photoV += (sc.photo - sc.photoV) * Math.min(1, dt * 5);
       sc.hzPulse += dt * 7;
       if (run && run.lap) {
         const hs = run.horses;
@@ -3227,6 +3298,16 @@ const Scene = (() => {
       const vg = ctx.createRadialGradient(W / 2, H * 0.6, H * 0.35, W / 2, H * 0.6, W * 0.75);
       vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
       ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+      if (sc.photoV > 0.01) {
+        // photo finish: cinema bars, a tighter vignette and a pulsing label
+        const pv = sc.photoV, bh = H * 0.085 * pv;
+        const pg = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.2, W / 2, H * 0.55, W * 0.6);
+        pg.addColorStop(0, 'rgba(0,0,0,0)'); pg.addColorStop(1, 'rgba(0,0,0,' + (0.55 * pv) + ')');
+        ctx.fillStyle = pg; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
+        ctx.globalAlpha = pv * (0.65 + 0.35 * Math.sin(sc.t * 9)); ctx.fillStyle = '#e9cf73'; ctx.font = '800 ' + Math.max(10, Math.min(14, bh * 0.6)) + 'px JetBrains Mono, monospace'; ctx.textAlign = 'center';
+        ctx.fillText(I18n.t('PHOTO FINISH'), W / 2, bh * 0.68); ctx.globalAlpha = 1;
+      }
       if (sc.flash > 0) { ctx.globalAlpha = sc.flash * 0.6; ctx.fillStyle = sc.flashCol; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
     }
 
@@ -3259,8 +3340,27 @@ const Scene = (() => {
   var S = {
     screen: 'menu', me: 0, laps: 5, run: null, meta: M.load(),
     gphase: 'idle', speed: 1, paused: false, cd: 0, goT: 0, endDelay: 0,
-    hist: [], ticker: [], diff: 0, daily: 0, peekCard: null, newStuff: null, guideAt: 0, quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
+    hist: [], ticker: [], diff: 0, daily: 0, photoState: 0, photoT: 0, slowV: 1, finT: {}, peekCard: null, newStuff: null, guideAt: 0, quitArm: 0, resetArm: 0, lastRes: null, recorded: false, tstake: 10, cstake: 10, roundBets: [], lastBets: null, quiet: false, flash: null
   };
+
+  /* ---------- save and resume: the run is stored after every pit action and every few seconds in a lap ---------- */
+  var RK = 'suitderby.run', SAVE_V = 1;
+  function saveRun() {
+    var R = S.run;
+    if (!R || R.phase === 'over' || (S.screen !== 'game' && S.screen !== 'pit')) return;
+    try {
+      var d = E.pack(R);
+      if (R.phase !== 'lap') d.lap = null;
+      localStorage.setItem(RK, JSON.stringify({ v: SAVE_V, run: d, res: S.lastRes, daily: S.daily, cs: S.cstake, ts: S.tstake }));
+    } catch (e) {}
+  }
+  function clearSave() { try { localStorage.removeItem(RK); } catch (e) {} }
+  function loadSave() {
+    try { var d = JSON.parse(localStorage.getItem(RK)); if (d && d.v === SAVE_V && d.run && d.run.phase !== 'over' && d.run.horses) return d; } catch (e) {}
+    return null;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) saveRun(); });
+  window.addEventListener('pagehide', saveRun);
 
   function money(n, sign) {
     var a = Math.abs(Math.round(n)).toLocaleString(I.locale());
@@ -3274,6 +3374,7 @@ const Scene = (() => {
   function odds(o) { return '×' + I.n(o.toFixed(2)); }
   function mname(id) { return T(E.MODS[id].name); }
   function cardTxt(c) { return c.chaos ? '★' : lab(c) + SUITS[c.s].glyph; }
+  var PHOTO = { gap: 0.4, zone: 7, slow: 0.35, max: 5 };
   var STAKE_NAMES = ['Standard', 'Tough', 'Hard', 'Brutal', 'Legend'];
   function dailySeed() { var d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
   function dailyLabel(seed) { var t = String(seed); return t.slice(6) + '.' + t.slice(4, 6) + '.' + t.slice(0, 4); }
@@ -3306,7 +3407,7 @@ const Scene = (() => {
     S.screen = name;
     $$('.screen').forEach(function (el) { el.hidden = el.id !== 's-' + name; });
     window.scrollTo(0, 0);
-    Sfx.music.mode(name === 'game' ? 'race' : 'chill');
+    Sfx.music.mode(name === 'game' ? (S.run && S.run.mod === 'derby' ? 'final' : 'race') : 'chill');
     if (onEnter[name]) onEnter[name]();
   }
   document.addEventListener('click', function (e) {
@@ -3347,6 +3448,12 @@ const Scene = (() => {
     $('#menu-stats').textContent = S.meta.runs
       ? T('{runs} runs · {champs} won · best {pts} pts', { runs: S.meta.runs, champs: S.meta.champs, pts: S.meta.bestPts })
       : T('No runs yet.');
+    var sv = loadSave(), rb = $('#resumeBtn');
+    rb.hidden = !sv;
+    if (sv) {
+      var sr = sv.run;
+      $('#resume-sub').textContent = (sv.daily ? T('Daily') + ' · ' : '') + (sr.phase === 'lap' ? T('Lap {n} of {m} in progress', { n: sr.lapNo, m: sr.laps }) : sr.phase === 'prep' ? T('Before lap 1') : T('Pit stop after lap {n} of {m}', { n: sr.lapNo, m: sr.laps })) + ' · ' + sn(sr.me) + ' · ' + money(sr.cash);
+    }
     var ds = dailySeed(), dd = S.meta.daily;
     $('#daily-sub').textContent = dd && dd.date === ds
       ? T('Today: {o} overall, {p} pts. Ride again?', { o: dd.champion ? T('Champion') : ord(dd.rank), p: dd.pts })
@@ -3403,14 +3510,36 @@ const Scene = (() => {
     if (fx.owners) bits.push(T('a free starting upgrade'));
     if (fx.luck) bits.push(T('better shop rarity'));
     if (fx.sharp) bits.push(T('+{p}% bet payouts', { p: Math.round(fx.sharp * 100) }));
+    $('#setup-save').hidden = !loadSave();
     $('#setup-perks').textContent = T('Every run starts level: 10 cards per suit and no rival upgrades before lap 1. Each horse has its own trait.') + ' ' +
       (bits.length ? T('Your Stable perks: {list}.', { list: bits.join(', ') }) : T('No Stable perks yet. Finish a run to earn Stable Points.'));
   };
   function begin(opts) {
     S.run = E.newRun(opts);
     S.recorded = false; S.lastRes = null; S.tstake = 10; S.cstake = 10; S.lastBets = null; S.roundBets = []; S.newStuff = null; S.peekCard = null;
-    renderPit(); go('pit');
+    renderPit(); go('pit'); saveRun();
   }
+  function resumeRun() {
+    var d = loadSave(); if (!d) return;
+    try {
+      S.run = E.unpack(d.run); S.lastRes = d.res || null; S.daily = d.daily || 0; S.me = S.run.me;
+      S.recorded = false; S.newStuff = null; S.peekCard = null; S.cstake = d.cs || 10; S.tstake = d.ts || 10; S.lastBets = null; S.roundBets = [];
+      var R = S.run;
+      if (R.phase === 'lap' && R.lap) {
+        if (R.lap.done) { finishLap(); return; }
+        S.ticker = []; S.hist = []; lastMod = ''; S.endDelay = 0; S.quiet = false; S.photoState = 0; S.slowV = 1; S.finT = {};
+        go('game'); measure(); scene.setMe(R.me); scene.reset();
+        $('#hzcall').hidden = true; $('#hist').innerHTML = ''; $('#dname').textContent = T('Back on the track'); $('#dline').textContent = T('Press Resume to carry on.');
+        $('#face').className = 'face'; $('#cardin').style.transform = 'rotateY(180deg)';
+        renderDeck('#deckbar', '#deckleg', E.deckCounts(R, true), R.me, E.chaosCount(R, true)); renderPts(); renderCalls(); renderTicker();
+        syncHud(); setSpeedUI();
+        S.gphase = 'racing'; S.paused = true;
+        $('#ovtxt').textContent = T('Paused'); $('#ovtxt').className = 'big sm'; $('#overlay').hidden = false; $('#pause').textContent = T('Resume');
+        renderBets(); renderActions();
+      } else { renderPit(); go('pit'); }
+    } catch (e) { clearSave(); S.run = null; go('menu'); }
+  }
+  $('#resumeBtn').addEventListener('click', function () { Sfx.click(); resumeRun(); });
   $('#startRun').addEventListener('click', function () {
     S.daily = 0;
     begin({ me: S.me, laps: S.laps, meta: M.effects(S.meta), diff: S.diff });
@@ -3595,6 +3724,22 @@ const Scene = (() => {
   function floatMoney(i, txt) { scene.say(i, txt, '#e9cf73'); }
   function suitBtn(s) { var b = document.querySelector('[data-bet="' + s + '"]'); if (!b) return { x: innerWidth / 2, y: innerHeight * 0.6 }; var r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
 
+  /* a photo finish: when two horses reach the line almost together, the game drops into slow motion */
+  function photoCheck(dt) {
+    var R = S.run, L = R.lap;
+    if (S.photoState === 0 && !L.done && L.placeCount === 0) {
+      var u = R.horses.filter(function (h) { return !h.fin; }).sort(function (a, b) { return b.pos - a.pos; });
+      if (u.length > 1 && u[0].pos >= CFG.lapLen - PHOTO.zone && u[0].pos - u[1].pos < PHOTO.gap) {
+        S.photoState = 1; S.photoT = 0; scene.photo = 1;
+        Sfx.photo(); scene.cheer(0.6);
+        FX.banner(T('PHOTO FINISH'), null, 'big');
+      }
+    } else if (S.photoState === 1) {
+      S.photoT += dt;
+      if (L.placeCount >= 2 || L.done || S.photoT > PHOTO.max) { S.photoState = 2; scene.photo = 0; }
+    }
+    S.slowV += ((S.photoState === 1 ? PHOTO.slow : 1) - S.slowV) * Math.min(1, dt * 6);
+  }
   function handleEvents() {
     var R = S.run, evs = R.events.splice(0), lastCard = -1, redraw = false, quiet = S.quiet;
     evs.forEach(function (ev, k) { if (ev.type === 'draw' || ev.type === 'chaos') lastCard = k; });
@@ -3688,6 +3833,12 @@ const Scene = (() => {
       } else if (ev.type === 'finish') {
         S.ticker.push({ i: ev.horse, text: T(ev.horse === R.me ? 'you finish {o}' : 'finishes {o}', { o: ord(ev.place) }) });
         if (!quiet) { Sfx.finish(ev.place, ev.horse === R.me); Sfx.cheer(ev.place === 1 ? 1.2 : 0.6); }
+        S.finT[ev.place] = ev.time;
+        if (ev.place === 1 && S.photoState === 1 && !quiet) { Sfx.shutter(); FX.flash('#ffffff'); }
+        if (ev.place === 2 && S.finT[1] != null && ev.time - S.finT[1] < 0.6 && !quiet) {
+          var wh = R.horses.filter(function (h) { return h.place === 1; })[0];
+          if (wh) { FX.banner(T('{s} wins by {t}s', { s: sn(wh.i), t: I.n((ev.time - S.finT[1]).toFixed(2)) }), null, 'big'); S.ticker.push({ i: wh.i, text: T('photo finish: {t}s apart', { t: I.n((ev.time - S.finT[1]).toFixed(2)) }) }); scene.cheer(0.8); }
+        }
         scene.say(ev.horse, ord(ev.place), ev.place === 1 ? '#ffe07a' : '#ece8da', true);
         if (ev.place === 1 || ev.horse === R.me) scene.finishFlash();
         if (ev.horse === R.me && ev.place === 1 && !quiet) { FX.confetti(innerWidth / 2, innerHeight * 0.3, 70); FX.banner(T('WINNER'), null, 'big'); FX.shake(1); }
@@ -3704,7 +3855,7 @@ const Scene = (() => {
   /* ---------- lap flow ---------- */
   function beginLap() {
     var R = S.run;
-    S.ticker = []; S.hist = []; S.peekCard = null; lastMod = ''; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
+    S.ticker = []; S.hist = []; S.peekCard = null; lastMod = ''; S.photoState = 0; S.slowV = 1; S.finT = {}; S.paused = false; S.endDelay = 0; S.quiet = false; S.roundBets = [];
     E.startLap(R);
     scene.setMe(R.me); scene.reset(); $('#hzcall').hidden = true;
     $('#hist').innerHTML = ''; $('#dname').textContent = T('Shuffling'); $('#dline').textContent = T('First card comes out soon.');
@@ -3718,6 +3869,7 @@ const Scene = (() => {
     S.cd = 2.4; S.goT = 0;
     $('#overlay').hidden = false;
     setGamePhase('countdown'); renderBets(); renderActions();
+    saveRun();
   }
   function finishLap() {
     var R = S.run;
@@ -3776,8 +3928,8 @@ const Scene = (() => {
 
   $('#quit').addEventListener('click', function () {
     var b = $('#quit');
-    if (!S.quitArm) { S.quitArm = 1; b.textContent = T('Quit run?'); setTimeout(function () { S.quitArm = 0; b.textContent = T('Quit'); }, 3000); return; }
-    S.quitArm = 0; b.textContent = T('Quit'); S.run = null; S.gphase = 'idle'; go('menu');
+    if (!S.quitArm) { S.quitArm = 1; b.textContent = T('Save and quit?'); setTimeout(function () { S.quitArm = 0; b.textContent = T('Quit'); }, 3000); return; }
+    S.quitArm = 0; b.textContent = T('Quit'); saveRun(); S.run = null; S.gphase = 'idle'; go('menu');
   });
 
   /* ---------- pit stop ---------- */
@@ -3819,6 +3971,7 @@ const Scene = (() => {
       return '<tr class="s' + i + (i === R.me ? ' me' : '') + '"><td class="mono">' + (prep ? '–' : ord(k + 1)) + '</td><td><span class="g">' + SUITS[i].glyph + '</span> ' + sn(i) + (i === R.me ? ' <span class="dim">' + T('(you)') + '</span>' : '') + (lp ? ' <span class="dim mono">+' + CFG.points[lp.place - 1] * res.pm + '</span>' : '') + '</td><td class="num">' + h.points + '</td></tr>';
     }).join('');
     renderRivals(); renderIntel(); renderRecap();
+    setPitTab(prep ? 'bets' : 'result');
     $('#nextLap').textContent = R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
     $('#shopclosed').hidden = !prep;
     $('#offers').hidden = prep; $('#tiers').hidden = prep; $('#reroll').hidden = prep;
@@ -3829,13 +3982,39 @@ const Scene = (() => {
     if (!res || !res.topUps || !res.topUps.length) return '';
     return '<p class="uf"><b>' + T('Underdog fund') + '</b> ' + T('(no suit is starved out of the deck):') + ' ' + res.topUps.map(function (u) { return SUITS[u.horse].glyph + ' ' + TP(u.n, '+{n} card', '+{n} cards'); }).join(', ') + '.</p>';
   }
+  var PTABS = ['result', 'shop', 'bets'];
+  function setPitTab(t) {
+    S.pitTab = t;
+    PTABS.forEach(function (k) {
+      var on = k === t;
+      $('#tab-' + k).setAttribute('aria-selected', String(on));
+      $('[data-pane="' + k + '"]').hidden = !on;
+    });
+    renderPitTabs();
+  }
+  function renderPitTabs() {
+    var R = S.run; if (!R) return;
+    var n = 0, sh = $('#badge-shop'), bb = $('#badge-bets');
+    if (R.phase !== 'prep' && R.shop) R.shop.forEach(function (o) { if (!o.sold && E.available(R, o.id) && E.priceOf(R, o.id) <= E.spendable(R)) n++; });
+    sh.hidden = !n || S.pitTab === 'shop'; sh.textContent = n;
+    var c = R.calls.filter(Boolean).length;
+    bb.hidden = S.pitTab === 'bets'; bb.textContent = c + '/4';
+  }
+  $('#ptabs').addEventListener('click', function (e) { var b = e.target.closest('[data-ptab]'); if (b) { Sfx.pick(); setPitTab(b.dataset.ptab); } });
+  function renderStrip() {
+    var R = S.run, res = S.lastRes, h = '';
+    if (R.phase !== 'prep' && res) {
+      if (R.nextMod) { var m = E.MODS[R.nextMod]; h += '<span class="nchip mod' + (m.final ? ' derby' : '') + '" title="' + T(m.blurb) + '"><b>' + (m.final ? T('Final lap') : T('Next lap')) + '</b>' + T(m.name) + ' · ' + T(m.blurb) + '</span>'; }
+      var d = res.draft;
+      if (d && (d.slots || d.rerolls)) h += '<span class="nchip draft"><b>' + T('Underdog draft') + '</b>' + [d.slots ? TP(d.slots, '{n} extra shop slot', '{n} extra shop slots') : '', d.rerolls ? TP(d.rerolls, '{n} free reroll', '{n} free rerolls') : ''].filter(Boolean).join(' + ') + '</span>';
+      if (R.traps > 0) h += '<span class="nchip trapc"><b>' + T('Trap tokens') + '</b>' + R.traps + '</span>';
+    }
+    $('#nextstrip').innerHTML = h;
+  }
   function renderIntel() {
     var R = S.run, res = S.lastRes, h = '', box = $('#intel');
+    renderStrip();
     if (R.phase === 'prep' || !res) { box.innerHTML = ''; return; }
-    if (R.nextMod) {
-      var m = E.MODS[R.nextMod];
-      h += '<div class="card2 mod' + (m.final ? ' derby' : '') + '"><h4>' + (m.final ? T('Next: the final lap') : T('Next lap modifier')) + '</h4><p><b>' + T(m.name) + '</b>: ' + T(m.blurb) + '</p></div>';
-    }
     var d = res.draft;
     if (d && (d.slots || d.rerolls)) {
       var bits = [];
@@ -3895,8 +4074,9 @@ const Scene = (() => {
     renderBoard();
     if (!prep) renderShop();
     renderTable();
-    renderKit(); renderSets();
+    renderKit(); renderSets(); renderPitTabs();
     renderDeck('#pit-deckbar', '#pit-deckleg', E.deckCounts(R, false), R.me, E.chaosCount(R, false));
+    saveRun();
   }
 
   /* --- call the order --- */
@@ -4031,7 +4211,7 @@ const Scene = (() => {
       M.record(S.meta, r.sp, r.champion, r.points);
       S.newStuff = M.evaluate(S.meta, r, { daily: !!S.daily, maxDiff: CFG.maxDiff });
       if (S.daily) { var od = S.meta.daily; if (!od || od.date !== S.daily || r.points >= od.pts) S.meta.daily = { date: S.daily, pts: r.points, rank: r.rank, champion: r.champion }; }
-      M.save(S.meta); S.recorded = true;
+      M.save(S.meta); S.recorded = true; clearSave();
     }
     var ot = $('#over-rank');
     ot.textContent = r.champion ? T('Champion') : T('{o} overall', { o: ord(r.rank) });
@@ -4166,7 +4346,8 @@ const Scene = (() => {
       } else if (S.gphase === 'racing' || S.gphase === 'ending') {
         if (S.goT > 0) { S.goT -= dt; if (S.goT <= 0 && !S.paused) $('#overlay').hidden = true; }
         if (S.gphase === 'racing' && !S.paused) {
-          var mult = openHazard() ? Math.min(S.speed, 0.6) : S.speed;
+          photoCheck(dt);
+          var mult = (openHazard() ? Math.min(S.speed, 0.6) : S.speed) * S.slowV;
           E.stepLap(R, dt * mult);
           handleEvents();
           if (L.done) { S.endDelay = 1.4; setGamePhase('ending'); renderCalls(); }
@@ -4175,6 +4356,7 @@ const Scene = (() => {
           if (S.endDelay <= 0) finishLap();
         }
         if (S.gphase !== 'idle') renderActions();
+        S.saveT = (S.saveT || 0) + dt; if (S.saveT > 3 && S.gphase === 'racing' && !S.paused) { S.saveT = 0; saveRun(); }
       }
       if (S.screen === 'game') { renderScene(dt); syncHud(); }
     }

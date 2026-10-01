@@ -32,7 +32,7 @@ const Scene = (() => {
     const col = ['--hearts', '--diamonds', '--clubs', '--spades'].map((v, i) => (css.getPropertyValue(v).trim() || ['#f0525e', '#ff9a3d', '#3fc48a', '#8092ff'][i]));
     const glyph = cfg.glyphs, lapLen = cfg.lapLen;
     const sc = {
-      W: 600, H: 300, dpr: 1, cam: -6, ppu: 8, t: 0, crowd: 0.3, flash: 0, flashCol: '#fff',
+      W: 600, H: 300, dpr: 1, cam: -6, ppu: 8, t: 0, crowd: 0.3, flash: 0, photo: 0, photoV: 0, flashCol: '#fff',
       phase: [0, 0, 0, 0], lines: [0, 0, 0, 0], aura: [0, 0, 0, 0], tilt: [0, 0, 0, 0],
       parts: [], texts: [], rows: [0, 1, 2, 3], me: 0, stars: [], hzPulse: 0
     };
@@ -61,7 +61,7 @@ const Scene = (() => {
       return g;
     }
     function reset() {
-      sc.ppu = 15; sc.cam = -120 / sc.ppu; sc.parts = []; sc.texts = []; sc.phase = [0, 0, 0, 0]; sc.lines = [0, 0, 0, 0]; sc.aura = [0, 0, 0, 0]; sc.tilt = [0, 0, 0, 0]; sc.flash = 0;
+      sc.ppu = 15; sc.cam = -120 / sc.ppu; sc.parts = []; sc.texts = []; sc.phase = [0, 0, 0, 0]; sc.lines = [0, 0, 0, 0]; sc.aura = [0, 0, 0, 0]; sc.tilt = [0, 0, 0, 0]; sc.flash = 0; sc.photo = 0; sc.photoV = 0;
     }
 
     /* ---------- events from the game ---------- */
@@ -81,6 +81,7 @@ const Scene = (() => {
       sc.t += dt;
       sc.crowd = Math.max(0.22, sc.crowd - dt * 0.35);
       sc.flash = Math.max(0, sc.flash - dt * 2.4);
+      sc.photoV += (sc.photo - sc.photoV) * Math.min(1, dt * 5);
       sc.hzPulse += dt * 7;
       if (run && run.lap) {
         const hs = run.horses;
@@ -382,6 +383,16 @@ const Scene = (() => {
       const vg = ctx.createRadialGradient(W / 2, H * 0.6, H * 0.35, W / 2, H * 0.6, W * 0.75);
       vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
       ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+      if (sc.photoV > 0.01) {
+        // photo finish: cinema bars, a tighter vignette and a pulsing label
+        const pv = sc.photoV, bh = H * 0.085 * pv;
+        const pg = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.2, W / 2, H * 0.55, W * 0.6);
+        pg.addColorStop(0, 'rgba(0,0,0,0)'); pg.addColorStop(1, 'rgba(0,0,0,' + (0.55 * pv) + ')');
+        ctx.fillStyle = pg; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
+        ctx.globalAlpha = pv * (0.65 + 0.35 * Math.sin(sc.t * 9)); ctx.fillStyle = '#e9cf73'; ctx.font = '800 ' + Math.max(10, Math.min(14, bh * 0.6)) + 'px JetBrains Mono, monospace'; ctx.textAlign = 'center';
+        ctx.fillText(I18n.t('PHOTO FINISH'), W / 2, bh * 0.68); ctx.globalAlpha = 1;
+      }
       if (sc.flash > 0) { ctx.globalAlpha = sc.flash * 0.6; ctx.fillStyle = sc.flashCol; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
     }
 
