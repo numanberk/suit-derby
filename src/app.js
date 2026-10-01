@@ -169,7 +169,7 @@
   var SKIN_DOT = { classic: '#9ba593', gold: '#e2bb52', midnight: '#1f2a52', neon: '#5ef0ff', ghost: '#dfe8f2', candy: '#ff9ec7' };
   var THEME_DOT = { stadium: 'linear-gradient(#0d1322,#33271b)', dusk: 'linear-gradient(#a8454a,#f2a65a)', turf: 'linear-gradient(#8fc2ea,#2f6b3a)', snow: 'linear-gradient(#c9d6e3,#eef3f8)', neon: 'linear-gradient(#3b0a5e,#c2287f)' };
   function styleName(kind, id) {
-    var n = M.NODES.filter(function (x) { return x[kind] === id; })[0];
+    var n = M.COSMETICS.filter(function (x) { return x[kind] === id; })[0];
     return n ? T(n.name) : T(kind === 'skin' ? 'Classic' : 'Stadium');
   }
   function buildStyles() {
@@ -1181,9 +1181,11 @@
   }
   function branchOf(n) { return M.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }
   function renderTree() {
-    var svg = $('#tree'), html = '';
+    var svg = $('#tree'), html = ''; TREE.seen2 = {};
     [135, 245, 345, 440].forEach(function (r) { html += '<circle class="ring" cx="500" cy="500" r="' + r + '"/>'; });
+    var vis = function (n) { return M.owned(S.meta, n.id) || M.isOpen(S.meta, n.id); };
     M.NODES.forEach(function (n) {
+      if (!vis(n)) return;
       var p = npos(n);
       n.parents.forEach(function (pid) {
         var pn = M.nodeById(pid), pp = pid === 'root' ? { x: 500, y: 500 } : npos(pn);
@@ -1193,23 +1195,25 @@
     });
     html += '<g class="nd root" data-node="root" transform="translate(500 500)"><circle r="40"/><text class="ic" y="10" text-anchor="middle">🐴</text></g>';
     M.NODES.forEach(function (n) {
+      if (!vis(n)) return;
       var p = npos(n), st = nodeState(n), lv = M.level(S.meta, n.id), mx = M.maxOf(n), br = branchOf(n);
       var pips = '';
       if (mx > 1) for (var k = 0; k < mx; k++) pips += '<circle class="pip' + (k < lv ? ' on' : '') + '" cx="' + ((k - (mx - 1) / 2) * 9).toFixed(1) + '" cy="35" r="3"/>';
-      html += '<g class="nd st-' + st + (TREE.sel === n.id ? ' sel' : '') + '" data-node="' + n.id + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')" style="--c:' + br.color + '" tabindex="0" role="button" aria-label="' + T(n.name) + '"><circle r="26"/><text class="ic" y="9" text-anchor="middle">' + (ICONS[n.id] || '•') + '</text>' + pips + '</g>';
+      var fresh = TREE.seen && !TREE.seen[n.id]; TREE.seen2[n.id] = 1;
+      html += '<g class="nd st-' + st + (fresh ? ' new' : '') + (TREE.sel === n.id ? ' sel' : '') + '" data-node="' + n.id + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')" style="--c:' + br.color + '" tabindex="0" role="button" aria-label="' + T(n.name) + '"><circle r="26"/><text class="ic" y="9" text-anchor="middle">' + (ICONS[n.id] || '•') + '</text>' + pips + '</g>';
     });
-    svg.innerHTML = html;
+    svg.innerHTML = html; TREE.seen = TREE.seen2;
   }
   function renderNodeInfo() {
     var n = TREE.sel ? M.nodeById(TREE.sel) : null, box = $('#nodeinfo');
     if (!n || n.id === 'root') {
-      box.innerHTML = '<p class="note" style="margin:0">' + T('Tap a node to see what it does. You start in the middle: a node opens when the node next to it, towards the centre, is owned.') + '</p>' +
+      box.innerHTML = '<p class="note" style="margin:0">' + T('Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.') + '</p>' +
         '<div class="legend">' + M.BRANCHES.map(function (b) { return '<span style="--c:' + b.color + '"><i></i>' + T(b.name) + '</span>'; }).join('') + '</div>';
       return;
     }
     var st = nodeState(n), lv = M.level(S.meta, n.id), mx = M.maxOf(n), cost = M.costOf(S.meta, n.id), br = branchOf(n);
     var pips = ''; for (var k = 0; k < mx; k++) pips += '<i class="' + (k < lv ? 'on' : '') + '"></i>';
-    var typ = { perk: 'Perk', codex: 'Codex', jockey: 'Jockey', skin: 'Coat', theme: 'Track' }[n.type];
+    var typ = { perk: 'Perk', codex: 'Codex', jockey: 'Jockey' }[n.type];
     var extra = '';
     if (n.unlocks) extra = '<p class="nx">' + T('Adds to the shop: {list}.', { list: n.unlocks.map(function (u) { return T(E.upgradeById(u).name); }).join(', ') }) + '</p>';
     var btn = st === 'max' ? '<button type="button" class="btn small" disabled>' + T('Maxed') + '</button>'
@@ -1218,8 +1222,33 @@
     box.innerHTML = '<div class="ni"><span class="nic" aria-hidden="true">' + (ICONS[n.id] || '•') + '</span><div class="nt"><h4>' + T(n.name) + '</h4><span class="nb" style="--c:' + br.color + '">' + T(br.name) + ' · ' + T(typ) + '</span></div></div><p>' + T(n.blurb) + '</p>' + extra +
       '<div class="row"><div class="pips" aria-hidden="true">' + pips + '</div><span class="lv">' + (mx > 1 ? T('Level {n} / {m}', { n: lv, m: mx }) : (lv ? T('Owned') : T('Not owned'))) + '</span>' + btn + '</div>';
   }
+  function renderWardrobe() {
+    var sel = M.effects(S.meta).sel;
+    function card(n) {
+      var kind = n.skin ? 'skin' : 'theme', val = n[kind], own = M.owned(S.meta, n.id), cur = own && sel[kind] === val, cost = M.costOf(S.meta, n.id);
+      var btn = own ? '<button type="button" class="btn small' + (cur ? '' : ' primary') + '" data-wear="' + kind + ':' + val + '"' + (cur ? ' disabled' : '') + '>' + (cur ? T('In use') : T('Use')) + '</button>'
+        : '<button type="button" class="btn small primary" data-buynode="' + n.id + '"' + (M.canBuy(S.meta, n.id) ? '' : ' disabled') + '>' + T('Buy · {c} SP', { c: cost }) + '</button>';
+      return '<div class="wcard' + (own ? ' own' : '') + (cur ? ' cur' : '') + '"><span class="wic" aria-hidden="true">' + (ICONS[n.id] || '•') + '</span><div class="wt"><h4>' + T(n.name) + '</h4><p>' + T(n.blurb) + '</p></div>' + btn + '</div>';
+    }
+    var def = function (kind, name, blurb, val) { var cur = sel[kind] === val; return '<div class="wcard own' + (cur ? ' cur' : '') + '"><span class="wic" aria-hidden="true">' + (kind === 'skin' ? '🐴' : '🏟️') + '</span><div class="wt"><h4>' + T(name) + '</h4><p>' + T(blurb) + '</p></div><button type="button" class="btn small' + (cur ? '' : ' primary') + '" data-wear="' + kind + ':' + val + '"' + (cur ? ' disabled' : '') + '>' + (cur ? T('In use') : T('Use')) + '</button></div>'; };
+    $('#wardrobe').innerHTML = '<h3 class="lbl sect-h">' + T('Horse coat') + '</h3><div class="wgrid">' + def('skin', 'Classic', 'The plain suit-coloured coat.', 'classic') + M.COSMETICS.filter(function (n) { return n.skin; }).map(card).join('') + '</div>' +
+      '<h3 class="lbl sect-h">' + T('Track') + '</h3><div class="wgrid">' + def('theme', 'Stadium', 'The floodlit stadium.', 'stadium') + M.COSMETICS.filter(function (n) { return n.theme; }).map(card).join('') + '</div>';
+  }
+  function setStab(t) {
+    S.stab = t;
+    $$('[data-stab]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.stab === t ? 'true' : 'false'); });
+    $$('[data-stabpane]').forEach(function (p) { p.hidden = p.dataset.stabpane !== t; });
+    if (t === 'tree') { var w = $('#treewrap'); w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; w.scrollTop = (w.scrollHeight - w.clientHeight) / 2; }
+  }
+  $('#stabs').addEventListener('click', function (e) { var b = e.target.closest('[data-stab]'); if (b) { Sfx.pick(); setStab(b.dataset.stab); } });
+  $('#wardrobe').addEventListener('click', function (e) {
+    var w = e.target.closest('[data-wear]');
+    if (w) { var p = w.dataset.wear.split(':'); if (M.select(S.meta, p[0], p[1])) { M.save(S.meta); Sfx.pick(); renderWardrobe(); } return; }
+    var b = e.target.closest('[data-buynode]');
+    if (b && M.buy(S.meta, b.dataset.buynode)) { var n = M.nodeById(b.dataset.buynode); M.select(S.meta, n.skin ? 'skin' : 'theme', n.skin || n.theme); M.save(S.meta); Sfx.buy(); renderStable(); }
+  });
   function renderStable() {
-    $('#stable-sp').textContent = T('{n} SP', { n: S.meta.sp });
+    $('#stable-sp').textContent = T('{n} SP', { n: S.meta.sp }); renderWardrobe();
     if (!TREE.sel) { var first = M.NODES.filter(function (n) { return nodeState(n) === 'aff'; })[0]; TREE.sel = first ? first.id : 'deep'; }
     renderTree(); renderNodeInfo();
     var fx = M.effects(S.meta);
@@ -1236,8 +1265,7 @@
     $('#resetMeta').textContent = S.resetArm ? T('Really reset everything?') : T('Reset all progress');
   }
   onEnter.stable = function () {
-    renderStable();
-    var w = $('#treewrap'); w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; w.scrollTop = (w.scrollHeight - w.clientHeight) / 2;
+    TREE.seen = null; renderStable(); setStab(S.stab || 'tree');
   };
   function pickNode(id) { TREE.sel = id; Sfx.pick(); renderTree(); renderNodeInfo(); }
   $('#tree').addEventListener('click', function (e) { var g = e.target.closest('[data-node]'); if (g) pickNode(g.dataset.node); });
@@ -1299,7 +1327,7 @@
       '<section><h3>Peek and burn</h3><p>During a lap you can <b>Peek</b> for $' + C.peekCost + ' to see the card on top of the deck. The draw waits a moment so you can react, and next-card bets are closed until it is drawn. You can only peek when no next-card bet is open. After a peek you can <b>Burn</b> the card for $' + C.burnCost + ' (up to ' + C.burnMax + ' times per lap) and peek again.</p></section>' +
       '<section><h3>Horse traits and sets</h3><p>Every suit’s horse has its own trait: ' + E.TRAITS.map(function (t, i) { return SUITS[i].glyph + ' ' + t.name + ' (' + t.blurb.replace(/\.$/, '') + ')'; }).join('; ') + '. Upgrades also form <b>sets</b>: own different upgrades of one type (Deck, Horse, Money, Betting, Luck, Gear) and the set pays a bonus, shown at the pit stop.</p></section>' +
       '<section><h3>Trophies, stakes and the Daily</h3><p><b>Trophies</b> are earned once for feats like a three-bet streak, three trapped rivals or a comeback win, and some of them unlock new upgrades (Echo Chamber, Trap Master, Phoenix, Grit Amplifier). Win a run to open the next <b>stakes</b> level: rivals buy more upgrades and prizes shrink, but Stable Points grow by ' + Math.round(C.diffSp * 100) + '% per level. The <b>Daily Derby</b> is a five-lap run on the same seed and horse for everyone that day, with no Stable perks, and gives a result you can copy and share.</p></section>' +
-      '<section><h3>The Stable</h3><p>At the end of a run you earn <b>Stable Points</b>: lap points, correct calls, and a bonus of 2 per lap for the champion or 1 per lap for the runner-up. The Stable is a <b>skill tree</b>: you start in the middle and a node opens once a node next to it (towards the centre) is owned. Eight branches lead out: Treasury (cash and prices), Training Yard (horse), Betting Ring, Workshop (gadget slots, hand size, a second crew), Codex (unlocks upgrades for the shop), Jockey Club (new jockeys), Paddock (coats and tracks) and Luck Alley. Progress is saved in this browser.</p></section>';
+      '<section><h3>The Stable</h3><p>At the end of a run you earn <b>Stable Points</b>: lap points, correct calls, and a bonus of 2 per lap for the champion or 1 per lap for the runner-up. The Stable is a <b>skill tree</b>: you start in the middle and nodes stay hidden until a node next to them (towards the centre) is owned, so the tree grows as you buy. Seven branches lead out: Treasury (cash and prices), Training Yard (horse), Betting Ring, Workshop (gadget slots, hand size, a second crew), Codex (unlocks upgrades for the shop), Jockey Club (new jockeys) and Luck Alley. Coats and tracks have their own <b>Cosmetics</b> tab. Progress is saved in this browser.</p></section>';
   }
 
   /* ---------- loop ---------- */

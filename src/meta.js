@@ -3,7 +3,7 @@
 const Meta = (() => {
   /* The Stable is a skill tree. You start in the middle and spend Stable Points to open nodes; a node can be
      bought once any node next to it (its parents) is owned. Branches: Treasury, Training Yard, Betting Ring,
-     Workshop, Codex (unlocks upgrades for the shop), Jockey Club, Paddock (cosmetics) and Luck Alley.
+     Workshop, Codex (unlocks upgrades for the shop), Jockey Club and Luck Alley (cosmetics live in their own tab).
      a = angle in degrees on the tree, r = ring (distance from the centre). */
   const BRANCHES = [
     { id: 'treasury', name: 'Treasury', a: -90, color: '#e9cf73' },
@@ -12,7 +12,6 @@ const Meta = (() => {
     { id: 'shop', name: 'Workshop', a: 45, color: '#8fb8ee' },
     { id: 'codex', name: 'Codex', a: 90, color: '#c79bf0' },
     { id: 'club', name: 'Jockey Club', a: 135, color: '#f0a8c8' },
-    { id: 'paddock', name: 'Paddock', a: 180, color: '#e6d9b8' },
     { id: 'luck', name: 'Luck Alley', a: 225, color: '#8fe0d6' }
   ];
   const N = (id, br, type, name, blurb, costs, parents, a, r, extra) => Object.assign({ id, br, type, name, blurb, costs, parents, a, r }, extra || {});
@@ -55,26 +54,29 @@ const Meta = (() => {
     N('jk_saboteur', 'club', 'jockey', 'Saboteur', 'Ride as the Saboteur: more traps, earned for 2nd place too.', [50], ['jk_banker', 'jk_trainer'], 135, 3, { jockey: 'saboteur' }),
     N('jk_collector', 'club', 'jockey', 'Collector', 'Ride as the Collector: an extra gadget slot and a bigger hand.', [60], ['jk_trainer'], 148, 3, { jockey: 'collector' }),
     N('jk_daredevil', 'club', 'jockey', 'Daredevil', 'Ride as the Daredevil: huge perfect jumps, longer stumbles.', [70], ['jk_saboteur'], 135, 4, { jockey: 'daredevil' }),
-    // ---- Paddock: cosmetics
-    N('sk_gold', 'paddock', 'skin', 'Golden Coat', 'A golden coat for your horse.', [15], ['root'], 180, 1, { skin: 'gold' }),
-    N('sk_midnight', 'paddock', 'skin', 'Midnight Coat', 'A dark coat with a blue shine.', [15], ['sk_gold'], 170, 2, { skin: 'midnight' }),
-    N('sk_neon', 'paddock', 'skin', 'Neon Glow', 'A glowing neon coat.', [25], ['sk_midnight'], 164, 3, { skin: 'neon' }),
-    N('sk_ghost', 'paddock', 'skin', 'Ghost Coat', 'A pale, see-through coat.', [25], ['sk_midnight'], 180, 3, { skin: 'ghost' }),
-    N('th_dusk', 'paddock', 'theme', 'Dusk Track', 'A golden-hour sunset over the stadium.', [15], ['sk_gold', 'sk_midnight'], 192, 2, { theme: 'dusk' }),
-    N('th_turf', 'paddock', 'theme', 'Green Turf', 'A grass track under a bright daytime sky.', [25], ['th_dusk'], 196, 3, { theme: 'turf' }),
-    N('th_snow', 'paddock', 'theme', 'Snow Day', 'A white winter track.', [25], ['th_dusk'], 212, 3, { theme: 'snow' }),
-    N('sk_candy', 'paddock', 'skin', 'Candy Coat', 'A pastel pink-and-mint coat.', [20], ['th_snow'], 214, 4, { skin: 'candy' }),
-    N('th_neon', 'paddock', 'theme', 'Neon City', 'A glowing synthwave track.', [35], ['th_turf', 'th_snow'], 196, 4, { theme: 'neon' }),
     // ---- Luck Alley
     N('lucky', 'luck', 'perk', 'Lucky Stable', 'Rarer upgrades show up more often in the shop.', [25, 40, 60], ['root'], 225, 1),
     N('reroll', 'luck', 'perk', 'Free Reroll', 'One free shop reroll at every Shop stop.', [25, 50], ['lucky'], 214, 2),
     N('eagle', 'luck', 'perk', 'Eagle Eye', 'Peeking costs $3 less and burning $7 less.', [20, 35, 50], ['lucky'], 236, 2)
   ];
+  /* cosmetics are not part of the tree: they are bought in the Stable's Cosmetics tab (always open) */
+  const COSMETICS = [
+    N('sk_gold', 'paddock', 'skin', 'Golden Coat', 'A golden coat for your horse.', [15], ['root'], 0, 0, { skin: 'gold' }),
+    N('sk_midnight', 'paddock', 'skin', 'Midnight Coat', 'A dark coat with a blue shine.', [15], ['root'], 0, 0, { skin: 'midnight' }),
+    N('sk_neon', 'paddock', 'skin', 'Neon Glow', 'A glowing neon coat.', [25], ['root'], 0, 0, { skin: 'neon' }),
+    N('sk_ghost', 'paddock', 'skin', 'Ghost Coat', 'A pale, see-through coat.', [25], ['root'], 0, 0, { skin: 'ghost' }),
+    N('th_dusk', 'paddock', 'theme', 'Dusk Track', 'A golden-hour sunset over the stadium.', [15], ['root'], 0, 0, { theme: 'dusk' }),
+    N('th_turf', 'paddock', 'theme', 'Green Turf', 'A grass track under a bright daytime sky.', [25], ['root'], 0, 0, { theme: 'turf' }),
+    N('th_snow', 'paddock', 'theme', 'Snow Day', 'A white winter track.', [25], ['root'], 0, 0, { theme: 'snow' }),
+    N('sk_candy', 'paddock', 'skin', 'Candy Coat', 'A pastel pink-and-mint coat.', [20], ['root'], 0, 0, { skin: 'candy' }),
+    N('th_neon', 'paddock', 'theme', 'Neon City', 'A glowing synthwave track.', [35], ['root'], 0, 0, { theme: 'neon' })
+  ];
+  const ALL = NODES.concat(COSMETICS);
   const ROOT = { id: 'root', name: 'The Stable', type: 'root', costs: [], parents: [] };
-  const nodeById = id => (id === 'root' ? ROOT : NODES.find(n => n.id === id));
+  const nodeById = id => (id === 'root' ? ROOT : ALL.find(n => n.id === id));
   const ITEMS = NODES.filter(n => n.type === 'perk');
-  const SKINS = ['classic'].concat(NODES.filter(n => n.skin).map(n => n.skin));
-  const THEMES = ['stadium'].concat(NODES.filter(n => n.theme).map(n => n.theme));
+  const SKINS = ['classic'].concat(COSMETICS.filter(n => n.skin).map(n => n.skin));
+  const THEMES = ['stadium'].concat(COSMETICS.filter(n => n.theme).map(n => n.theme));
 
   /* trophies: earned once, forever. Some of them unlock an upgrade for the shop. */
   const ACH = [
@@ -124,7 +126,7 @@ const Meta = (() => {
     return true;
   }
   function owns(state, kind, id) {
-    const n = NODES.find(x => x[kind] === id);
+    const n = ALL.find(x => x[kind] === id);
     return !n ? (kind === 'jockey' ? id === 'rookie' : kind === 'skin' ? id === 'classic' : id === 'stadium') : owned(state, n.id);
   }
   function select(state, kind, id) {
@@ -153,8 +155,8 @@ const Meta = (() => {
       gadgetSlots: L('belt'), hand: L('hand'), crewExtra: L('crew2'), pickN: 3 + L('pickmore'),
       unlocked, sel,
       jockeys: ['rookie'].concat(NODES.filter(n => n.jockey && owned(state, n.id)).map(n => n.jockey)),
-      skins: ['classic'].concat(NODES.filter(n => n.skin && owned(state, n.id)).map(n => n.skin)),
-      themes: ['stadium'].concat(NODES.filter(n => n.theme && owned(state, n.id)).map(n => n.theme))
+      skins: ['classic'].concat(COSMETICS.filter(n => n.skin && owned(state, n.id)).map(n => n.skin)),
+      themes: ['stadium'].concat(COSMETICS.filter(n => n.theme && owned(state, n.id)).map(n => n.theme))
     };
   }
   function record(state, sp, champion, pts) {
@@ -183,6 +185,6 @@ const Meta = (() => {
   function save(state) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function reset() { const s = fresh(); save(s); return s; }
 
-  return { ITEMS, NODES, BRANCHES, ROOT, SKINS, THEMES, nodeById, ACH, fresh, level, maxOf, costOf, owned, isOpen, canBuy, buy, owns, select, effects, record, evaluate, has, load, save, reset };
+  return { ITEMS, NODES, COSMETICS, BRANCHES, ROOT, SKINS, THEMES, nodeById, ACH, fresh, level, maxOf, costOf, owned, isOpen, canBuy, buy, owns, select, effects, record, evaluate, has, load, save, reset };
 })();
 if (typeof module !== 'undefined') module.exports = Meta;

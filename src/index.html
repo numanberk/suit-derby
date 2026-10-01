@@ -218,14 +218,26 @@
   <section class="screen" id="s-stable" hidden aria-label="The Stable">
     <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="The Stable">The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
     <p class="lede sm" data-i18n="Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
+    <div class="stabs" id="stabs" role="tablist" data-i18n-label="Stable sections" aria-label="Stable sections">
+      <button type="button" role="tab" data-stab="tree" aria-selected="true" data-i18n="Skill tree">Skill tree</button>
+      <button type="button" role="tab" data-stab="wardrobe" aria-selected="false" data-i18n="Cosmetics">Cosmetics</button>
+      <button type="button" role="tab" data-stab="trophies" aria-selected="false" data-i18n="Trophies">Trophies</button>
+    </div>
+    <div data-stabpane="tree">
     <div class="treewrap" id="treewrap"><svg id="tree" viewBox="0 0 1000 1000" role="group" data-i18n-label="Skill tree" aria-label="Skill tree"></svg></div>
     <div class="nodeinfo" id="nodeinfo"></div>
     <h3 class="lbl sect-h" data-i18n="Codex">Codex</h3>
     <p class="lede sm" id="codex-sub"></p>
     <div class="codex" id="codex"></div>
-    <h3 class="lbl sect-h" data-i18n="Trophies">Trophies</h3>
-    <p class="lede sm" id="trophy-sub"></p>
-    <div class="trophies" id="trophies"></div>
+    </div>
+    <div data-stabpane="wardrobe" hidden>
+      <p class="lede sm" data-i18n="Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.">Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.</p>
+      <div id="wardrobe"></div>
+    </div>
+    <div data-stabpane="trophies" hidden>
+      <p class="lede sm" id="trophy-sub"></p>
+      <div class="trophies" id="trophies"></div>
+    </div>
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 

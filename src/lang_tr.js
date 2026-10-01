@@ -432,7 +432,7 @@
       '<section><h3>Bak ve yak</h3><p>Bir tur sırasında $' + C.peekCost + ' ödeyip destenin en üstündeki kartı görmek için <b>Bak</b>’a basabilirsin. Çekiliş tepki verebilmen için biraz bekler ve kart çekilene kadar sıradaki kart bahisleri kapalıdır. Yalnızca açık bir sıradaki kart bahsin yokken bakabilirsin. Baktıktan sonra kartı $' + C.burnCost + ' karşılığında <b>Yakabilir</b> (tur başına en fazla ' + C.burnMax + ' kez) ve tekrar bakabilirsin.</p></section>' +
       '<section><h3>At özellikleri ve takımlar</h3><p>Her rengin atının kendine özgü bir özelliği vardır: ♥ Sprinter (dayanıklılık %20 daha hızlı dolar), ♦ Uzun Soluklu (atılımlar %5 daha yavaş söner), ♣ Dengeli (tökezlemeler yarı kadar sürer, seyir hızı +0,03), ♠ Finişçi (turun son %40’ında seyir hızı +0,12). Geliştirmeler ayrıca <b>takımlar</b> oluşturur: aynı türden (Deste, At, Para, Bahis, Şans, Ekipman) farklı geliştirmeler edin, takım bir bonus öder ve bu molada görünür.</p></section>' +
       '<section><h3>Rozetler, zorluk ve Günlük Derbi</h3><p><b>Rozetler</b>, üst üste üç kart bahsi tutmak, üç rakibi tuzağa düşürmek ya da geri dönüp kazanmak gibi başarılar için bir kez verilir ve bazıları yeni geliştirmelerin (Yankı Odası, Tuzak Ustası, Anka, Azim Yükselteci) kilidini açar. Bir sonraki <b>zorluk</b> seviyesini açmak için bir koşu kazan: rakipler daha çok geliştirme alır ve ödüller küçülür, ama Ahır Puanı seviye başına %' + Math.round(C.diffSp * 100) + ' artar. <b>Günlük Derbi</b>, o gün herkes için aynı tohum ve aynı atla, Ahır geliştirmesiz beş turluk bir koşudur ve kopyalayıp paylaşabileceğin bir sonuç verir.</p></section>' +
-      '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Ahır bir <b>yetenek ağacıdır</b>: ortadan başlarsın ve merkeze doğru yanındaki düğüm sahipken o düğüm açılır. Sekiz dal dışarı uzanır: Hazine (para ve fiyatlar), Antrenman Sahası (at), Bahis Halkası, Atölye (alet yuvaları, el büyüklüğü, ikinci ekip), Kodeks (dükkan için geliştirmeleri açar), Jokey Kulübü (yeni jokeyler), Padok (tüyler ve pistler) ve Şans Sokağı. İlerleme bu tarayıcıda saklanır.</p></section>';
+      '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Ahır bir <b>yetenek ağacıdır</b>: ortadan başlarsın; bir düğüm, merkeze doğru yanındaki düğüm sahip olunana kadar gizli kalır, yani ağaç sen satın aldıkça büyür. Yedi dal dışarı uzanır: Hazine (para ve fiyatlar), Antrenman Sahası (at), Bahis Halkası, Atölye (alet yuvaları, el büyüklüğü, ikinci ekip), Kodeks (dükkan için geliştirmeleri açar), Jokey Kulübü (yeni jokeyler) ve Şans Sokağı. Tüyler ve pistlerin kendi <b>Görünümler</b> sekmesi var. İlerleme bu tarayıcıda saklanır.</p></section>';
   };
 
   Object.assign(I18n.dict.tr, {
@@ -584,5 +584,11 @@
     '{n} spin left this stop': 'bu molada {n} çevirme kaldı', '{n} spins left this stop': 'bu molada {n} çevirme kaldı',
     'Your jockey': 'Jokeyin', 'Horse coat': 'At tüyü', 'Track': 'Pist', 'Wheel of Fortune': 'Kader Çarkı', 'Skill tree': 'Yetenek ağacı',
     'Gadgets and round cards': 'Aletler ve tur kartları'
+  });
+  Object.assign(I18n.dict.tr, {
+    'Cosmetics': 'Görünümler', 'Stable sections': 'Ahır bölümleri', 'In use': 'Kullanımda', 'Use': 'Kullan', 'Classic': 'Klasik', 'Stadium': 'Stadyum',
+    'The plain suit-coloured coat.': 'Sade, takım renginde tüy.', 'The floodlit stadium.': 'Işıklarla aydınlanmış stadyum.',
+    'Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.': 'Tüyler ve pistler sadece görüntü içindir. Ahır Puanıyla satın al, sonra Kurulumda ya da burada seç.',
+    'Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.': 'Ne işe yaradığını görmek için bir düğüme dokun. Ortadan başlarsın ve ağaç sen satın aldıkça büyür: yeni düğümler sahip olduklarının yanında belirir.'
   });
 })();

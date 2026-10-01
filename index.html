@@ -640,6 +640,21 @@ h1, h2, h3, p { margin: 0; }
 .cx b { font: 700 12px var(--f-body); } .cx small { font: 500 10px var(--f-mono); color: var(--ink-dim); }
 .cx.on { opacity: 1; border-color: color-mix(in srgb, var(--tc) 60%, var(--line)); }
 
+/* v11.1: Stable tabs, fogged tree, cosmetics tab */
+.stabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 10px 0 6px; }
+.stabs button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); font: 800 18px/1 var(--f-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); }
+.stabs button[aria-selected="true"] { background: var(--gold); color: var(--gold-ink); border-color: transparent; }
+#tree .nd.new { animation: ndin .7s ease-out; transform-box: fill-box; transform-origin: center; }
+@keyframes ndin { from { opacity: 0; } to { opacity: 1; } }
+.wgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.wcard { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--track); border: 1px solid var(--line); }
+.wcard:not(.own) { opacity: .92; }
+.wcard.cur { border-color: var(--gold); }
+.wcard .wic { font-size: 28px; text-align: center; }
+.wcard h4 { margin: 0; font: 700 15px var(--f-body); }
+.wcard p { margin: 2px 0 0; font: 400 12px/1.3 var(--f-body); color: var(--ink-dim); }
+@media (max-width: 520px) { .wcard { grid-template-columns: 36px 1fr; } .wcard .btn { grid-column: 1 / -1; } }
+
 </style>
 </head>
 <body>
@@ -850,14 +865,26 @@ h1, h2, h3, p { margin: 0; }
   <section class="screen" id="s-stable" hidden aria-label="The Stable">
     <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="The Stable">The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
     <p class="lede sm" data-i18n="Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
+    <div class="stabs" id="stabs" role="tablist" data-i18n-label="Stable sections" aria-label="Stable sections">
+      <button type="button" role="tab" data-stab="tree" aria-selected="true" data-i18n="Skill tree">Skill tree</button>
+      <button type="button" role="tab" data-stab="wardrobe" aria-selected="false" data-i18n="Cosmetics">Cosmetics</button>
+      <button type="button" role="tab" data-stab="trophies" aria-selected="false" data-i18n="Trophies">Trophies</button>
+    </div>
+    <div data-stabpane="tree">
     <div class="treewrap" id="treewrap"><svg id="tree" viewBox="0 0 1000 1000" role="group" data-i18n-label="Skill tree" aria-label="Skill tree"></svg></div>
     <div class="nodeinfo" id="nodeinfo"></div>
     <h3 class="lbl sect-h" data-i18n="Codex">Codex</h3>
     <p class="lede sm" id="codex-sub"></p>
     <div class="codex" id="codex"></div>
-    <h3 class="lbl sect-h" data-i18n="Trophies">Trophies</h3>
-    <p class="lede sm" id="trophy-sub"></p>
-    <div class="trophies" id="trophies"></div>
+    </div>
+    <div data-stabpane="wardrobe" hidden>
+      <p class="lede sm" data-i18n="Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.">Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.</p>
+      <div id="wardrobe"></div>
+    </div>
+    <div data-stabpane="trophies" hidden>
+      <p class="lede sm" id="trophy-sub"></p>
+      <div class="trophies" id="trophies"></div>
+    </div>
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 
@@ -1374,7 +1401,7 @@ if (typeof module !== 'undefined') module.exports = I18n;
       '<section><h3>Bak ve yak</h3><p>Bir tur sırasında $' + C.peekCost + ' ödeyip destenin en üstündeki kartı görmek için <b>Bak</b>’a basabilirsin. Çekiliş tepki verebilmen için biraz bekler ve kart çekilene kadar sıradaki kart bahisleri kapalıdır. Yalnızca açık bir sıradaki kart bahsin yokken bakabilirsin. Baktıktan sonra kartı $' + C.burnCost + ' karşılığında <b>Yakabilir</b> (tur başına en fazla ' + C.burnMax + ' kez) ve tekrar bakabilirsin.</p></section>' +
       '<section><h3>At özellikleri ve takımlar</h3><p>Her rengin atının kendine özgü bir özelliği vardır: ♥ Sprinter (dayanıklılık %20 daha hızlı dolar), ♦ Uzun Soluklu (atılımlar %5 daha yavaş söner), ♣ Dengeli (tökezlemeler yarı kadar sürer, seyir hızı +0,03), ♠ Finişçi (turun son %40’ında seyir hızı +0,12). Geliştirmeler ayrıca <b>takımlar</b> oluşturur: aynı türden (Deste, At, Para, Bahis, Şans, Ekipman) farklı geliştirmeler edin, takım bir bonus öder ve bu molada görünür.</p></section>' +
       '<section><h3>Rozetler, zorluk ve Günlük Derbi</h3><p><b>Rozetler</b>, üst üste üç kart bahsi tutmak, üç rakibi tuzağa düşürmek ya da geri dönüp kazanmak gibi başarılar için bir kez verilir ve bazıları yeni geliştirmelerin (Yankı Odası, Tuzak Ustası, Anka, Azim Yükselteci) kilidini açar. Bir sonraki <b>zorluk</b> seviyesini açmak için bir koşu kazan: rakipler daha çok geliştirme alır ve ödüller küçülür, ama Ahır Puanı seviye başına %' + Math.round(C.diffSp * 100) + ' artar. <b>Günlük Derbi</b>, o gün herkes için aynı tohum ve aynı atla, Ahır geliştirmesiz beş turluk bir koşudur ve kopyalayıp paylaşabileceğin bir sonuç verir.</p></section>' +
-      '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Ahır bir <b>yetenek ağacıdır</b>: ortadan başlarsın ve merkeze doğru yanındaki düğüm sahipken o düğüm açılır. Sekiz dal dışarı uzanır: Hazine (para ve fiyatlar), Antrenman Sahası (at), Bahis Halkası, Atölye (alet yuvaları, el büyüklüğü, ikinci ekip), Kodeks (dükkan için geliştirmeleri açar), Jokey Kulübü (yeni jokeyler), Padok (tüyler ve pistler) ve Şans Sokağı. İlerleme bu tarayıcıda saklanır.</p></section>';
+      '<section><h3>Ahır</h3><p>Koşu sonunda <b>Ahır Puanı</b> kazanırsın: tur puanları, doğru tahminler ve şampiyon için tur başına 2, ikinci için tur başına 1 bonus. Ahır bir <b>yetenek ağacıdır</b>: ortadan başlarsın; bir düğüm, merkeze doğru yanındaki düğüm sahip olunana kadar gizli kalır, yani ağaç sen satın aldıkça büyür. Yedi dal dışarı uzanır: Hazine (para ve fiyatlar), Antrenman Sahası (at), Bahis Halkası, Atölye (alet yuvaları, el büyüklüğü, ikinci ekip), Kodeks (dükkan için geliştirmeleri açar), Jokey Kulübü (yeni jokeyler) ve Şans Sokağı. Tüyler ve pistlerin kendi <b>Görünümler</b> sekmesi var. İlerleme bu tarayıcıda saklanır.</p></section>';
   };
 
   Object.assign(I18n.dict.tr, {
@@ -1526,6 +1553,12 @@ if (typeof module !== 'undefined') module.exports = I18n;
     '{n} spin left this stop': 'bu molada {n} çevirme kaldı', '{n} spins left this stop': 'bu molada {n} çevirme kaldı',
     'Your jockey': 'Jokeyin', 'Horse coat': 'At tüyü', 'Track': 'Pist', 'Wheel of Fortune': 'Kader Çarkı', 'Skill tree': 'Yetenek ağacı',
     'Gadgets and round cards': 'Aletler ve tur kartları'
+  });
+  Object.assign(I18n.dict.tr, {
+    'Cosmetics': 'Görünümler', 'Stable sections': 'Ahır bölümleri', 'In use': 'Kullanımda', 'Use': 'Kullan', 'Classic': 'Klasik', 'Stadium': 'Stadyum',
+    'The plain suit-coloured coat.': 'Sade, takım renginde tüy.', 'The floodlit stadium.': 'Işıklarla aydınlanmış stadyum.',
+    'Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.': 'Tüyler ve pistler sadece görüntü içindir. Ahır Puanıyla satın al, sonra Kurulumda ya da burada seç.',
+    'Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.': 'Ne işe yaradığını görmek için bir düğüme dokun. Ortadan başlarsın ve ağaç sen satın aldıkça büyür: yeni düğümler sahip olduklarının yanında belirir.'
   });
 })();
 
@@ -2050,7 +2083,7 @@ if (typeof module !== 'undefined') module.exports = Sfx;
 const Meta = (() => {
   /* The Stable is a skill tree. You start in the middle and spend Stable Points to open nodes; a node can be
      bought once any node next to it (its parents) is owned. Branches: Treasury, Training Yard, Betting Ring,
-     Workshop, Codex (unlocks upgrades for the shop), Jockey Club, Paddock (cosmetics) and Luck Alley.
+     Workshop, Codex (unlocks upgrades for the shop), Jockey Club and Luck Alley (cosmetics live in their own tab).
      a = angle in degrees on the tree, r = ring (distance from the centre). */
   const BRANCHES = [
     { id: 'treasury', name: 'Treasury', a: -90, color: '#e9cf73' },
@@ -2059,7 +2092,6 @@ const Meta = (() => {
     { id: 'shop', name: 'Workshop', a: 45, color: '#8fb8ee' },
     { id: 'codex', name: 'Codex', a: 90, color: '#c79bf0' },
     { id: 'club', name: 'Jockey Club', a: 135, color: '#f0a8c8' },
-    { id: 'paddock', name: 'Paddock', a: 180, color: '#e6d9b8' },
     { id: 'luck', name: 'Luck Alley', a: 225, color: '#8fe0d6' }
   ];
   const N = (id, br, type, name, blurb, costs, parents, a, r, extra) => Object.assign({ id, br, type, name, blurb, costs, parents, a, r }, extra || {});
@@ -2102,26 +2134,29 @@ const Meta = (() => {
     N('jk_saboteur', 'club', 'jockey', 'Saboteur', 'Ride as the Saboteur: more traps, earned for 2nd place too.', [50], ['jk_banker', 'jk_trainer'], 135, 3, { jockey: 'saboteur' }),
     N('jk_collector', 'club', 'jockey', 'Collector', 'Ride as the Collector: an extra gadget slot and a bigger hand.', [60], ['jk_trainer'], 148, 3, { jockey: 'collector' }),
     N('jk_daredevil', 'club', 'jockey', 'Daredevil', 'Ride as the Daredevil: huge perfect jumps, longer stumbles.', [70], ['jk_saboteur'], 135, 4, { jockey: 'daredevil' }),
-    // ---- Paddock: cosmetics
-    N('sk_gold', 'paddock', 'skin', 'Golden Coat', 'A golden coat for your horse.', [15], ['root'], 180, 1, { skin: 'gold' }),
-    N('sk_midnight', 'paddock', 'skin', 'Midnight Coat', 'A dark coat with a blue shine.', [15], ['sk_gold'], 170, 2, { skin: 'midnight' }),
-    N('sk_neon', 'paddock', 'skin', 'Neon Glow', 'A glowing neon coat.', [25], ['sk_midnight'], 164, 3, { skin: 'neon' }),
-    N('sk_ghost', 'paddock', 'skin', 'Ghost Coat', 'A pale, see-through coat.', [25], ['sk_midnight'], 180, 3, { skin: 'ghost' }),
-    N('th_dusk', 'paddock', 'theme', 'Dusk Track', 'A golden-hour sunset over the stadium.', [15], ['sk_gold', 'sk_midnight'], 192, 2, { theme: 'dusk' }),
-    N('th_turf', 'paddock', 'theme', 'Green Turf', 'A grass track under a bright daytime sky.', [25], ['th_dusk'], 196, 3, { theme: 'turf' }),
-    N('th_snow', 'paddock', 'theme', 'Snow Day', 'A white winter track.', [25], ['th_dusk'], 212, 3, { theme: 'snow' }),
-    N('sk_candy', 'paddock', 'skin', 'Candy Coat', 'A pastel pink-and-mint coat.', [20], ['th_snow'], 214, 4, { skin: 'candy' }),
-    N('th_neon', 'paddock', 'theme', 'Neon City', 'A glowing synthwave track.', [35], ['th_turf', 'th_snow'], 196, 4, { theme: 'neon' }),
     // ---- Luck Alley
     N('lucky', 'luck', 'perk', 'Lucky Stable', 'Rarer upgrades show up more often in the shop.', [25, 40, 60], ['root'], 225, 1),
     N('reroll', 'luck', 'perk', 'Free Reroll', 'One free shop reroll at every Shop stop.', [25, 50], ['lucky'], 214, 2),
     N('eagle', 'luck', 'perk', 'Eagle Eye', 'Peeking costs $3 less and burning $7 less.', [20, 35, 50], ['lucky'], 236, 2)
   ];
+  /* cosmetics are not part of the tree: they are bought in the Stable's Cosmetics tab (always open) */
+  const COSMETICS = [
+    N('sk_gold', 'paddock', 'skin', 'Golden Coat', 'A golden coat for your horse.', [15], ['root'], 0, 0, { skin: 'gold' }),
+    N('sk_midnight', 'paddock', 'skin', 'Midnight Coat', 'A dark coat with a blue shine.', [15], ['root'], 0, 0, { skin: 'midnight' }),
+    N('sk_neon', 'paddock', 'skin', 'Neon Glow', 'A glowing neon coat.', [25], ['root'], 0, 0, { skin: 'neon' }),
+    N('sk_ghost', 'paddock', 'skin', 'Ghost Coat', 'A pale, see-through coat.', [25], ['root'], 0, 0, { skin: 'ghost' }),
+    N('th_dusk', 'paddock', 'theme', 'Dusk Track', 'A golden-hour sunset over the stadium.', [15], ['root'], 0, 0, { theme: 'dusk' }),
+    N('th_turf', 'paddock', 'theme', 'Green Turf', 'A grass track under a bright daytime sky.', [25], ['root'], 0, 0, { theme: 'turf' }),
+    N('th_snow', 'paddock', 'theme', 'Snow Day', 'A white winter track.', [25], ['root'], 0, 0, { theme: 'snow' }),
+    N('sk_candy', 'paddock', 'skin', 'Candy Coat', 'A pastel pink-and-mint coat.', [20], ['root'], 0, 0, { skin: 'candy' }),
+    N('th_neon', 'paddock', 'theme', 'Neon City', 'A glowing synthwave track.', [35], ['root'], 0, 0, { theme: 'neon' })
+  ];
+  const ALL = NODES.concat(COSMETICS);
   const ROOT = { id: 'root', name: 'The Stable', type: 'root', costs: [], parents: [] };
-  const nodeById = id => (id === 'root' ? ROOT : NODES.find(n => n.id === id));
+  const nodeById = id => (id === 'root' ? ROOT : ALL.find(n => n.id === id));
   const ITEMS = NODES.filter(n => n.type === 'perk');
-  const SKINS = ['classic'].concat(NODES.filter(n => n.skin).map(n => n.skin));
-  const THEMES = ['stadium'].concat(NODES.filter(n => n.theme).map(n => n.theme));
+  const SKINS = ['classic'].concat(COSMETICS.filter(n => n.skin).map(n => n.skin));
+  const THEMES = ['stadium'].concat(COSMETICS.filter(n => n.theme).map(n => n.theme));
 
   /* trophies: earned once, forever. Some of them unlock an upgrade for the shop. */
   const ACH = [
@@ -2171,7 +2206,7 @@ const Meta = (() => {
     return true;
   }
   function owns(state, kind, id) {
-    const n = NODES.find(x => x[kind] === id);
+    const n = ALL.find(x => x[kind] === id);
     return !n ? (kind === 'jockey' ? id === 'rookie' : kind === 'skin' ? id === 'classic' : id === 'stadium') : owned(state, n.id);
   }
   function select(state, kind, id) {
@@ -2200,8 +2235,8 @@ const Meta = (() => {
       gadgetSlots: L('belt'), hand: L('hand'), crewExtra: L('crew2'), pickN: 3 + L('pickmore'),
       unlocked, sel,
       jockeys: ['rookie'].concat(NODES.filter(n => n.jockey && owned(state, n.id)).map(n => n.jockey)),
-      skins: ['classic'].concat(NODES.filter(n => n.skin && owned(state, n.id)).map(n => n.skin)),
-      themes: ['stadium'].concat(NODES.filter(n => n.theme && owned(state, n.id)).map(n => n.theme))
+      skins: ['classic'].concat(COSMETICS.filter(n => n.skin && owned(state, n.id)).map(n => n.skin)),
+      themes: ['stadium'].concat(COSMETICS.filter(n => n.theme && owned(state, n.id)).map(n => n.theme))
     };
   }
   function record(state, sp, champion, pts) {
@@ -2230,7 +2265,7 @@ const Meta = (() => {
   function save(state) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function reset() { const s = fresh(); save(s); return s; }
 
-  return { ITEMS, NODES, BRANCHES, ROOT, SKINS, THEMES, nodeById, ACH, fresh, level, maxOf, costOf, owned, isOpen, canBuy, buy, owns, select, effects, record, evaluate, has, load, save, reset };
+  return { ITEMS, NODES, COSMETICS, BRANCHES, ROOT, SKINS, THEMES, nodeById, ACH, fresh, level, maxOf, costOf, owned, isOpen, canBuy, buy, owns, select, effects, record, evaluate, has, load, save, reset };
 })();
 if (typeof module !== 'undefined') module.exports = Meta;
 
@@ -4234,7 +4269,7 @@ const Scene = (() => {
   var SKIN_DOT = { classic: '#9ba593', gold: '#e2bb52', midnight: '#1f2a52', neon: '#5ef0ff', ghost: '#dfe8f2', candy: '#ff9ec7' };
   var THEME_DOT = { stadium: 'linear-gradient(#0d1322,#33271b)', dusk: 'linear-gradient(#a8454a,#f2a65a)', turf: 'linear-gradient(#8fc2ea,#2f6b3a)', snow: 'linear-gradient(#c9d6e3,#eef3f8)', neon: 'linear-gradient(#3b0a5e,#c2287f)' };
   function styleName(kind, id) {
-    var n = M.NODES.filter(function (x) { return x[kind] === id; })[0];
+    var n = M.COSMETICS.filter(function (x) { return x[kind] === id; })[0];
     return n ? T(n.name) : T(kind === 'skin' ? 'Classic' : 'Stadium');
   }
   function buildStyles() {
@@ -5246,9 +5281,11 @@ const Scene = (() => {
   }
   function branchOf(n) { return M.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }
   function renderTree() {
-    var svg = $('#tree'), html = '';
+    var svg = $('#tree'), html = ''; TREE.seen2 = {};
     [135, 245, 345, 440].forEach(function (r) { html += '<circle class="ring" cx="500" cy="500" r="' + r + '"/>'; });
+    var vis = function (n) { return M.owned(S.meta, n.id) || M.isOpen(S.meta, n.id); };
     M.NODES.forEach(function (n) {
+      if (!vis(n)) return;
       var p = npos(n);
       n.parents.forEach(function (pid) {
         var pn = M.nodeById(pid), pp = pid === 'root' ? { x: 500, y: 500 } : npos(pn);
@@ -5258,23 +5295,25 @@ const Scene = (() => {
     });
     html += '<g class="nd root" data-node="root" transform="translate(500 500)"><circle r="40"/><text class="ic" y="10" text-anchor="middle">🐴</text></g>';
     M.NODES.forEach(function (n) {
+      if (!vis(n)) return;
       var p = npos(n), st = nodeState(n), lv = M.level(S.meta, n.id), mx = M.maxOf(n), br = branchOf(n);
       var pips = '';
       if (mx > 1) for (var k = 0; k < mx; k++) pips += '<circle class="pip' + (k < lv ? ' on' : '') + '" cx="' + ((k - (mx - 1) / 2) * 9).toFixed(1) + '" cy="35" r="3"/>';
-      html += '<g class="nd st-' + st + (TREE.sel === n.id ? ' sel' : '') + '" data-node="' + n.id + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')" style="--c:' + br.color + '" tabindex="0" role="button" aria-label="' + T(n.name) + '"><circle r="26"/><text class="ic" y="9" text-anchor="middle">' + (ICONS[n.id] || '•') + '</text>' + pips + '</g>';
+      var fresh = TREE.seen && !TREE.seen[n.id]; TREE.seen2[n.id] = 1;
+      html += '<g class="nd st-' + st + (fresh ? ' new' : '') + (TREE.sel === n.id ? ' sel' : '') + '" data-node="' + n.id + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')" style="--c:' + br.color + '" tabindex="0" role="button" aria-label="' + T(n.name) + '"><circle r="26"/><text class="ic" y="9" text-anchor="middle">' + (ICONS[n.id] || '•') + '</text>' + pips + '</g>';
     });
-    svg.innerHTML = html;
+    svg.innerHTML = html; TREE.seen = TREE.seen2;
   }
   function renderNodeInfo() {
     var n = TREE.sel ? M.nodeById(TREE.sel) : null, box = $('#nodeinfo');
     if (!n || n.id === 'root') {
-      box.innerHTML = '<p class="note" style="margin:0">' + T('Tap a node to see what it does. You start in the middle: a node opens when the node next to it, towards the centre, is owned.') + '</p>' +
+      box.innerHTML = '<p class="note" style="margin:0">' + T('Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.') + '</p>' +
         '<div class="legend">' + M.BRANCHES.map(function (b) { return '<span style="--c:' + b.color + '"><i></i>' + T(b.name) + '</span>'; }).join('') + '</div>';
       return;
     }
     var st = nodeState(n), lv = M.level(S.meta, n.id), mx = M.maxOf(n), cost = M.costOf(S.meta, n.id), br = branchOf(n);
     var pips = ''; for (var k = 0; k < mx; k++) pips += '<i class="' + (k < lv ? 'on' : '') + '"></i>';
-    var typ = { perk: 'Perk', codex: 'Codex', jockey: 'Jockey', skin: 'Coat', theme: 'Track' }[n.type];
+    var typ = { perk: 'Perk', codex: 'Codex', jockey: 'Jockey' }[n.type];
     var extra = '';
     if (n.unlocks) extra = '<p class="nx">' + T('Adds to the shop: {list}.', { list: n.unlocks.map(function (u) { return T(E.upgradeById(u).name); }).join(', ') }) + '</p>';
     var btn = st === 'max' ? '<button type="button" class="btn small" disabled>' + T('Maxed') + '</button>'
@@ -5283,8 +5322,33 @@ const Scene = (() => {
     box.innerHTML = '<div class="ni"><span class="nic" aria-hidden="true">' + (ICONS[n.id] || '•') + '</span><div class="nt"><h4>' + T(n.name) + '</h4><span class="nb" style="--c:' + br.color + '">' + T(br.name) + ' · ' + T(typ) + '</span></div></div><p>' + T(n.blurb) + '</p>' + extra +
       '<div class="row"><div class="pips" aria-hidden="true">' + pips + '</div><span class="lv">' + (mx > 1 ? T('Level {n} / {m}', { n: lv, m: mx }) : (lv ? T('Owned') : T('Not owned'))) + '</span>' + btn + '</div>';
   }
+  function renderWardrobe() {
+    var sel = M.effects(S.meta).sel;
+    function card(n) {
+      var kind = n.skin ? 'skin' : 'theme', val = n[kind], own = M.owned(S.meta, n.id), cur = own && sel[kind] === val, cost = M.costOf(S.meta, n.id);
+      var btn = own ? '<button type="button" class="btn small' + (cur ? '' : ' primary') + '" data-wear="' + kind + ':' + val + '"' + (cur ? ' disabled' : '') + '>' + (cur ? T('In use') : T('Use')) + '</button>'
+        : '<button type="button" class="btn small primary" data-buynode="' + n.id + '"' + (M.canBuy(S.meta, n.id) ? '' : ' disabled') + '>' + T('Buy · {c} SP', { c: cost }) + '</button>';
+      return '<div class="wcard' + (own ? ' own' : '') + (cur ? ' cur' : '') + '"><span class="wic" aria-hidden="true">' + (ICONS[n.id] || '•') + '</span><div class="wt"><h4>' + T(n.name) + '</h4><p>' + T(n.blurb) + '</p></div>' + btn + '</div>';
+    }
+    var def = function (kind, name, blurb, val) { var cur = sel[kind] === val; return '<div class="wcard own' + (cur ? ' cur' : '') + '"><span class="wic" aria-hidden="true">' + (kind === 'skin' ? '🐴' : '🏟️') + '</span><div class="wt"><h4>' + T(name) + '</h4><p>' + T(blurb) + '</p></div><button type="button" class="btn small' + (cur ? '' : ' primary') + '" data-wear="' + kind + ':' + val + '"' + (cur ? ' disabled' : '') + '>' + (cur ? T('In use') : T('Use')) + '</button></div>'; };
+    $('#wardrobe').innerHTML = '<h3 class="lbl sect-h">' + T('Horse coat') + '</h3><div class="wgrid">' + def('skin', 'Classic', 'The plain suit-coloured coat.', 'classic') + M.COSMETICS.filter(function (n) { return n.skin; }).map(card).join('') + '</div>' +
+      '<h3 class="lbl sect-h">' + T('Track') + '</h3><div class="wgrid">' + def('theme', 'Stadium', 'The floodlit stadium.', 'stadium') + M.COSMETICS.filter(function (n) { return n.theme; }).map(card).join('') + '</div>';
+  }
+  function setStab(t) {
+    S.stab = t;
+    $$('[data-stab]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.stab === t ? 'true' : 'false'); });
+    $$('[data-stabpane]').forEach(function (p) { p.hidden = p.dataset.stabpane !== t; });
+    if (t === 'tree') { var w = $('#treewrap'); w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; w.scrollTop = (w.scrollHeight - w.clientHeight) / 2; }
+  }
+  $('#stabs').addEventListener('click', function (e) { var b = e.target.closest('[data-stab]'); if (b) { Sfx.pick(); setStab(b.dataset.stab); } });
+  $('#wardrobe').addEventListener('click', function (e) {
+    var w = e.target.closest('[data-wear]');
+    if (w) { var p = w.dataset.wear.split(':'); if (M.select(S.meta, p[0], p[1])) { M.save(S.meta); Sfx.pick(); renderWardrobe(); } return; }
+    var b = e.target.closest('[data-buynode]');
+    if (b && M.buy(S.meta, b.dataset.buynode)) { var n = M.nodeById(b.dataset.buynode); M.select(S.meta, n.skin ? 'skin' : 'theme', n.skin || n.theme); M.save(S.meta); Sfx.buy(); renderStable(); }
+  });
   function renderStable() {
-    $('#stable-sp').textContent = T('{n} SP', { n: S.meta.sp });
+    $('#stable-sp').textContent = T('{n} SP', { n: S.meta.sp }); renderWardrobe();
     if (!TREE.sel) { var first = M.NODES.filter(function (n) { return nodeState(n) === 'aff'; })[0]; TREE.sel = first ? first.id : 'deep'; }
     renderTree(); renderNodeInfo();
     var fx = M.effects(S.meta);
@@ -5301,8 +5365,7 @@ const Scene = (() => {
     $('#resetMeta').textContent = S.resetArm ? T('Really reset everything?') : T('Reset all progress');
   }
   onEnter.stable = function () {
-    renderStable();
-    var w = $('#treewrap'); w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; w.scrollTop = (w.scrollHeight - w.clientHeight) / 2;
+    TREE.seen = null; renderStable(); setStab(S.stab || 'tree');
   };
   function pickNode(id) { TREE.sel = id; Sfx.pick(); renderTree(); renderNodeInfo(); }
   $('#tree').addEventListener('click', function (e) { var g = e.target.closest('[data-node]'); if (g) pickNode(g.dataset.node); });
@@ -5364,7 +5427,7 @@ const Scene = (() => {
       '<section><h3>Peek and burn</h3><p>During a lap you can <b>Peek</b> for $' + C.peekCost + ' to see the card on top of the deck. The draw waits a moment so you can react, and next-card bets are closed until it is drawn. You can only peek when no next-card bet is open. After a peek you can <b>Burn</b> the card for $' + C.burnCost + ' (up to ' + C.burnMax + ' times per lap) and peek again.</p></section>' +
       '<section><h3>Horse traits and sets</h3><p>Every suit’s horse has its own trait: ' + E.TRAITS.map(function (t, i) { return SUITS[i].glyph + ' ' + t.name + ' (' + t.blurb.replace(/\.$/, '') + ')'; }).join('; ') + '. Upgrades also form <b>sets</b>: own different upgrades of one type (Deck, Horse, Money, Betting, Luck, Gear) and the set pays a bonus, shown at the pit stop.</p></section>' +
       '<section><h3>Trophies, stakes and the Daily</h3><p><b>Trophies</b> are earned once for feats like a three-bet streak, three trapped rivals or a comeback win, and some of them unlock new upgrades (Echo Chamber, Trap Master, Phoenix, Grit Amplifier). Win a run to open the next <b>stakes</b> level: rivals buy more upgrades and prizes shrink, but Stable Points grow by ' + Math.round(C.diffSp * 100) + '% per level. The <b>Daily Derby</b> is a five-lap run on the same seed and horse for everyone that day, with no Stable perks, and gives a result you can copy and share.</p></section>' +
-      '<section><h3>The Stable</h3><p>At the end of a run you earn <b>Stable Points</b>: lap points, correct calls, and a bonus of 2 per lap for the champion or 1 per lap for the runner-up. The Stable is a <b>skill tree</b>: you start in the middle and a node opens once a node next to it (towards the centre) is owned. Eight branches lead out: Treasury (cash and prices), Training Yard (horse), Betting Ring, Workshop (gadget slots, hand size, a second crew), Codex (unlocks upgrades for the shop), Jockey Club (new jockeys), Paddock (coats and tracks) and Luck Alley. Progress is saved in this browser.</p></section>';
+      '<section><h3>The Stable</h3><p>At the end of a run you earn <b>Stable Points</b>: lap points, correct calls, and a bonus of 2 per lap for the champion or 1 per lap for the runner-up. The Stable is a <b>skill tree</b>: you start in the middle and nodes stay hidden until a node next to them (towards the centre) is owned, so the tree grows as you buy. Seven branches lead out: Treasury (cash and prices), Training Yard (horse), Betting Ring, Workshop (gadget slots, hand size, a second crew), Codex (unlocks upgrades for the shop), Jockey Club (new jockeys) and Luck Alley. Coats and tracks have their own <b>Cosmetics</b> tab. Progress is saved in this browser.</p></section>';
   }
 
   /* ---------- loop ---------- */
