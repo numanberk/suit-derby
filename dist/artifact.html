@@ -593,24 +593,24 @@ h1, h2, h3, p { margin: 0; }
 
 /* ===== v11: the Stable skill tree ===== */
 .treewrap { overflow: auto; max-height: 76vh; border: 1px solid var(--line); border-radius: 14px; background: radial-gradient(circle at 50% 50%, #18211a, var(--ground) 70%); touch-action: pan-x pan-y; }
-#tree { display: block; width: max(100%, 780px); height: auto; }
-#tree .ring { fill: none; stroke: rgba(255,255,255,.05); stroke-dasharray: 3 7; }
-#tree .edge { stroke: rgba(255,255,255,.12); stroke-width: 3; }
-#tree .edge.on { stroke: var(--c); stroke-width: 4; opacity: .9; }
-#tree .nd { cursor: pointer; }
-#tree .nd circle { fill: #141b13; stroke: color-mix(in srgb, var(--c, #888) 35%, #333); stroke-width: 3; transition: fill .15s, stroke .15s; }
-#tree .nd .ic { font-size: 24px; pointer-events: none; }
-#tree .nd.st-locked { opacity: .38; }
-#tree .nd.st-open circle { stroke: color-mix(in srgb, var(--c) 70%, #555); stroke-dasharray: 5 4; }
-#tree .nd.st-aff circle { stroke: var(--c); stroke-width: 4; fill: color-mix(in srgb, var(--c) 18%, #141b13); animation: ndpulse 1.6s ease-in-out infinite; }
-#tree .nd.st-own circle, #tree .nd.st-max circle { fill: color-mix(in srgb, var(--c) 40%, #141b13); stroke: var(--c); stroke-width: 4; }
-#tree .nd.st-max circle { fill: color-mix(in srgb, var(--c) 65%, #141b13); }
-#tree .nd.sel circle { stroke: #fff; stroke-width: 5; }
-#tree .nd.root circle { fill: #232d1f; stroke: var(--gold); stroke-width: 4; }
-#tree .pip { fill: #2b3628; } #tree .pip.on { fill: var(--c); }
-#tree .nd:focus-visible circle { stroke: var(--gold); stroke-width: 6; }
+:is(#tree, #gtree) { display: block; width: max(100%, 780px); height: auto; }
+:is(#tree, #gtree) .ring { fill: none; stroke: rgba(255,255,255,.05); stroke-dasharray: 3 7; }
+:is(#tree, #gtree) .edge { stroke: rgba(255,255,255,.12); stroke-width: 3; }
+:is(#tree, #gtree) .edge.on { stroke: var(--c); stroke-width: 4; opacity: .9; }
+:is(#tree, #gtree) .nd { cursor: pointer; }
+:is(#tree, #gtree) .nd circle { fill: #141b13; stroke: color-mix(in srgb, var(--c, #888) 35%, #333); stroke-width: 3; transition: fill .15s, stroke .15s; }
+:is(#tree, #gtree) .nd .ic { font-size: 24px; pointer-events: none; }
+:is(#tree, #gtree) .nd.st-locked { opacity: .38; }
+:is(#tree, #gtree) .nd.st-open circle { stroke: color-mix(in srgb, var(--c) 70%, #555); stroke-dasharray: 5 4; }
+:is(#tree, #gtree) .nd.st-aff circle { stroke: var(--c); stroke-width: 4; fill: color-mix(in srgb, var(--c) 18%, #141b13); animation: ndpulse 1.6s ease-in-out infinite; }
+:is(#tree, #gtree) .nd.st-own circle, :is(#tree, #gtree) .nd.st-max circle { fill: color-mix(in srgb, var(--c) 40%, #141b13); stroke: var(--c); stroke-width: 4; }
+:is(#tree, #gtree) .nd.st-max circle { fill: color-mix(in srgb, var(--c) 65%, #141b13); }
+:is(#tree, #gtree) .nd.sel circle { stroke: #fff; stroke-width: 5; }
+:is(#tree, #gtree) .nd.root circle { fill: #232d1f; stroke: var(--gold); stroke-width: 4; }
+:is(#tree, #gtree) .pip { fill: #2b3628; } :is(#tree, #gtree) .pip.on { fill: var(--c); }
+:is(#tree, #gtree) .nd:focus-visible circle { stroke: var(--gold); stroke-width: 6; }
 @keyframes ndpulse { 50% { stroke-width: 7; } }
-@media (prefers-reduced-motion: reduce) { #tree .nd.st-aff circle { animation: none; } }
+@media (prefers-reduced-motion: reduce) { :is(#tree, #gtree) .nd.st-aff circle { animation: none; } }
 .nodeinfo { margin: 12px 0 8px; padding: 14px 16px; border-radius: 12px; background: var(--track); border: 1px solid var(--line); }
 .nodeinfo .ni { display: flex; gap: 12px; align-items: center; margin-bottom: 6px; }
 .nodeinfo .nic { font-size: 30px; line-height: 1; }
@@ -633,7 +633,7 @@ h1, h2, h3, p { margin: 0; }
 .stabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 10px 0 6px; }
 .stabs button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); font: 800 18px/1 var(--f-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); }
 .stabs button[aria-selected="true"] { background: var(--gold); color: var(--gold-ink); border-color: transparent; }
-#tree .nd.new { animation: ndin .7s ease-out; transform-box: fill-box; transform-origin: center; }
+:is(#tree, #gtree) .nd.new { animation: ndin .7s ease-out; transform-box: fill-box; transform-origin: center; }
 @keyframes ndin { from { opacity: 0; } to { opacity: 1; } }
 .wgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
 .wcard { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--track); border: 1px solid var(--line); }
@@ -643,6 +643,106 @@ h1, h2, h3, p { margin: 0; }
 .wcard h4 { margin: 0; font: 700 15px var(--f-body); }
 .wcard p { margin: 2px 0 0; font: 400 12px/1.3 var(--f-body); color: var(--ink-dim); }
 @media (max-width: 520px) { .wcard { grid-template-columns: 36px 1fr; } .wcard .btn { grid-column: 1 / -1; } }
+
+/* ===== Gambler's Night ===== */
+.mrow.gnight { border-color: color-mix(in srgb, var(--gold) 40%, var(--line)); }
+.gsteps { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 16px 0 6px; }
+.gstep { padding: 12px 14px; border-radius: 12px; background: var(--track); border: 1px solid var(--line); }
+.gstep b { font: 800 20px/1 var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: var(--gold); }
+.gstep p { margin-top: 6px; color: var(--ink-dim); font-size: 14px; }
+.gbar h2 { font-size: 26px; }
+.gbank small { display: block; font: 500 10px var(--f-mono); color: var(--bad); }
+.g { color: var(--c); font-weight: 700; }
+.gcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; margin-top: 14px; }
+@media (max-width: 760px) { .gcols { grid-template-columns: 1fr; gap: 14px; } }
+/* heat gauge */
+.gheat { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 12px; padding: 10px 14px; border-radius: 12px; background: var(--track); border: 1px solid var(--line); }
+.gheat .lbl { margin: 0; }
+.gheat .hbar { position: relative; height: 10px; border-radius: 6px; background: #2b3628; overflow: hidden; }
+.gheat .hbar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #66d394, #e9cf73 55%, #f07272); border-radius: 6px; transition: width .35s; }
+.gheat .hbar u { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,.55); }
+.gheat small { grid-column: 1 / -1; font: 600 11px var(--f-mono); color: var(--ink-dim); }
+.gheat.st-2 small { color: var(--diamonds); } .gheat.st-3 small { color: var(--bad); } .gheat.st-3 { border-color: var(--bad); }
+/* deck sheet */
+.dsheet { display: grid; gap: 8px; }
+.dsr { position: relative; display: grid; grid-template-columns: 1.1fr 1fr 1.2fr; align-items: center; gap: 4px 10px; padding: 10px 12px 14px; border-radius: 10px; background: var(--track); border: 1px solid var(--line); overflow: hidden; }
+.dsr .dsn b { font: 800 18px var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
+.dsr .dsc, .dsr .dss { font-size: 13px; color: var(--ink-dim); }
+.dsr .dsbar { position: absolute; left: 0; bottom: 0; height: 4px; width: var(--w); background: var(--c); }
+@media (max-width: 520px) { .dsr { grid-template-columns: 1fr 1fr; } .dsr .dss { grid-column: 1 / -1; } }
+.gtop { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.gtop .lbl { margin: 0; }
+.gc { display: inline-flex; align-items: center; gap: 2px; min-width: 42px; justify-content: center; padding: 6px 8px; border-radius: 8px; background: #ece8da; color: #1b1607; font: 800 18px/1 var(--f-body); border: 2px solid var(--c); }
+.gc i { font-style: normal; color: var(--c); }
+.gc.fc { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 55%, transparent); }
+.gc.bk { background: repeating-linear-gradient(45deg, #2a3f6b, #2a3f6b 6px, #20315a 6px, #20315a 12px); color: #cdd8f5; border-color: #8092ff; }
+.gc.gpp { animation: gpop .35s ease-out; }
+@keyframes gpop { from { transform: translateY(-14px) rotate(-8deg) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+/* the book */
+.gboard { display: grid; grid-template-columns: 1.3fr repeat(4, 1fr); gap: 6px; align-items: stretch; }
+.gb-h { font: 600 12px var(--f-mono); text-align: center; color: var(--ink-dim); align-self: end; }
+.gb-n { display: flex; align-items: center; gap: 6px; font: 800 17px var(--f-display); text-transform: uppercase; letter-spacing: .03em; min-width: 0; }
+.gcell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); min-width: 0; }
+.gcell b { font-size: 15px; } .gcell small { font-size: 11px; color: var(--ink-dim); }
+.gcell.on { background: var(--c); border-color: var(--c); color: #0d110c; } .gcell.on small { color: #0d110c; }
+.gcell:disabled { opacity: .35; }
+.gslipbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.gslipbar .lbl { margin: 0; }
+.gchips { display: flex; gap: 6px; flex-wrap: wrap; }
+.gchip { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--line); background: var(--track); font: 700 13px var(--f-mono); }
+.gchip.on { background: var(--gold); color: var(--gold-ink); border-color: transparent; } .gchip:disabled { opacity: .35; }
+.gsum { margin-top: 10px; color: var(--ink-dim); min-height: 3em; }
+.gact { margin-top: 6px; flex-wrap: wrap; }
+/* the race */
+.glanes { display: grid; gap: 6px; margin-top: 12px; }
+.gl { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 8px; }
+.glname { display: flex; align-items: center; gap: 6px; font: 800 15px var(--f-display); text-transform: uppercase; letter-spacing: .03em; }
+.gtrack { position: relative; height: 54px; border-radius: 10px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 calc(10% - 1px), rgba(255,255,255,.1) calc(10% - 1px) 10%), #131a12; border: 1px solid var(--line); overflow: hidden; }
+.gl.fin .gtrack { border-color: var(--c); }
+.gfin { position: absolute; right: 0; top: 0; bottom: 0; width: 10px; background: repeating-conic-gradient(#ece8da 0 25%, #1b1b1b 0 50%) 0 0 / 10px 10px; opacity: .8; }
+.gh { position: absolute; top: 3px; left: 0; width: 64px; transition: left .5s cubic-bezier(.3,.8,.3,1); }
+.gh .horse { width: 100%; height: auto; display: block; }
+.gfx { position: absolute; left: 6px; top: 2px; display: flex; gap: 4px; font-size: 12px; } .gfx em { font-style: normal; background: rgba(0,0,0,.55); padding: 0 4px; border-radius: 6px; }
+.gplace { position: absolute; right: 18px; top: 4px; font: 800 18px var(--f-display); color: var(--gold); }
+.gtags { position: absolute; left: 6px; bottom: 3px; display: flex; gap: 3px; }
+.gtag { font: 700 10px var(--f-mono); padding: 1px 5px; border-radius: 5px; background: rgba(255,255,255,.14); } .gtag.hit { background: var(--good); color: #06210f; } .gtag.miss { background: var(--bad); color: #2a0707; }
+.gtrack .gstep { position: absolute; right: 18px; bottom: 3px; font-size: 10px; color: var(--ink-dim); background: none; border: 0; padding: 0; }
+@media (max-width: 520px) { .gl { grid-template-columns: 1fr; gap: 2px; } .glname { font-size: 13px; } }
+.gmid { display: grid; grid-template-columns: auto auto 1fr; gap: 16px; align-items: center; margin-top: 14px; }
+@media (max-width: 620px) { .gmid { grid-template-columns: 1fr 1fr; } .gmid .gdeck { grid-column: 1 / -1; } }
+.gcardbox { display: grid; gap: 4px; justify-items: start; } .gcardbox .lbl { margin: 0; }
+.glast { display: flex; gap: 6px; align-items: center; min-height: 40px; } .glast small { color: var(--ink-dim); }
+.gdeck .lbl { margin: 0 0 4px; display: block; } .gdeck .dk { display: flex; gap: 8px; flex-wrap: wrap; }
+.dkc { display: inline-flex; align-items: baseline; gap: 4px; padding: 3px 8px; border-radius: 8px; background: var(--track); border: 1px solid var(--line); } .dkc b { font-size: 15px; } .dkc small { color: var(--ink-dim); font-size: 11px; }
+.gctl { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn.gbig { padding: 14px 28px; font-size: 17px; flex: 1; min-width: 160px; }
+.gbanner { margin-top: 12px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); } .gbanner.bad { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--track)); color: var(--ink); }
+.gsl { display: grid; grid-template-columns: 32px auto 1fr auto auto auto; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 6px; border-radius: 10px; background: var(--track); border: 1px solid var(--line); }
+.gsl.empty { grid-template-columns: 32px 1fr; opacity: .6; }
+.gsl .gsn { font: 700 14px var(--f-body); }
+.gres { font: 700 13px var(--f-mono); } .glive { font: 600 12px var(--f-mono); color: var(--ink-dim); }
+.grc { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: -2px 0 8px; padding: 8px; border-radius: 10px; border: 1px dashed var(--line); }
+.grc .note { flex-basis: 100%; margin: 0; }
+.gtools { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+.gtool { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 8px 10px; border-radius: 10px; background: var(--track); border: 1px solid var(--line); text-align: left; }
+.gtool b { font: 800 16px var(--f-display); text-transform: uppercase; letter-spacing: .03em; } .gtool span { font-size: 12px; color: var(--gold); } .gtool small { font-size: 11px; color: var(--ink-dim); }
+.gtool.k-deck { border-left: 3px solid var(--spades); } .gtool.k-track { border-left: 3px solid var(--clubs); } .gtool.k-read { border-left: 3px solid var(--gold); }
+.gtool.on { background: var(--raise); border-color: var(--gold); }
+.gtool[aria-disabled="true"] { opacity: .45; } .gtool.lock { opacity: .3; }
+.gtgt { margin-bottom: 8px; padding: 10px 12px; border-radius: 10px; background: var(--raise); border: 1px solid var(--gold); display: grid; gap: 8px; } .gtgt > div { display: flex; gap: 6px; flex-wrap: wrap; }
+.glog { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; color: var(--ink-dim); font-size: 14px; } .glog li:first-child { color: var(--ink); }
+/* result and backroom */
+.gfinal { display: grid; gap: 6px; }
+.gfr { display: grid; grid-template-columns: 34px auto 1fr auto auto; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--track); border: 1px solid var(--line); font-size: 14px; }
+.offer-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+.gover { text-align: center; margin: 10px 0 20px; } .gbig { font: 900 84px/1 var(--f-display); letter-spacing: .02em; }
+.gstats { max-width: 520px; margin-inline: auto; }
+
+.gover .lede { margin-inline: auto; }
+.gtl { margin: 14px 0 4px; padding: 10px 14px; border-radius: 12px; background: var(--track); border: 1px solid var(--line); }
+.gtl summary { cursor: pointer; font: 800 18px var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
+.gtl ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.gtl li small { color: var(--ink-dim); } .gtl li.dim { opacity: .55; }
 
 </style>
 
@@ -660,6 +760,8 @@ h1, h2, h3, p { margin: 0; }
       <button type="button" class="mrow resume" id="resumeBtn" hidden><span class="mt" data-i18n="Continue run">Continue run</span><span class="md" id="resume-sub"></span></button>
       <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
       <button type="button" class="mrow daily" id="dailyBtn"><span class="mt" data-i18n="Daily Derby">Daily Derby</span><span class="md" id="daily-sub"></span></button>
+      <button type="button" class="mrow gnight resume" id="gResume" hidden><span class="mt" data-i18n="Continue night">Continue night</span><span class="md" id="gresume-sub"></span></button>
+      <button type="button" class="mrow gnight" data-go="gsetup"><span class="mt" data-i18n="Gambler’s Night">Gambler’s Night</span><span class="md" id="gnight-sub" data-i18n="No horse of your own: call the finishing order, rig the race, don’t get caught.">No horse of your own: call the finishing order, rig the race, don’t get caught.</span></button>
       <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
       <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a run works">How a run works</span></button>
     </nav>
@@ -875,6 +977,14 @@ h1, h2, h3, p { margin: 0; }
     </div>
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
+
+  <!-- GAMBLER'S NIGHT -->
+  <section class="screen" id="s-gsetup" hidden aria-label="Gambler’s Night"></section>
+  <section class="screen" id="s-gbook" hidden aria-label="The book"></section>
+  <section class="screen" id="s-grace" hidden aria-label="The race"></section>
+  <section class="screen" id="s-gback" hidden aria-label="Result and backroom"></section>
+  <section class="screen" id="s-gover" hidden aria-label="Night over"></section>
+  <section class="screen" id="s-grep" hidden aria-label="Reputation"></section>
 
   <!-- RULES -->
   <section class="screen" id="s-rules" hidden aria-label="Rules">
@@ -1547,6 +1657,248 @@ if (typeof module !== 'undefined') module.exports = I18n;
     'The plain suit-coloured coat.': 'Sade, takım renginde tüy.', 'The floodlit stadium.': 'Işıklarla aydınlanmış stadyum.',
     'Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.': 'Tüyler ve pistler sadece görüntü içindir. Ahır Puanıyla satın al, sonra Kurulumda ya da burada seç.',
     'Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.': 'Ne işe yaradığını görmek için bir düğüme dokun. Ortadan başlarsın ve ağaç sen satın aldıkça büyür: yeni düğümler sahip olduklarının yanında belirir.'
+  });
+  Object.assign(I18n.dict.tr, {
+    "Lane Swap": "Koridor Değişimi",
+    "Peek": "Göz At",
+    "Look at the next card before it is drawn. The book does not know it.": "Çekilmeden önce sıradaki karta bak. Defter bunu bilmiyor.",
+    "Burn": "Yak",
+    "Throw the next card away. Nobody moves.": "Sıradaki kartı at. Kimse ilerlemez.",
+    "Stack": "Üste Çek",
+    "Pull the nearest card of a suit to the top of the deck.": "Bir takımın en yakın kartını destenin üstüne çek.",
+    "Mud": "Çamur",
+    "Soak a lane: the horse loses 1 step on its next 3 cards.": "Bir koridoru ıslat: at sonraki 3 kartında 1 adım kaybeder.",
+    "Swap": "Değiştir",
+    "Swap the top two cards of the deck.": "Destenin üstündeki iki kartın yerini değiştir.",
+    "Tailwind": "Arkadan Rüzgâr",
+    "A gust behind a horse: +1 step on its next 3 cards.": "Atın arkasından esen bir rüzgâr: sonraki 3 kartında +1 adım.",
+    "Shave": "Kırp",
+    "Quietly remove one plain card of a suit from the deck for good.": "Bir takımın bir sayı kartını sessizce desteden kalıcı olarak çıkar.",
+    "Hurdle": "Engel",
+    "Drop a hurdle: the horse wastes its next card.": "Bir engel koy: at sıradaki kartını boşa harcar.",
+    "Riffle": "Karıştır",
+    "Reshuffle the whole deck. Good when the cards are running against you.": "Bütün desteyi yeniden karıştır. Kartlar aleyhine giderken işe yarar.",
+    "The horse trades places with the one just ahead of it. Once a night.": "At, hemen önündeki atla yer değiştirir. Gecede bir kez.",
+    "Tool Discount": "Araç İndirimi",
+    "Every tool costs 20% less.": "Her araç %20 daha ucuz.",
+    "Ice Bucket": "Buz Kovası",
+    "Heat cools twice as fast.": "Şüphe iki kat hızlı soğur.",
+    "Lookout": "Gözcü",
+    "The stewards spot you 30% less often.": "Komiserler seni %30 daha az fark eder.",
+    "Binoculars": "Dürbün",
+    "Peek shows one more card.": "Göz At bir kart daha gösterir.",
+    "Friendly Bookie": "Dost Bahisçi",
+    "Better odds: the book keeps 4% less.": "Daha iyi oranlar: defter %4 daha az pay alır.",
+    "High Roller Table": "Yüksek Bahis Masası",
+    "A perfect order pays 1 more times the stake.": "Kusursuz sıralama bahsin 1 katı daha fazla öder.",
+    "Late Money": "Geç Para",
+    "Re-calls cost half as much.": "Tahmin değişikliği yarı fiyata.",
+    "Bigger Toolbelt": "Büyük Alet Kemeri",
+    "One more use of every tool each race.": "Her yarışta her aracın bir kullanımı daha.",
+    "Greased Palm": "Yağlı Avuç",
+    "The first tool you use each race adds no Heat.": "Her yarışta kullandığın ilk araç Şüphe artırmaz.",
+    "Tip-off": "Gizli Bilgi",
+    "The top card of every deck is shown before you call.": "Tahmin etmeden önce her destenin üst kartı gösterilir.",
+    "Safety Net": "Güvenlik Ağı",
+    "If no place of yours hits, get 30% of your stakes back.": "Hiçbir sıran tutmazsa bahislerinin %30’unu geri al.",
+    "Good Lawyer": "İyi Avukat",
+    "Fines are 40% smaller.": "Cezalar %40 daha küçük.",
+    "Unlocks the Swap tool: swap the top two cards.": "Değiştir aracını açar: üstteki iki kartı değiştir.",
+    "Unlocks the Tailwind tool: a horse gets +1 step on its next 3 cards.": "Arkadan Rüzgâr aracını açar: bir at sonraki 3 kartında +1 adım alır.",
+    "Unlocks the Shave tool: remove a plain card of a suit for good.": "Kırp aracını açar: bir takımın bir sayı kartını kalıcı olarak çıkar.",
+    "Unlocks the Hurdle tool: a horse wastes its next card.": "Engel aracını açar: bir at sıradaki kartını boşa harcar.",
+    "Unlocks the Riffle tool: reshuffle the deck.": "Karıştır aracını açar: desteyi yeniden karıştır.",
+    "Unlocks Lane Swap: a horse trades places with the one just ahead. Once a night.": "Koridor Değişimi’ni açar: bir at, hemen önündeki atla yer değiştirir. Gecede bir kez.",
+    "Deep Toolbox": "Derin Alet Çantası",
+    "One more use of every tool in every race.": "Her yarışta her aracın bir kullanımı daha.",
+    "Cool Head": "Soğukkanlılık",
+    "Heat cools 25% faster.": "Şüphe %25 daha hızlı soğur.",
+    "Thick Skin": "Kalın Deri",
+    "You can carry 1 more Heat before you are caught.": "Yakalanmadan önce 1 Şüphe daha taşıyabilirsin.",
+    "Friend on the Board": "Kurulda Bir Dost",
+    "Stewards spot you 15% less often.": "Komiserler seni %15 daha az fark eder.",
+    "Lawyer": "Avukat",
+    "Fines are 20% smaller.": "Cezalar %20 daha küçük.",
+    "The first tool you use in each race adds no Heat.": "Her yarışta kullandığın ilk araç Şüphe artırmaz.",
+    "Alibi": "Mazeret",
+    "If you are caught, you get half of your stakes back.": "Yakalanırsan bahislerinin yarısını geri alırsın.",
+    "Start every night with $30 more.": "Her geceye $30 fazla parayla başla.",
+    "Unlocks the $100 chip.": "$100’lık fişi açar.",
+    "Every tool costs 5% less.": "Her araç %5 daha ucuz.",
+    "Long Night": "Uzun Gece",
+    "Lets you choose a night of 8 races.": "8 yarışlık bir gece seçmene izin verir.",
+    "Shark’s Terms": "Tefeci Şartları",
+    "A loan costs $10 less to pay back.": "Bir borcu ödemek $10 daha ucuz.",
+    "If no place hits, 15% of your stakes come back.": "Hiçbir sıra tutmazsa bahislerinin %15’i geri gelir.",
+    "Sharp Eye": "Keskin Göz",
+    "Better odds: the book keeps 1% less.": "Daha iyi oranlar: defter %1 daha az pay alır.",
+    "Perfect Pay": "Kusursuz Ödeme",
+    "A perfect order pays half a stake more.": "Kusursuz sıralama yarım bahis daha fazla öder.",
+    "Backroom Network": "Arka Oda Ağı",
+    "One more favor on offer in the backroom.": "Arka odada bir iyilik daha sunulur.",
+    "Re-calls cost 25% less.": "Tahmin değişikliği %25 daha ucuz.",
+    "Toolbox": "Alet Çantası",
+    "Nerve": "Cesaret",
+    "Bankroll": "Kasa",
+    "The Book": "Bahis Defteri",
+    "Not unlocked yet. Open it in Reputation.": "Henüz açılmadı. İtibar’dan aç.",
+    "You are out of this race.": "Bu yarışın dışındasın.",
+    "The stewards took it.": "Komiserler aldı.",
+    "No uses left this race.": "Bu yarış için kullanım kalmadı.",
+    "Used up for tonight.": "Bu gece için bitti.",
+    "Not enough cash.": "Yeterli para yok.",
+    "Not now.": "Şimdi olmaz.",
+    "No such card left.": "Öyle bir kart kalmadı.",
+    "It is already on top.": "Zaten en üstte.",
+    "Both cards are the same suit.": "İki kart da aynı takımdan.",
+    "That horse has already finished.": "O at zaten bitirdi.",
+    "That horse is already in front.": "O at zaten önde.",
+    "The deck is empty.": "Deste boş.",
+    "Pick a target first.": "Önce bir hedef seç.",
+    "You peek at the top of the deck.": "Destenin üstüne göz atıyorsun.",
+    "A card goes in the bin.": "Bir kart çöpe gidiyor.",
+    "The top two cards swap places.": "Üstteki iki kart yer değiştiriyor.",
+    "A {s} card is on top now.": "Artık üstte bir {s} kartı var.",
+    "A plain {s} card quietly disappears.": "Bir {s} sayı kartı sessizce ortadan kayboluyor.",
+    "The deck is reshuffled.": "Deste yeniden karıştırıldı.",
+    "Mud in the {s} lane.": "{s} koridorunda çamur var.",
+    "A tailwind for {s}.": "{s} için arkadan rüzgâr.",
+    "A hurdle in front of {s}.": "{s} önünde bir engel.",
+    "{s} slips past {o}.": "{s}, {o} atını geçiyor.",
+    "Calm": "Sakin",
+    "Warm": "Isınıyor",
+    "The stewards are watching": "Komiserler izliyor",
+    "Danger": "Tehlike",
+    "Your bankroll. What is left at the end of the night is your score.": "Kasan. Gecenin sonunda kalan paran puanındır.",
+    "owe {m}": "borç {m}",
+    "Heat": "Şüphe",
+    "Heat {h} of {c}": "Şüphe {h} / {c}",
+    "{p} inspection chance": "{p} denetim şansı",
+    "Race {n} of {m}": "Yarış {n} / {m}",
+    "in the backroom": "arka odada",
+    "Gambler’s Night": "Kumarbazın Gecesi",
+    "{n} RP": "{n} İP",
+    "You are not an owner tonight. You are a gambler with a pocket full of tricks. Call the order all four horses will finish in, then bend the deck and the track your way. Do not get caught.": "Bu gece at sahibi değilsin. Cebi hilelerle dolu bir kumarbazsın. Dört atın bitireceği sırayı tahmin et, sonra desteyi ve pisti kendi yoluna çevir. Yakalanma.",
+    "Read": "Oku",
+    "Study the deck sheet. Every card moves one horse. More cards means more steps, and the odds come from the cards.": "Deste kâğıdını incele. Her kart bir atı ilerletir. Daha çok kart daha çok adım demek ve oranlar kartlardan gelir.",
+    "Call": "Tahmin Et",
+    "Pick a horse for each place, then lock your slip before the first card. Odds lock with it.": "Her sıra için bir at seç, sonra ilk karttan önce kuponunu kilitle. Oranlar onunla birlikte kilitlenir.",
+    "Rig": "Hile Yap",
+    "Cards are time. Between draws, spend cash on tools that nudge the deck or the track.": "Kartlar zamandır. Çekişler arasında desteyi ya da pisti dürten araçlara para harca.",
+    "Stay clean": "Temiz Kal",
+    "Every trick adds Heat. Too much and the stewards inspect you, fine you, or throw out your slip.": "Her hile Şüphe artırır. Fazlası olursa komiserler seni denetler, ceza keser ya da kuponunu iptal eder.",
+    "Length of the night": "Gecenin uzunluğu",
+    "Unlock “Long Night” in Reputation": "İtibar’da “Uzun Gece”yi aç",
+    "A short night": "Kısa bir gece",
+    "A long night": "Uzun bir gece",
+    "You start with {m}. What you hold at the end of the night, minus any debt, is your score, and it earns Reputation Points (RP).": "{m} ile başlarsın. Gecenin sonunda elindeki para, borçlar çıkınca, puanındır ve İtibar Puanı (İP) kazandırır.",
+    "Starting a new night replaces your saved night.": "Yeni bir gece başlatmak kayıtlı gecenin yerine geçer.",
+    "Start the night": "Geceyi başlat",
+    "Reputation": "İtibar",
+    "{n} plain": "{n} sayı kartı",
+    "{n} face": "{n} resimli",
+    "Top of the deck": "Destenin üstü",
+    "The deck": "Deste",
+    "First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.": "İlk {n} adıma ulaşan çizgiyi geçer. Sayı kartı atını 1, resimli kart 2 adım ilerletir. Yarış 3 at çizgiyi geçince biter. Tek sır kartların sırası.",
+    "Stake per place": "Sıra başına bahis",
+    "{n} places · {m} at stake": "{n} sıra · {m} bahis",
+    "Pick a horse for each place you want to back. A horse can hold one place.": "Bahis oynamak istediğin her sıra için bir at seç. Bir at tek sırada olabilir.",
+    "Not enough cash for that. Pick a smaller chip or back fewer places.": "Buna yetecek para yok. Daha küçük bir fiş seç ya da daha az sıraya oyna.",
+    "Perfect order: {c} chance, pays {m} extra": "Kusursuz sıralama: {c} şans, ekstra {m} öder",
+    "Fill with the likeliest order": "En olası sıralamayla doldur",
+    "Peek · {m}": "Göz At · {m}",
+    "Lock in your call": "Tahminini kilitle",
+    "Odds lock when you do. After that you can still change a pick, for a fee, at the odds of that moment.": "Sen kilitleyince oranlar da kilitlenir. Sonrasında bir seçimi, ücret karşılığında, o anın oranıyla yine de değiştirebilirsin.",
+    "You are broke: not enough for even the smallest chip. Borrow in the backroom next time, or walk out now.": "Parasızsın: en küçük fişe bile yetmiyor. Bir dahaki sefere arka odadan borç al ya da şimdi çık.",
+    "Walk out with {m}": "{m} ile çık",
+    "Slip locked. The race is on.": "Kupon kilitlendi. Yarış başladı.",
+    "Last card": "Son kart",
+    "Your slip": "Kuponun",
+    "Tools": "Araçlar",
+    "Track talk": "Pist sohbeti",
+    "Caught! Your slip is void for this race. The cards are still going to run it out.": "Yakalandın! Kuponun bu yarış için geçersiz. Kartlar yine de yarışı bitirecek.",
+    "See the result": "Sonucu gör",
+    "Draw a card": "Kart çek",
+    "Stop": "Dur",
+    "Auto": "Otomatik",
+    "Fast": "Hızlı",
+    "no bet": "bahis yok",
+    "void": "geçersiz",
+    "now {p}": "şimdi {p}",
+    "Cancel": "Vazgeç",
+    "Change": "Değiştir",
+    "Change place {p} for a {f} fee, at the odds of now:": "{p} sırayı {f} ücretle, şimdiki oranla değiştir:",
+    "Cash {m} · slip {s} · re-calls cost a fee each": "Para {m} · kupon {s} · her değişiklik ücretli",
+    "Heat +{h}": "Şüphe +{h}",
+    "locked": "kilitli",
+    "Steward inspection! Fine {m}, and the {t} is confiscated.": "Komiser denetimi! {m} ceza ve {t} aracına el konuldu.",
+    "INSPECTION": "DENETİM",
+    "CAUGHT! Disqualified, fined {m}. Your slip is void.": "YAKALANDIN! Diskalifiye, {m} ceza. Kuponun geçersiz.",
+    "Your alibi returns {m}.": "Mazeretin {m} geri getiriyor.",
+    "CAUGHT": "YAKALANDIN",
+    "{s} wastes a card on the hurdle.": "{s} bir kartı engelde harcıyor.",
+    "{s} crosses the line: {p}.": "{s} çizgiyi geçiyor: {p}.",
+    "The race is over.": "Yarış bitti.",
+    "Auto stopped: the odds moved.": "Otomatik durdu: oranlar değişti.",
+    "Place {p} switched to {s}.": "{p} sıra {s} olarak değiştirildi.",
+    "PERFECT ORDER": "KUSURSUZ SIRALAMA",
+    "Caught and disqualified: your slip was void.": "Yakalandın ve diskalifiye oldun: kuponun geçersizdi.",
+    "Finishing order": "Bitiş sırası",
+    "called ×{o}": "tahmin ×{o}",
+    "you had {s}": "seninki {s}",
+    "Your night so far": "Şimdiye kadar gecen",
+    "Winning calls": "Tutan tahminler",
+    "Perfect order": "Kusursuz sıralama",
+    "Safety net": "Güvenlik ağı",
+    "Re-call fees": "Değişiklik ücretleri",
+    "Fines": "Cezalar",
+    "Net this race": "Bu yarışın net kazancı",
+    "Count up the night": "Geceyi say",
+    "To the backroom": "Arka odaya",
+    "The backroom": "Arka oda",
+    "Between races the fixers sell favors that last the whole night. You may buy one favor. Everything costs cash, and cash is your score.": "Yarışlar arasında hilebazlar bütün gece süren iyilikler satar. Bir iyilik alabilirsin. Her şey paradır ve para puanındır.",
+    "Favor": "İyilik",
+    "Services": "Hizmetler",
+    "Service": "Hizmet",
+    "Cool off": "Soğu",
+    "Slip out for a while. Heat drops by {n}.": "Bir süre ortadan kaybol. Şüphe {n} düşer.",
+    "Loan shark": "Tefeci",
+    "Borrow {a} now, owe {o} when the night ends. Twice a night at most.": "Şimdi {a} borç al, gece bitince {o} öde. Gecede en fazla iki kez.",
+    "Borrow": "Borç al",
+    "Your favors:": "İyiliklerin:",
+    "Start race {n}": "{n}. yarışı başlat",
+    "Night over": "Gece bitti",
+    "You walked out ahead.": "Önde çıktın.",
+    "You broke even.": "Başa baş çıktın.",
+    "The house had a good night.": "Kasa iyi bir gece geçirdi.",
+    "Cash at the end": "Sondaki para",
+    "Debt repaid": "Ödenen borç",
+    "Final bankroll": "Son kasa",
+    "Places called right": "Doğru tahmin edilen sıralar",
+    "Perfect orders": "Kusursuz sıralamalar",
+    "Tools used": "Kullanılan araçlar",
+    "Times caught · inspections": "Yakalanma · denetim",
+    "Reputation earned": "Kazanılan itibar",
+    "Another night": "Bir gece daha",
+    "Reputation Points come from your nights. Spend them on a skill tree that grows as you buy: new tools, a cooler head, a fatter bankroll, a better book.": "İtibar Puanları gecelerinden gelir. Satın aldıkça büyüyen bir yetenek ağacına harca: yeni araçlar, soğukkanlılık, dolgun bir kasa, daha iyi bir defter.",
+    "Buy · {c} RP": "Al · {c} İP",
+    "Reset Reputation": "İtibarı sıfırla",
+    "No horse of your own: call the finishing order, rig the race, don’t get caught.": "Kendi atın yok: bitiş sırasını tahmin et, yarışı kurcala, yakalanma.",
+    "{n} race": "{n} yarış",
+    "{n} races": "{n} yarış",
+    "{n} step in the deck": "destede {n} adım",
+    "{n} steps in the deck": "destede {n} adım",
+    "{n} card drawn": "{n} kart çekildi",
+    "{n} cards drawn": "{n} kart çekildi",
+    "{n} card left": "{n} kart kaldı",
+    "{n} cards left": "{n} kart kaldı",
+    "{n} use left": "{n} kullanım kaldı",
+    "{n} uses left": "{n} kullanım kaldı",
+    "Continue night": "Geceye devam et"
+  });
+  Object.assign(I18n.dict.tr, {
+    "All tools and Heat": "Bütün araçlar ve Şüphe", "once a night": "gecede bir kez", "{n} per race": "yarışta {n}",
+    "Heat cools a little with every card drawn without a trick, and between races. From {w} Heat every trick risks a steward inspection: a fine, and the tool is taken away. At {c} Heat you are caught: your slip is void and you are fined.": "Şüphe, hile yapmadan çekilen her kartla ve yarışlar arasında biraz soğur. {w} Şüpheden sonra her hile komiser denetimi riski taşır: ceza ve aracın elinden alınması. {c} Şüphede yakalanırsın: kuponun geçersiz olur ve ceza kesilir."
   });
 })();
 
@@ -3497,6 +3849,488 @@ if (typeof module !== 'undefined') module.exports = Engine;
 
 </script>
 <script>
+/* Gambler's Night: a second game mode. You are not an owner. You are a gambler at the track: call the finishing
+   order of all four horses, then nudge the deck and the track towards your call without getting caught.
+   Time is card draws: every card drawn moves one horse; there is no clock. Pure JS, no DOM, testable in Node. */
+const Gamble = (() => {
+  const SUITS = [
+    { id: 'hearts', name: 'Hearts', glyph: '♥' }, { id: 'diamonds', name: 'Diamonds', glyph: '♦' },
+    { id: 'clubs', name: 'Clubs', glyph: '♣' }, { id: 'spades', name: 'Spades', glyph: '♠' }
+  ];
+  const CFG = {
+    track: 10,            // steps to the line
+    night: 5, nightLong: 8,
+    startCash: 300,
+    edge: 0.88,           // the book keeps 10%
+    minOdds: 1.15, maxOdds: 30,
+    mc: 480,              // simulations behind every quote
+    chips: [5, 10, 25, 50, 100],
+    perfectK: 0.06, perfectMin: 0.75, perfectMax: 30,   // a perfect order pays total stake x clamp(K / its chance): long shots pay big
+    recallFee: 0.2,       // of the stake of the place you change
+    heatMax: 10, warnHeat: 5,
+    coolDraw: 0.06, coolRace: 1.5,
+    fineBase: 15, fineHeat: 3, dqFine: 40,
+    effectLen: 3,         // draws a mud / tailwind lasts for the horse
+    inspectPer: 0.12,     // chance per heat point above 4
+    loan: 100, loanOwe: 130, coolPrice: 25, coolAmt: 3, favorOffers: 3
+  };
+
+  /* ---------- tools ---------- */
+  const TOOLS = {
+    peek:   { kind: 'read',  name: 'Peek',      blurb: 'Look at the next card before it is drawn. The book does not know it.', cost: 6,  heat: 0, uses: 3, target: null,    open: true },
+    burn:   { kind: 'deck',  name: 'Burn',      blurb: 'Throw the next card away. Nobody moves.',                               cost: 12, heat: 2, uses: 2, target: null,    open: true },
+    stack:  { kind: 'deck',  name: 'Stack',     blurb: 'Pull the nearest card of a suit to the top of the deck.',               cost: 28, heat: 3, uses: 2, target: 'suit',  open: true },
+    mud:    { kind: 'track', name: 'Mud',       blurb: 'Soak a lane: the horse loses 1 step on its next 3 cards.',              cost: 20, heat: 3, uses: 2, target: 'horse', open: true },
+    swap:   { kind: 'deck',  name: 'Swap',      blurb: 'Swap the top two cards of the deck.',                                   cost: 10, heat: 2, uses: 2, target: null },
+    wind:   { kind: 'track', name: 'Tailwind',  blurb: 'A gust behind a horse: +1 step on its next 3 cards.',                   cost: 20, heat: 3, uses: 2, target: 'horse' },
+    shave:  { kind: 'deck',  name: 'Shave',     blurb: 'Quietly remove one plain card of a suit from the deck for good.',       cost: 22, heat: 3, uses: 1, target: 'suit' },
+    hurdle: { kind: 'track', name: 'Hurdle',    blurb: 'Drop a hurdle: the horse wastes its next card.',                        cost: 32, heat: 4, uses: 1, target: 'horse' },
+    riffle: { kind: 'deck',  name: 'Riffle',    blurb: 'Reshuffle the whole deck. Good when the cards are running against you.', cost: 30, heat: 4, uses: 1, target: null },
+    lane:   { kind: 'track', name: 'Lane Swap', blurb: 'The horse trades places with the one just ahead of it. Once a night.',  cost: 70, heat: 6, uses: 1, target: 'horse', night: 1 }
+  };
+  const TOOL_ORDER = ['peek', 'burn', 'stack', 'mud', 'swap', 'wind', 'shave', 'hurdle', 'riffle', 'lane'];
+
+  /* ---------- backroom favors: bought between races, they last the night ---------- */
+  const FAVORS = [
+    { id: 'discount', name: 'Tool Discount', blurb: 'Every tool costs 20% less.', price: 40, fx: { disc: 0.2 } },
+    { id: 'ice', name: 'Ice Bucket', blurb: 'Heat cools twice as fast.', price: 35, fx: { cool: 1 } },
+    { id: 'lookout', name: 'Lookout', blurb: 'The stewards spot you 30% less often.', price: 45, fx: { watch: 0.3 } },
+    { id: 'longview', name: 'Binoculars', blurb: 'Peek shows one more card.', price: 40, fx: { peekN: 1 } },
+    { id: 'bookie', name: 'Friendly Bookie', blurb: 'Better odds: the book keeps 4% less.', price: 55, fx: { edge: 0.04 } },
+    { id: 'jackpot', name: 'High Roller Table', blurb: 'A perfect order pays 1 more times the stake.', price: 50, fx: { perfectPlus: 1 } },
+    { id: 'cheapcall', name: 'Late Money', blurb: 'Re-calls cost half as much.', price: 30, fx: { recallMul: 0.5 } },
+    { id: 'toolbelt', name: 'Bigger Toolbelt', blurb: 'One more use of every tool each race.', price: 70, fx: { extraUse: 1 } },
+    { id: 'palm', name: 'Greased Palm', blurb: 'The first tool you use each race adds no Heat.', price: 45, fx: { greased: 1 } },
+    { id: 'tipoff', name: 'Tip-off', blurb: 'The top card of every deck is shown before you call.', price: 50, fx: { tip: 1 } },
+    { id: 'safety', name: 'Safety Net', blurb: 'If no place of yours hits, get 30% of your stakes back.', price: 40, fx: { insure: 0.3 } },
+    { id: 'lawyer', name: 'Good Lawyer', blurb: 'Fines are 40% smaller.', price: 35, fx: { fineMul: -0.4 } }
+  ];
+  const favorById = id => FAVORS.find(f => f.id === id);
+
+  /* ---------- the rng (one number of state, so a night can be saved exactly) ---------- */
+  function mulberry32(a) {
+    const f = function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    f.state = () => a | 0;
+    return f;
+  }
+  function shuffle(arr, rng) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; } return arr; }
+  const stepOf = c => (c.r >= 11 ? 2 : 1);
+  const label = c => ({ 11: 'J', 12: 'Q', 13: 'K' })[c.r] || String(c.r);
+
+  /* ---------- effects: the base (Reputation tree) plus favors bought this night ---------- */
+  function combine(base, favors) {
+    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0 }, base || {});
+    fx.tools = (fx.tools || []).slice();
+    (favors || []).forEach(id => {
+      const f = favorById(id); if (!f) return;
+      Object.keys(f.fx).forEach(k => { if (k === 'recallMul') fx.recallMul *= f.fx[k]; else fx[k] = (fx[k] || 0) + f.fx[k]; });
+    });
+    return fx;
+  }
+  const heatCap = run => CFG.heatMax + (run.fx.heatCap || 0);
+  const edgeOf = run => Math.min(0.99, CFG.edge + (run.fx.edge || 0));
+  const toolOpen = (run, id) => run.fx.tools.indexOf(id) >= 0;
+  const toolCost = (run, id) => Math.max(1, Math.round(TOOLS[id].cost * (1 - Math.min(0.7, run.fx.disc))));
+  const toolMax = (run, id) => TOOLS[id].uses + (run.fx.extraUse || 0);
+
+  /* ---------- a race ---------- */
+  function makeRace(run) {
+    const rng = run.rng, comp = [], deck = [];
+    for (let s = 0; s < 4; s++) {
+      const n = 8 + Math.floor(rng() * 4), f = 1 + Math.floor(rng() * 2);
+      comp.push({ n, f });
+      for (let k = 0; k < n; k++) deck.push({ s, r: 2 + Math.floor(rng() * 9) });
+      for (let k = 0; k < f; k++) deck.push({ s, r: 11 + Math.floor(rng() * 3) });
+    }
+    shuffle(deck, rng);
+    return {
+      deck, comp, prog: [0, 0, 0, 0], reach: [0, 0, 0, 0], finished: [], draws: 0, order: null, done: false,
+      lane: [0, 1, 2, 3].map(() => ({ mud: 0, wind: 0, hurdle: false })),
+      uses: {}, slip: [null, null, null, null], locked: false, pk: 0, tampered: false, caught: false, confiscated: {},
+      spent: 0, fees: 0, fines: 0, last: null, firstTool: true, events: []
+    };
+  }
+  function newNight(o) {
+    o = o || {};
+    const seed = o.seed == null ? (Math.random() * 4294967296) >>> 0 : o.seed;
+    const base = o.meta || {};
+    const run = {
+      v: 1, seed, rng: mulberry32(seed), base, favors: [], fx: null, phase: 'book', races: o.races || CFG.night, raceNo: 1,
+      cash: 0, debt: 0, startCash: 0, heat: 0, chip: 10, race: null, nightUses: {}, back: null, loans: 0,
+      stats: { hits: 0, perfects: 0, races: 0, tools: 0, caught: 0, inspections: 0, bestNet: 0, spent: 0 }, results: [], result: null, over: null
+    };
+    run.fx = combine(base, run.favors);
+    run.cash = run.startCash = run.fx.startCash;
+    run.chip = run.fx.chips.indexOf(10) >= 0 ? 10 : run.fx.chips[0];
+    run.race = makeRace(run);
+    if (run.fx.tip) run.race.pk = 1;
+    return run;
+  }
+  function pack(run) { const o = JSON.parse(JSON.stringify(run, (k, v) => (k === '_q' ? undefined : v))); o.rngState = run.rng.state(); return o; }
+  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); return run; }
+
+  /* ---------- odds: the book simulates the rest of the deck in random order ---------- */
+  function remainingCodes(race) { return race.deck.map(c => c.s * 2 + (stepOf(c) - 1)); }
+  function simulate(prog, lane, codes, track, rng, finished, top) {
+    const p = prog.slice(), mud = lane.map(l => l.mud), wind = lane.map(l => l.wind), hur = lane.map(l => l.hurdle);
+    const fin = finished.slice(), seen = [false, false, false, false];
+    fin.forEach(h => { seen[h] = true; });
+    let d = codes.slice();
+    for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = d[i]; d[i] = d[j]; d[j] = t; }
+    if (top && top.length) d = top.concat(d);
+    const n = d.length;
+    for (let i = 0; i < n && fin.length < 3; i++) {
+      const s = d[i] >> 1; let st = (d[i] & 1) + 1;
+      if (hur[s]) { st = 0; hur[s] = false; } else { if (mud[s] > 0) { st = Math.max(0, st - 1); mud[s]--; } if (wind[s] > 0) { st++; wind[s]--; } }
+      p[s] += st;
+      if (!seen[s] && p[s] >= track) { seen[s] = true; fin.push(s); }
+    }
+    const rest = [0, 1, 2, 3].filter(h => !seen[h]).sort((a, b) => p[b] - p[a] || a - b);
+    return fin.concat(rest);
+  }
+  /* returns { P[h][pl], orders: Map(code -> count), n } for the current state of the race */
+  function quote(run) {
+    const r = run.race;
+    const key = r.prog.join(',') + '|' + r.lane.map(l => l.mud + ':' + l.wind + ':' + (l.hurdle ? 1 : 0)).join(',') + '|' + r.deck.length + '|' + remainingCodes(r).reduce((a, c) => a + c, 0) + '|' + r.finished.join('');
+    if (run._q && run._q.key === key) return run._q.q;
+    const rng = mulberry32((run.seed ^ Math.imul(run.raceNo, 2654435761) ^ Math.imul(r.draws + 1, 40503) ^ (r.deck.length * 977)) >>> 0);
+    const codes = remainingCodes(r), P = [0, 1, 2, 3].map(() => [0, 0, 0, 0]), orders = {};
+    const N = CFG.mc;
+    for (let i = 0; i < N; i++) {
+      const o = simulate(r.prog, r.lane, codes, CFG.track, rng, r.finished);
+      for (let pl = 0; pl < 4; pl++) P[o[pl]][pl]++;
+      const k = o.join(''); orders[k] = (orders[k] || 0) + 1;
+    }
+    for (let h = 0; h < 4; h++) for (let pl = 0; pl < 4; pl++) P[h][pl] /= N;
+    const q = { P, orders, n: N };
+    run._q = { key, q };
+    return q;
+  }
+  function oddsFor(run, p) {
+    if (p <= 0.0005) return CFG.maxOdds;
+    return Math.round(Math.max(CFG.minOdds, Math.min(CFG.maxOdds, edgeOf(run) / p)) * 100) / 100;
+  }
+  function board(run) { const q = quote(run); return q.P.map(row => row.map(p => ({ p, odds: oddsFor(run, p) }))); }
+  /* chance that a whole order comes in, e.g. [2,0,1,3] = horse 2 first, 0 second ... */
+  function orderChance(run, order) { const q = quote(run); return (q.orders[order.join('')] || 0) / q.n; }
+  /* what a complete, correct order would pay on top, as a multiple of the total stake */
+  function perfectMult(run, order) {
+    const p = Math.max(0.004, orderChance(run, order));
+    return Math.round((Math.max(CFG.perfectMin, Math.min(CFG.perfectMax, CFG.perfectK / p)) + (run.fx.perfectPlus || 0)) * 100) / 100;
+  }
+  /* the most likely complete order right now */
+  function bestOrder(run) { const q = quote(run); let b = null, c = -1; for (const k in q.orders) if (q.orders[k] > c) { c = q.orders[k]; b = k.split('').map(Number); } return b; }
+
+  /* ---------- the slip ---------- */
+  const staked = run => run.race.slip.reduce((a, b) => a + (b ? b.stake : 0), 0);
+  function setChip(run, v) { if (run.fx.chips.indexOf(v) < 0 || run.race.locked) return false; run.chip = v; return true; }
+  /* before the lock: choose a horse for a place (a horse can only hold one place); the same pick again clears it */
+  function pick(run, pl, h) {
+    const r = run.race; if (run.phase !== 'book' || r.locked) return false;
+    if (r.slip[pl] && r.slip[pl].h === h) { r.slip[pl] = null; return true; }
+    for (let i = 0; i < 4; i++) if (r.slip[i] && r.slip[i].h === h) r.slip[i] = null;
+    r.slip[pl] = { h, stake: run.chip, odds: 0 };
+    return true;
+  }
+  function pickBest(run) { const o = bestOrder(run); o.forEach((h, pl) => { run.race.slip[pl] = { h, stake: run.chip, odds: 0 }; }); }
+  function canLock(run) { const r = run.race; const n = r.slip.filter(Boolean).length; return run.phase === 'book' && !r.locked && n > 0 && n * run.chip <= run.cash; }
+  function lock(run) {
+    if (!canLock(run)) return false;
+    const r = run.race, b = board(run);
+    r.slip.forEach((s, pl) => { if (s) { s.stake = run.chip; s.odds = b[s.h][pl].odds; run.cash -= s.stake; } });
+    r.pmult = r.slip.every(Boolean) ? perfectMult(run, r.slip.map(s => s.h)) : 0;
+    r.locked = true; run.phase = 'race';
+    return true;
+  }
+  const recallFee = (run, pl) => { const s = run.race.slip[pl]; return s ? Math.max(1, Math.round(s.stake * CFG.recallFee * run.fx.recallMul)) : 0; };
+  /* during the race: change the horse you have on a place, for a fee, at the odds of this moment */
+  function canRecall(run, pl, h) {
+    const r = run.race, s = r.slip[pl];
+    if (run.phase !== 'race' || r.done || r.caught || !s) return false;
+    if (r.finished.length > pl) return false;                     // that place is already decided
+    if (s.h === h || r.finished.indexOf(h) >= 0) return false;      // a horse that has crossed holds its place
+    return true;
+  }
+  function recall(run, pl, h) {
+    if (!canRecall(run, pl, h)) return false;
+    const r = run.race, s = r.slip[pl];
+    // a horse already holding another unsettled place trades places with this one: both pay a fee
+    const other = r.slip.findIndex((x, i) => x && i !== pl && x.h === h);
+    let fee = recallFee(run, pl);
+    if (other >= 0) {
+      if (r.finished.length > other) return false;
+      fee += recallFee(run, other);
+    }
+    if (run.cash < fee) return false;
+    run.cash -= fee; r.fees += fee;
+    const b = board(run);
+    if (other >= 0) { const o = r.slip[other]; o.h = s.h; o.odds = b[o.h][other].odds; }
+    s.h = h; s.odds = b[h][pl].odds;
+    r._recalled = true;
+    return true;
+  }
+
+  /* ---------- drawing a card: the only way time passes ---------- */
+  function draw(run) {
+    const r = run.race;
+    if (run.phase !== 'race' || r.done) return null;
+    const card = r.deck.shift(), s = card.s, ln = r.lane[s];
+    let st = stepOf(card), note = null;
+    if (ln.hurdle) { st = 0; ln.hurdle = false; note = 'hurdle'; }
+    else {
+      if (ln.mud > 0) { st = Math.max(0, st - 1); ln.mud--; note = 'mud'; }
+      if (ln.wind > 0) { st++; ln.wind--; note = note ? 'both' : 'wind'; }
+    }
+    r.draws++;
+    r.pk = Math.max(0, r.pk - 1);
+    const before = r.prog[s];
+    r.prog[s] += st;
+    const ev = { card, horse: s, steps: st, note, from: before, to: r.prog[s], place: null, done: false, cooled: 0 };
+    if (r.finished.indexOf(s) < 0 && r.prog[s] >= CFG.track) { r.finished.push(s); ev.place = r.finished.length; }
+    if (st > 0) r.reach[s] = r.draws;
+    if (!r.tampered) { const c = CFG.coolDraw * (1 + run.fx.cool); const h0 = run.heat; run.heat = Math.max(0, run.heat - c); ev.cooled = h0 - run.heat; }
+    r.tampered = false; r._recalled = false;
+    r.last = { s, st, r: card.r };
+    if (r.finished.length >= 3 || r.deck.length === 0) {
+      const rest = [0, 1, 2, 3].filter(h => r.finished.indexOf(h) < 0).sort((a, b) => r.prog[b] - r.prog[a] || r.reach[a] - r.reach[b] || a - b);
+      r.order = r.finished.concat(rest); r.done = true; ev.done = true;
+    }
+    return ev;
+  }
+
+  /* ---------- tools ---------- */
+  function toolState(run, id) {
+    const T = TOOLS[id], r = run.race, left = toolMax(run, id) - (r.uses[id] || 0);
+    let why = null;
+    if (!toolOpen(run, id)) why = 'locked';
+    else if (r.caught) why = 'caught';
+    else if (r.confiscated[id]) why = 'confiscated';
+    else if (!(run.phase === 'race' || (run.phase === 'book' && id === 'peek'))) why = 'phase';
+    else if (r.done) why = 'phase';
+    else if (left <= 0) why = 'uses';
+    else if (T.night && (run.nightUses[id] || 0) >= T.night) why = 'night';
+    else if (run.cash < toolCost(run, id)) why = 'cash';
+    else if (id === 'peek' && r.deck.length === 0) why = 'empty';
+    return { id, cost: toolCost(run, id), heat: heatOf(run, id), left, max: toolMax(run, id), ok: !why, why };
+  }
+  function heatOf(run, id) {
+    const h = TOOLS[id].heat;
+    return run.race.firstTool && run.fx.greased && h > 0 ? 0 : h;
+  }
+  function inspectChance(run) {
+    if (run.heat < CFG.warnHeat) return 0;
+    return Math.max(0, Math.min(0.85, (run.heat - 4) * CFG.inspectPer * (1 - Math.min(0.9, run.fx.watch))));
+  }
+  function addFine(run, amt) {
+    amt = Math.max(1, Math.round(amt * (1 + (run.fx.fineMul || 0))));
+    run.race.fines += amt; run.cash -= amt;
+    if (run.cash < 0) { run.debt += -run.cash; run.cash = 0; }
+    return amt;
+  }
+  /* returns { ok, why, events:[...] }. arg: suit index or horse index for tools that need a target */
+  function useTool(run, id, arg) {
+    const T = TOOLS[id], r = run.race, ts = toolState(run, id), ev = [];
+    if (!T || !ts.ok) return { ok: false, why: ts.why, events: ev };
+    if (T.target && !(arg >= 0 && arg < 4)) return { ok: false, why: 'target', events: ev };
+    // effect
+    let msg = null;
+    if (id === 'peek') { r.pk = Math.min(r.deck.length, Math.max(r.pk, run.fx.peekN)); }
+    else if (id === 'burn') { r.burned = (r.burned || 0) + 1; r.deck.shift(); r.pk = 0; }
+    else if (id === 'swap') { if (r.deck.length < 2 || r.deck[0].s === r.deck[1].s) return { ok: false, why: 'same', events: ev }; const t = r.deck[0]; r.deck[0] = r.deck[1]; r.deck[1] = t; r.pk = 0; }
+    else if (id === 'stack') { const i = r.deck.findIndex(c => c.s === arg); if (i < 0) return { ok: false, why: 'none', events: ev }; if (i === 0) return { ok: false, why: 'top', events: ev }; const c = r.deck.splice(i, 1)[0]; r.deck.unshift(c); r.pk = 0; }
+    else if (id === 'shave') { const idx = []; r.deck.forEach((c, i) => { if (c.s === arg && c.r < 11) idx.push(i); }); if (!idx.length) return { ok: false, why: 'none', events: ev }; r.deck.splice(idx[Math.floor(run.rng() * idx.length)], 1); r.pk = 0; r.shaved = (r.shaved || 0) + 1; r.comp[arg].n--; }
+    else if (id === 'riffle') { shuffle(r.deck, run.rng); r.pk = 0; }
+    else if (id === 'mud') { r.lane[arg].mud += CFG.effectLen; }
+    else if (id === 'wind') { r.lane[arg].wind += CFG.effectLen; }
+    else if (id === 'hurdle') { if (r.finished.indexOf(arg) >= 0) return { ok: false, why: 'finished', events: ev }; r.lane[arg].hurdle = true; }
+    else if (id === 'lane') {
+      if (r.finished.indexOf(arg) >= 0) return { ok: false, why: 'finished', events: ev };
+      const ahead = [0, 1, 2, 3].filter(h => h !== arg && r.finished.indexOf(h) < 0 && r.prog[h] > r.prog[arg]).sort((a, b) => r.prog[a] - r.prog[b])[0];
+      if (ahead == null) return { ok: false, why: 'lead', events: ev };
+      const t = r.prog[arg]; r.prog[arg] = r.prog[ahead]; r.prog[ahead] = t; msg = ahead;
+    }
+    // payment, heat, bookkeeping
+    const cost = ts.cost, heat = ts.heat;
+    run.cash -= cost; r.spent += cost; r.uses[id] = (r.uses[id] || 0) + 1; if (T.night) run.nightUses[id] = (run.nightUses[id] || 0) + 1;
+    run.stats.tools++; run.stats.spent += cost;
+    if (T.heat > 0) { r.firstTool = false; r.tampered = true; }
+    run.heat = Math.min(heatCap(run), run.heat + heat);
+    ev.push({ t: 'tool', id, arg, cost, heat, msg });
+    // the stewards
+    if (run.heat >= heatCap(run)) {
+      r.caught = true; run.stats.caught++;
+      const fine = addFine(run, CFG.dqFine);
+      run.heat = Math.floor(heatCap(run) / 2);
+      ev.push({ t: 'caught', fine, refund: 0 });
+      if (run.fx.alibi) { let back = 0; r.slip.forEach(s => { if (s) back += Math.round(s.stake * 0.5); }); run.cash += back; r.alibi = back; ev[ev.length - 1].refund = back; }
+    } else if (T.heat > 0 && run.heat >= CFG.warnHeat && run.rng() < inspectChance(run)) {
+      run.stats.inspections++;
+      const fine = addFine(run, CFG.fineBase + run.heat * CFG.fineHeat);
+      r.confiscated[id] = true; run.heat = Math.max(0, run.heat - 2);
+      ev.push({ t: 'inspect', fine, id });
+    }
+    return { ok: true, events: ev };
+  }
+
+  /* ---------- settle a finished race ---------- */
+  function settle(run) {
+    const r = run.race;
+    if (!r.done || run.phase !== 'race') return null;
+    const bets = [];
+    let pay = 0, stakes = 0, hits = 0, all = true;
+    for (let pl = 0; pl < 4; pl++) {
+      const s = r.slip[pl];
+      if (!s) { all = false; continue; }
+      const hit = r.order[pl] === s.h;
+      const p = hit && !r.caught ? Math.round(s.stake * s.odds) : 0;
+      stakes += s.stake; pay += p; if (hit) hits++; else all = false;
+      bets.push({ pl, h: s.h, stake: s.stake, odds: s.odds, hit, pay: p, actual: r.order[pl] });
+    }
+    const perfect = all && !r.caught && bets.length === 4;
+    const bonus = perfect ? Math.round(stakes * r.pmult) : 0;
+    const insured = !hits && !r.caught && run.fx.insure ? Math.round(stakes * run.fx.insure) : 0;
+    run.cash += pay + bonus + insured;
+    const net = pay + bonus + insured - stakes - r.fees - r.spent - r.fines + (r.alibi || 0);
+    const res = { raceNo: run.raceNo, order: r.order.slice(), bets, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, draws: r.draws };
+    run.result = res; run.results.push(res);
+    run.stats.races++; run.stats.hits += hits; if (perfect) run.stats.perfects++; run.stats.bestNet = Math.max(run.stats.bestNet, net);
+    run.phase = 'result';
+    return res;
+  }
+
+  /* ---------- the backroom between races ---------- */
+  function toBackroom(run) {
+    if (run.phase !== 'result') return false;
+    if (run.raceNo >= run.races) return finish(run);
+    const pool = FAVORS.filter(f => run.favors.indexOf(f.id) < 0).map(f => f.id);
+    shuffle(pool, run.rng);
+    run.back = { offers: pool.slice(0, run.fx.offers), bought: false, cooled: 0, loaned: 0 };
+    run.phase = 'back';
+    return true;
+  }
+  const favorPrice = (run, id) => favorById(id).price;
+  function buyFavor(run, id) {
+    const b = run.back;
+    if (run.phase !== 'back' || b.bought || b.offers.indexOf(id) < 0 || run.cash < favorPrice(run, id)) return false;
+    run.cash -= favorPrice(run, id); run.favors.push(id); b.bought = true; run.fx = combine(run.base, run.favors);
+    return true;
+  }
+  function coolOff(run) {
+    if (run.phase !== 'back' || run.heat <= 0 || run.cash < CFG.coolPrice) return false;
+    run.cash -= CFG.coolPrice; run.heat = Math.max(0, run.heat - CFG.coolAmt); run.back.cooled++;
+    return true;
+  }
+  function canLoan(run) { return run.phase === 'back' && run.loans < 2; }
+  function takeLoan(run) {
+    if (!canLoan(run)) return false;
+    run.cash += CFG.loan; run.debt += run.fx.loanOwe; run.loans++; run.back.loaned++;
+    return true;
+  }
+  function nextRace(run) {
+    if (run.phase !== 'back') return false;
+    run.raceNo++; run.heat = Math.max(0, run.heat - CFG.coolRace * (1 + run.fx.cool));
+    run.race = makeRace(run); run.back = null; run.result = null; run.phase = 'book';
+    if (run.fx.tip) run.race.pk = 1;
+    return true;
+  }
+  function finish(run) {
+    const final = run.cash - run.debt, profit = final - run.startCash;
+    const rp = Math.max(0, Math.round(profit / 10)) + run.stats.hits + run.stats.perfects * 6 + (profit > 0 ? 5 : 0);
+    run.over = { final, profit, rp, hits: run.stats.hits, perfects: run.stats.perfects, caught: run.stats.caught };
+    run.phase = 'over';
+    return true;
+  }
+  /* leave the table early, between races */
+  function walkOut(run) { if (run.phase !== 'book' || run.race.locked) return false; return finish(run); }
+  /* a bot-friendly helper: expected payout of the locked slip in the current state (uses the quote's sims) */
+  function expected(run) {
+    const q = quote(run), r = run.race; let e = 0;
+    r.slip.forEach((s, pl) => { if (s) e += q.P[s.h][pl] * s.stake * s.odds; });
+    return e;
+  }
+
+  /* ---------- Reputation: the permanent skill tree of this mode (its own save, separate from the horse game) ---------- */
+  const Meta = (() => {
+    const BRANCHES = [
+      { id: 'tools', name: 'Toolbox', a: -90, color: '#8fb8ee' },
+      { id: 'nerve', name: 'Nerve', a: 0, color: '#ee8b6b' },
+      { id: 'purse', name: 'Bankroll', a: 90, color: '#e9cf73' },
+      { id: 'eye', name: 'The Book', a: 180, color: '#c79bf0' }
+    ];
+    const N = (id, br, name, blurb, costs, parents, a, r, extra) => Object.assign({ id, br, name, blurb, costs, parents, a, r }, extra || {});
+    const NODES = [
+      N('t_swap', 'tools', 'Swap', 'Unlocks the Swap tool: swap the top two cards.', [10], ['root'], -104, 1, { tool: 'swap' }),
+      N('t_wind', 'tools', 'Tailwind', 'Unlocks the Tailwind tool: a horse gets +1 step on its next 3 cards.', [10], ['root'], -76, 1, { tool: 'wind' }),
+      N('t_shave', 'tools', 'Shave', 'Unlocks the Shave tool: remove a plain card of a suit for good.', [18], ['t_swap'], -110, 2, { tool: 'shave' }),
+      N('t_hurdle', 'tools', 'Hurdle', 'Unlocks the Hurdle tool: a horse wastes its next card.', [18], ['t_wind'], -70, 2, { tool: 'hurdle' }),
+      N('t_riffle', 'tools', 'Riffle', 'Unlocks the Riffle tool: reshuffle the deck.', [25], ['t_shave'], -104, 3, { tool: 'riffle' }),
+      N('t_lane', 'tools', 'Lane Swap', 'Unlocks Lane Swap: a horse trades places with the one just ahead. Once a night.', [35], ['t_hurdle'], -76, 3, { tool: 'lane' }),
+      N('t_belt', 'tools', 'Deep Toolbox', 'One more use of every tool in every race.', [40, 70], ['t_riffle', 't_lane'], -90, 4),
+      N('n_cool', 'nerve', 'Cool Head', 'Heat cools 25% faster.', [10, 18, 28], ['root'], -16, 1),
+      N('n_skin', 'nerve', 'Thick Skin', 'You can carry 1 more Heat before you are caught.', [15, 28, 45], ['root'], 16, 1),
+      N('n_watch', 'nerve', 'Friend on the Board', 'Stewards spot you 15% less often.', [18, 30, 45], ['n_cool'], -18, 2),
+      N('n_law', 'nerve', 'Lawyer', 'Fines are 20% smaller.', [18, 32], ['n_skin'], 18, 2),
+      N('n_palm', 'nerve', 'Greased Palm', 'The first tool you use in each race adds no Heat.', [30], ['n_watch', 'n_law'], 0, 3),
+      N('n_alibi', 'nerve', 'Alibi', 'If you are caught, you get half of your stakes back.', [45], ['n_palm'], 0, 4),
+      N('p_deep', 'purse', 'Deep Pockets', 'Start every night with $30 more.', [10, 16, 24, 34, 46], ['root'], 74, 1),
+      N('p_chips', 'purse', 'High Stakes', 'Unlocks the $100 chip.', [14], ['root'], 106, 1),
+      N('p_haggle', 'purse', 'Haggler', 'Every tool costs 5% less.', [14, 22, 32, 44], ['p_deep'], 74, 2),
+      N('p_night', 'purse', 'Long Night', 'Lets you choose a night of 8 races.', [30], ['p_chips'], 106, 2),
+      N('p_shark', 'purse', 'Shark’s Terms', 'A loan costs $10 less to pay back.', [20, 34], ['p_haggle'], 70, 3),
+      N('p_safe', 'purse', 'Safety Net', 'If no place hits, 15% of your stakes come back.', [25, 40], ['p_night'], 110, 3),
+      N('e_sharp', 'eye', 'Sharp Eye', 'Better odds: the book keeps 1% less.', [15, 25, 38, 52], ['root'], 164, 1),
+      N('e_view', 'eye', 'Binoculars', 'Peek shows one more card.', [15, 28], ['root'], 196, 1),
+      N('e_perf', 'eye', 'Perfect Pay', 'A perfect order pays half a stake more.', [20, 35], ['e_sharp'], 164, 2),
+      N('e_net', 'eye', 'Backroom Network', 'One more favor on offer in the backroom.', [20, 35], ['e_view'], 196, 2),
+      N('e_calls', 'eye', 'Late Money', 'Re-calls cost 25% less.', [25, 40], ['e_perf', 'e_net'], 180, 3),
+      N('e_tip', 'eye', 'Tip-off', 'The top card of every deck is shown before you call.', [40], ['e_calls'], 180, 4)
+    ];
+    const ROOT = { id: 'root', name: 'The Book', costs: [], parents: [] };
+    const nodeById = id => (id === 'root' ? ROOT : NODES.find(n => n.id === id));
+    const KEY = 'suitderby.g1';
+    const fresh = () => ({ sp: 0, levels: {}, nights: 0, best: -9999, v: 1 });
+    const level = (st, id) => st.levels[id] || 0;
+    const maxOf = n => n.costs.length;
+    const owned = (st, id) => id === 'root' || level(st, id) > 0;
+    const isOpen = (st, id) => { const n = nodeById(id); return !!n && n.parents.some(p => owned(st, p)); };
+    const costOf = (st, id) => { const n = nodeById(id), l = level(st, id); return l >= maxOf(n) ? null : n.costs[l]; };
+    const canBuy = (st, id) => { const c = costOf(st, id); return c != null && st.sp >= c && isOpen(st, id); };
+    function buy(st, id) { if (!canBuy(st, id)) return false; st.sp -= costOf(st, id); st.levels[id] = level(st, id) + 1; return true; }
+    function effects(st) {
+      const L = id => level(st, id);
+      const tools = ['peek', 'burn', 'stack', 'mud'].concat(NODES.filter(n => n.tool && owned(st, n.id)).map(n => n.tool));
+      return {
+        tools, chips: [5, 10, 25, 50].concat(L('p_chips') ? [100] : []), longNight: !!L('p_night'),
+        startCash: CFG.startCash + 30 * L('p_deep'), disc: 0.05 * L('p_haggle'), cool: 0.25 * L('n_cool'), heatCap: L('n_skin'), watch: 0.15 * L('n_watch'),
+        fineMul: -0.2 * L('n_law'), greased: L('n_palm') ? 1 : 0, alibi: L('n_alibi') ? 1 : 0, loanOwe: CFG.loanOwe - 10 * L('p_shark'), insure: 0.15 * L('p_safe'),
+        edge: 0.01 * L('e_sharp'), peekN: 1 + L('e_view'), perfectPlus: 0.5 * L('e_perf'), offers: CFG.favorOffers + L('e_net'), recallMul: 1 - 0.25 * L('e_calls'), tip: L('e_tip') ? 1 : 0,
+        extraUse: L('t_belt')
+      };
+    }
+    function record(st, over) { st.sp += over.rp; st.nights++; st.best = Math.max(st.best, Math.round(over.profit)); }
+    function load() {
+      try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && typeof o.sp === 'number') return Object.assign(fresh(), o, { levels: Object.assign({}, o.levels) }); } catch (e) {}
+      return fresh();
+    }
+    function save(st) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+    function reset() { const s = fresh(); save(s); return s; }
+    return { BRANCHES, NODES, ROOT, nodeById, fresh, level, maxOf, owned, isOpen, costOf, canBuy, buy, effects, record, load, save, reset };
+  })();
+
+  return { Meta, SUITS, CFG, TOOLS, TOOL_ORDER, FAVORS, favorById, newNight, pack, unpack, mulberry32, combine, makeRace,
+    quote, board, orderChance, perfectMult, bestOrder, oddsFor, staked, setChip, pick, pickBest, canLock, lock, recallFee, canRecall, recall, draw,
+    toolState, toolCost, toolMax, heatCap, inspectChance, useTool, settle, toBackroom, buyFavor, coolOff, takeLoan, canLoan, nextRace, finish,
+    expected, walkOut, stepOf, label, favorPrice, edgeOf, simulate, remainingCodes };
+})();
+if (typeof module !== 'undefined') module.exports = Gamble;
+
+</script>
+<script>
 /* Suit Derby win effects: the classic casino pop. Coins, confetti, sparks, shockwaves,
    a BIG WIN banner with a counting number, and a screen shake. All of it draws on one
    transparent canvas over the page and stops when there is nothing left to draw. */
@@ -4168,7 +5002,7 @@ const Scene = (() => {
     S.screen = name;
     $$('.screen').forEach(function (el) { el.hidden = el.id !== 's-' + name; });
     window.scrollTo(0, 0);
-    Sfx.music.mode(name === 'game' ? (S.run && S.run.mod === 'derby' ? 'final' : 'race') : 'chill');
+    Sfx.music.mode(name === 'game' ? (S.run && S.run.mod === 'derby' ? 'final' : 'race') : name === 'grace' ? 'race' : 'chill');
     if (onEnter[name]) onEnter[name]();
   }
   document.addEventListener('click', function (e) {
@@ -5482,6 +6316,528 @@ const Scene = (() => {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   requestAnimationFrame(frame);
   window.__derby = { S: S, E: E, M: M, go: go, scene: scene, FX: FX };
+  window.__ui = { go: go, onEnter: onEnter, money: money, ord: ord, horseSVG: horseSVG };
+})();
+
+</script>
+<script>
+/* Gambler's Night UI. Screens: setup, the book (call the order), the race (card by card), the backroom, night over, Reputation. */
+(function () {
+  'use strict';
+  var G = Gamble, GM = G.Meta, U = window.__ui, I = I18n, T = I.t, TP = I.tp, CFG = G.CFG;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var money = U.money, ord = U.ord, go = U.go, onEnter = U.onEnter;
+
+  var GS = { meta: GM.load(), run: null, len: 5, tool: null, recall: null, auto: 0, timer: null, log: [], prevP: null, last: null, tree: { sel: null, seen: null }, recorded: false, doneShown: false, resetArm: 0 };
+  var KEY = 'suitderby.grun', SV = 1;
+
+  /* ---------- save and resume ---------- */
+  function saveRun() {
+    var R = GS.run; if (!R || R.phase === 'over') return;
+    try { localStorage.setItem(KEY, JSON.stringify({ v: SV, run: G.pack(R), len: GS.len, log: GS.log.slice(-8) })); } catch (e) {}
+  }
+  function clearRun() { try { localStorage.removeItem(KEY); } catch (e) {} }
+  function loadRun() {
+    try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.v === SV && d.run && d.run.race && d.run.phase !== 'over') return d; } catch (e) {}
+    return null;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) saveRun(); });
+  window.addEventListener('pagehide', saveRun);
+
+  /* ---------- small helpers ---------- */
+  function sn(i) { return T(G.SUITS[i].name); }
+  function gl(i) { return '<span class="g s' + i + '">' + G.SUITS[i].glyph + '</span>'; }
+  function lab(c) { var l = G.label(c); return I.lang === 'tr' ? ({ J: 'V', Q: 'K', K: 'P' }[l] || l) : l; }
+  function cardHTML(c, cls) { return '<span class="gc s' + c.s + (c.r >= 11 ? ' fc' : '') + (cls ? ' ' + cls : '') + '"><b>' + lab(c) + '</b><i>' + G.SUITS[c.s].glyph + '</i></span>'; }
+  function oddsTxt(o) { return '×' + I.n(o.toFixed(2)); }
+  function pct(p) { return I.n(Math.round(p * 100)) + '%'; }
+  function f1(x) { return I.n(x.toFixed(1)); }
+  function toolName(id) { return T(G.TOOLS[id].name); }
+  var PLACES = ['1st', '2nd', '3rd', '4th'];
+  function placeName(pl) { return ord(pl + 1); }
+  function log(text) { GS.log.push(text); if (GS.log.length > 40) GS.log.shift(); }
+  function bankHTML(R) {
+    return '<div class="cashchip gbank" title="' + T('Your bankroll. What is left at the end of the night is your score.') + '">' + money(R.cash) + (R.debt ? '<small>' + T('owe {m}', { m: money(R.debt) }) + '</small>' : '') + '</div>';
+  }
+  function heatHTML(R) {
+    var cap = G.heatCap(R), h = R.heat, w = Math.min(100, h / cap * 100), warn = CFG.warnHeat / cap * 100;
+    var st = h < 3 ? 'Calm' : h < CFG.warnHeat ? 'Warm' : h < cap - 2 ? 'The stewards are watching' : 'Danger';
+    var ins = G.inspectChance(R);
+    return '<div class="gheat st-' + (h < 3 ? 0 : h < CFG.warnHeat ? 1 : h < cap - 2 ? 2 : 3) + '"><span class="lbl">' + T('Heat') + '</span><div class="hbar" role="img" aria-label="' + T('Heat {h} of {c}', { h: f1(h), c: cap }) + '"><i style="width:' + w.toFixed(1) + '%"></i><u style="left:' + warn.toFixed(1) + '%"></u></div><b class="mono">' + f1(h) + ' / ' + cap + '</b><small>' + T(st) + (ins > 0 ? ' · ' + T('{p} inspection chance', { p: pct(ins) }) : '') + '</small></div>';
+  }
+  function quit() {
+    stopAuto(); saveRun(); go('menu');
+  }
+
+  /* ---------- menu hooks ---------- */
+  var prevMenu = onEnter.menu;
+  onEnter.menu = function () {
+    prevMenu();
+    var sv = loadRun(), b = $('#gResume'); b.hidden = !sv;
+    if (sv) { var r = sv.run; $('#gresume-sub').textContent = T('Race {n} of {m}', { n: r.raceNo, m: r.races }) + ' · ' + money(r.cash) + (r.phase === 'back' || r.phase === 'result' ? ' · ' + T('in the backroom') : ''); }
+  };
+  $('#gResume').addEventListener('click', function () {
+    var sv = loadRun(); if (!sv) return;
+    GS.run = G.unpack(sv.run); GS.len = sv.len || 5; GS.log = sv.log || []; GS.tool = null; GS.recall = null; GS.recorded = false; GS.doneShown = !!GS.run.race.done; GS.prevP = null;
+    show();
+  });
+
+  /* ---------- phase router ---------- */
+  function show() {
+    var R = GS.run, ph = R.phase;
+    go(ph === 'book' ? 'gbook' : ph === 'race' ? 'grace' : ph === 'over' ? 'gover' : 'gback');
+  }
+
+  /* ---------- setup ---------- */
+  onEnter.gsetup = renderSetup;
+  function renderSetup() {
+    var fx = GM.effects(GS.meta), el = $('#s-gsetup');
+    if (GS.len === CFG.nightLong && !fx.longNight) GS.len = CFG.night;
+    var sv = loadRun();
+    el.innerHTML = '<header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Gambler’s Night') + '</h2><div class="cashchip sp">' + T('{n} RP', { n: GS.meta.sp }) + '</div></header>' +
+      '<p class="lede">' + T('You are not an owner tonight. You are a gambler with a pocket full of tricks. Call the order all four horses will finish in, then bend the deck and the track your way. Do not get caught.') + '</p>' +
+      '<div class="gsteps">' +
+      '<div class="gstep"><b>1 · ' + T('Read') + '</b><p>' + T('Study the deck sheet. Every card moves one horse. More cards means more steps, and the odds come from the cards.') + '</p></div>' +
+      '<div class="gstep"><b>2 · ' + T('Call') + '</b><p>' + T('Pick a horse for each place, then lock your slip before the first card. Odds lock with it.') + '</p></div>' +
+      '<div class="gstep"><b>3 · ' + T('Rig') + '</b><p>' + T('Cards are time. Between draws, spend cash on tools that nudge the deck or the track.') + '</p></div>' +
+      '<div class="gstep"><b>4 · ' + T('Stay clean') + '</b><p>' + T('Every trick adds Heat. Too much and the stewards inspect you, fine you, or throw out your slip.') + '</p></div></div>' +
+      '<details class="gtl"><summary>' + T('All tools and Heat') + '</summary><ul>' + G.TOOL_ORDER.map(function (id) {
+        var t = G.TOOLS[id], open = fx.tools.indexOf(id) >= 0;
+        return '<li' + (open ? '' : ' class="dim"') + '><b>' + (open ? '' : '🔒 ') + toolName(id) + '</b> <span class="mono">' + money(t.cost) + (t.heat ? ' · ' + T('Heat +{h}', { h: t.heat }) : '') + ' · ' + (t.night ? T('once a night') : T('{n} per race', { n: t.uses })) + '</span><br><small>' + T(t.blurb) + '</small></li>';
+      }).join('') + '</ul><p class="note">' + T('Heat cools a little with every card drawn without a trick, and between races. From {w} Heat every trick risks a steward inspection: a fine, and the tool is taken away. At {c} Heat you are caught: your slip is void and you are fined.', { w: CFG.warnHeat, c: G.heatCap({ fx: fx }) }) + '</p></details>' +
+      '<h3 class="lbl">' + T('Length of the night') + '</h3><div class="pills" role="radiogroup" aria-label="' + T('Length of the night') + '">' +
+      [CFG.night, CFG.nightLong].map(function (n) {
+        var lock = n === CFG.nightLong && !fx.longNight;
+        return '<label class="pill"><input type="radio" name="glen" value="' + n + '"' + (n === GS.len ? ' checked' : '') + (lock ? ' disabled' : '') + '><b>' + TP(n, '{n} race', '{n} races') + '</b><span>' + (lock ? T('Unlock “Long Night” in Reputation') : n === CFG.night ? T('A short night') : T('A long night')) + '</span></label>';
+      }).join('') + '</div>' +
+      '<p class="note">' + T('You start with {m}. What you hold at the end of the night, minus any debt, is your score, and it earns Reputation Points (RP).', { m: money(fx.startCash) }) + '</p>' +
+      (sv ? '<p class="note warn">' + T('Starting a new night replaces your saved night.') + '</p>' : '') +
+      '<div class="actions"><button type="button" class="btn primary" id="gStart">' + T('Start the night') + '</button><button type="button" class="btn" data-go="grep">' + T('Reputation') + '</button></div>';
+  }
+  $('#s-gsetup').addEventListener('change', function (e) { if (e.target.name === 'glen') GS.len = +e.target.value; });
+  $('#s-gsetup').addEventListener('click', function (e) {
+    if (!e.target.closest('#gStart')) return;
+    Sfx.click(); startNight();
+  });
+  function startNight() {
+    stopAuto();
+    GS.run = G.newNight({ meta: GM.effects(GS.meta), races: GS.len });
+    GS.log = []; GS.tool = null; GS.recall = null; GS.recorded = false; GS.doneShown = false; GS.prevP = null; GS.last = null;
+    saveRun(); show();
+  }
+
+  /* ---------- the book: read the deck, call the order ---------- */
+  onEnter.gbook = renderBook;
+  function deckSheet(R) {
+    var r = R.race;
+    return r.comp.map(function (c, s) {
+      var steps = c.n + c.f * 2;
+      return '<div class="dsr s' + s + '"><span class="dsn">' + gl(s) + ' <b>' + sn(s) + '</b></span><span class="dsc">' + T('{n} plain', { n: c.n }) + ' · ' + T('{n} face', { n: c.f }) + '</span><span class="dss mono">' + TP(steps, '{n} step in the deck', '{n} steps in the deck') + '</span><i class="dsbar" style="--w:' + Math.round(steps / 15 * 100) + '%"></i></div>';
+    }).join('');
+  }
+  function topHTML(R) {
+    var r = R.race;
+    if (!r.pk || !r.deck.length) return '';
+    return '<div class="gtop"><span class="lbl">' + T('Top of the deck') + '</span>' + r.deck.slice(0, r.pk).map(function (c) { return cardHTML(c); }).join('') + '</div>';
+  }
+  function renderBook() {
+    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length;
+    var full = n === 4, order = full ? r.slip.map(function (s) { return s.h; }) : null;
+    var pm = full ? G.perfectMult(R, order) : 0, pc = full ? G.orderChance(R, order) : 0;
+    var rows = '<div class="gboard" role="group" aria-label="' + T('Call the order') + '"><span class="gb-h"></span>' + [0, 1, 2, 3].map(function (pl) { return '<span class="gb-h mono">' + placeName(pl) + '</span>'; }).join('');
+    for (var h = 0; h < 4; h++) {
+      rows += '<span class="gb-n s' + h + '">' + gl(h) + ' ' + sn(h) + '</span>';
+      for (var pl = 0; pl < 4; pl++) {
+        var on = r.slip[pl] && r.slip[pl].h === h, c = b[h][pl];
+        rows += '<button type="button" class="gcell s' + h + (on ? ' on' : '') + '" data-gcell="' + pl + ',' + h + '" aria-pressed="' + on + '"><b class="mono">' + oddsTxt(c.odds) + '</b><small class="mono">' + pct(c.p) + '</small></button>';
+      }
+    }
+    rows += '</div>';
+    var chips = R.fx.chips.map(function (v) { return '<button type="button" class="gchip' + (R.chip === v ? ' on' : '') + '" data-gchip="' + v + '"' + (v > R.cash ? ' disabled' : '') + '>' + money(v) + '</button>'; }).join('');
+    var total = R.chip * n;
+    var pk = G.toolState(R, 'peek');
+    el.innerHTML = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Race {n} of {m}', { n: R.raceNo, m: R.races }) + '</h2>' + bankHTML(R) + '</header>' +
+      heatHTML(R) +
+      '<div class="gcols"><div><h3 class="lbl">' + T('The deck') + '</h3><div class="dsheet">' + deckSheet(R) + '</div>' +
+      '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' + topHTML(R) + '</div>' +
+      '<div><h3 class="lbl">' + T('Call the order') + '</h3>' + rows +
+      '<div class="gslipbar"><span class="lbl">' + T('Stake per place') + '</span><div class="gchips">' + chips + '</div></div>' +
+      '<p class="gsum">' + (n ? T('{n} places · {m} at stake', { n: n, m: money(total) }) : T('Pick a horse for each place you want to back. A horse can hold one place.')) +
+      (n && total > R.cash ? '<br><span class="neg">' + T('Not enough cash for that. Pick a smaller chip or back fewer places.') + '</span>' : '') +
+      (full ? '<br><span class="gold">' + T('Perfect order: {c} chance, pays {m} extra', { c: pc < 0.01 ? '&lt;1%' : pct(pc), m: money(Math.round(total * pm)) }) + '</span>' : '') + '</p>' +
+      '<div class="actions gact"><button type="button" class="btn" data-gbest>' + T('Fill with the likeliest order') + '</button>' +
+      '<button type="button" class="btn" data-gtool="peek"' + (pk.ok ? '' : ' disabled') + '>' + T('Peek · {m}', { m: money(pk.cost) }) + ' <small>' + pk.left + '/' + pk.max + '</small></button>' +
+      '<button type="button" class="btn primary" data-glock' + (G.canLock(R) ? '' : ' disabled') + '>' + T('Lock in your call') + '</button></div>' +
+      '<p class="note">' + T('Odds lock when you do. After that you can still change a pick, for a fee, at the odds of that moment.') + '</p>' +
+      (R.cash < R.fx.chips[0] ? '<div class="gbanner bad">' + T('You are broke: not enough for even the smallest chip. Borrow in the backroom next time, or walk out now.') + '</div>' : '') +
+      '<div class="actions"><button type="button" class="btn ghost small" data-gwalk>' + T('Walk out with {m}', { m: money(R.cash - R.debt) }) + '</button></div></div></div>';
+  }
+  $('#s-gbook').addEventListener('click', function (e) {
+    var R = GS.run; if (!R) return; var t = e.target;
+    var c = t.closest('[data-gcell]');
+    if (c) { var p = c.dataset.gcell.split(','); if (G.pick(R, +p[0], +p[1])) { Sfx.pick(); saveRun(); renderBook(); } return; }
+    c = t.closest('[data-gchip]'); if (c) { if (G.setChip(R, +c.dataset.gchip)) { Sfx.chip(); saveRun(); renderBook(); } return; }
+    if (t.closest('[data-gbest]')) { G.pickBest(R); Sfx.shuffle(); saveRun(); renderBook(); return; }
+    c = t.closest('[data-gtool]'); if (c) { runTool(c.dataset.gtool); return; }
+    if (t.closest('[data-glock]')) {
+      if (G.lock(R)) { Sfx.chip(); GS.last = null; GS.prevP = null; GS.doneShown = false; GS.auto = 0; log(T('Slip locked. The race is on.')); saveRun(); show(); } else Sfx.deny();
+      return;
+    }
+    if (t.closest('[data-gwalk]')) { if (G.walkOut(R)) { saveRun(); overHook(); show(); } return; }
+    if (t.closest('[data-gquit]')) quit();
+  });
+
+  /* ---------- the race ---------- */
+  onEnter.grace = function () { buildRace(); renderRace(); updateLanes(true); };
+  function buildRace() {
+    var el = $('#s-grace');
+    el.innerHTML = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2 id="gr-title"></h2><div id="gr-bank"></div></header>' +
+      '<div id="gr-heat"></div>' +
+      '<div class="glanes" id="glanes">' + [0, 1, 2, 3].map(function (i) {
+        return '<div class="gl s' + i + '" id="gl' + i + '"><div class="glname">' + gl(i) + '<b>' + sn(i) + '</b></div><div class="gtrack"><i class="gfin"></i><div class="gh" id="gh' + i + '">' + U.horseSVG(i) + '</div><span class="gfx" id="gfx' + i + '"></span><span class="gplace mono" id="gpl' + i + '"></span><span class="gtags" id="gtg' + i + '"></span><span class="gstep mono" id="gst' + i + '"></span></div></div>';
+      }).join('') + '</div>' +
+      '<div class="gmid"><div class="gcardbox"><span class="lbl">' + T('Last card') + '</span><div id="glast" class="glast"><span class="gc bk"><b>·</b></span></div></div>' +
+      '<div class="gcardbox"><span class="lbl">' + T('Top of the deck') + '</span><div id="gnext" class="glast"></div></div>' +
+      '<div class="gdeck" id="gdeck"></div></div>' +
+      '<div class="gctl" id="gctl"></div>' +
+      '<div class="gbanner" id="gbanner" hidden></div>' +
+      '<div class="gcols gr"><div><h3 class="lbl">' + T('Your slip') + '</h3><div id="gslip"></div></div>' +
+      '<div><h3 class="lbl">' + T('Tools') + '</h3><div id="gtarget"></div><div class="gtools" id="gtools"></div></div></div>' +
+      '<h3 class="lbl">' + T('Track talk') + '</h3><ul class="glog" id="glog"></ul>';
+  }
+  function renderRace() {
+    var R = GS.run; if (!R || R.phase !== 'race' && R.phase !== 'result') return;
+    var r = R.race;
+    $('#gr-title').textContent = T('Race {n} of {m}', { n: R.raceNo, m: R.races }) + ' · ' + TP(r.draws, '{n} card drawn', '{n} cards drawn');
+    $('#gr-bank').innerHTML = bankHTML(R); $('#gr-heat').innerHTML = heatHTML(R);
+    renderControls(); renderDeckRace(); renderSlip(); renderTools(); renderLog(); renderNext();
+    var bn = $('#gbanner');
+    if (r.caught) { bn.hidden = false; bn.className = 'gbanner bad'; bn.textContent = T('Caught! Your slip is void for this race. The cards are still going to run it out.'); }
+    else bn.hidden = true;
+  }
+  function renderControls() {
+    var R = GS.run, r = R.race, el = $('#gctl');
+    if (r.done) { el.innerHTML = '<button type="button" class="btn primary gbig" data-gresult>' + T('See the result') + '</button>'; return; }
+    el.innerHTML = '<button type="button" class="btn primary gbig" data-gdraw' + (GS.auto ? ' disabled' : '') + '>' + T('Draw a card') + '</button>' +
+      '<button type="button" class="btn" data-gauto>' + (GS.auto === 1 ? T('Stop') : T('Auto')) + '</button>' +
+      '<button type="button" class="btn" data-gfast>' + (GS.auto === 2 ? T('Stop') : T('Fast')) + '</button>';
+  }
+  function renderNext() {
+    var R = GS.run, r = R.race, el = $('#gnext'), last = $('#glast');
+    el.innerHTML = r.pk && r.deck.length ? r.deck.slice(0, r.pk).map(function (c) { return cardHTML(c); }).join('') : '<span class="gc bk"><b>?</b></span>';
+    if (GS.last) last.innerHTML = cardHTML(GS.last.card, 'gpp') + '<small class="mono">' + (GS.last.steps ? '+' + GS.last.steps : '0') + '</small>';
+  }
+  function renderDeckRace() {
+    var R = GS.run, r = R.race, n = [0, 0, 0, 0], f = [0, 0, 0, 0], steps = 0;
+    r.deck.forEach(function (c) { if (c.r >= 11) f[c.s]++; else n[c.s]++; steps += G.stepOf(c); });
+    $('#gdeck').innerHTML = '<span class="lbl">' + TP(r.deck.length, '{n} card left', '{n} cards left') + '</span><div class="dk">' + [0, 1, 2, 3].map(function (s) {
+      return '<span class="dkc s' + s + '">' + gl(s) + '<b class="mono">' + n[s] + '</b><small class="mono">+' + f[s] + '</small></span>';
+    }).join('') + '</div>';
+  }
+  function updateLanes(instant) {
+    var R = GS.run; if (!R) return; var r = R.race;
+    for (var i = 0; i < 4; i++) {
+      var h = $('#gh' + i); if (!h) return;
+      var pos = Math.min(1, r.prog[i] / CFG.track);
+      h.style.left = (pos * 86).toFixed(1) + '%';
+      $('#gst' + i).textContent = Math.min(r.prog[i], CFG.track) + '/' + CFG.track;
+      var l = r.lane[i], fx = '';
+      if (l.mud) fx += '<em class="mud" title="' + T('Mud') + '">🟤' + l.mud + '</em>';
+      if (l.wind) fx += '<em class="wind" title="' + T('Tailwind') + '">💨' + l.wind + '</em>';
+      if (l.hurdle) fx += '<em class="hur" title="' + T('Hurdle') + '">🚧</em>';
+      $('#gfx' + i).innerHTML = fx;
+      var pi = r.finished.indexOf(i);
+      $('#gpl' + i).textContent = pi >= 0 ? ord(pi + 1) : '';
+      $('#gl' + i).classList.toggle('fin', pi >= 0);
+      var tags = '';
+      r.slip.forEach(function (s, pl) { if (s && s.h === i) tags += '<span class="gtag' + (r.finished.length > pl ? (r.order && r.order[pl] === i || r.finished[pl] === i ? ' hit' : ' miss') : '') + '">' + placeName(pl) + '</span>'; });
+      $('#gtg' + i).innerHTML = tags;
+    }
+  }
+  function renderSlip() {
+    var R = GS.run, r = R.race, b = G.board(R), html = '';
+    for (var pl = 0; pl < 4; pl++) {
+      var s = r.slip[pl], settled = r.finished.length > pl || (r.done && r.order);
+      if (!s) { html += '<div class="gsl empty"><b class="mono">' + placeName(pl) + '</b><span class="dim">' + T('no bet') + '</span></div>'; continue; }
+      var live = b[s.h][pl], res = '';
+      if (settled) {
+        var actual = r.order ? r.order[pl] : r.finished[pl], hit = actual === s.h;
+        res = '<span class="gres ' + (hit ? 'pos' : 'neg') + '">' + (r.caught ? T('void') : hit ? '✓ ' + money(Math.round(s.stake * s.odds), true) : '✗ ' + gl(actual)) + '</span>';
+      } else {
+        res = '<span class="glive mono">' + T('now {p}', { p: pct(live.p) }) + '</span>' + (!r.caught && !r.done && r.finished.length <= pl ? '<button type="button" class="btn small" data-grecall="' + pl + '">' + (GS.recall === pl ? T('Cancel') : T('Change')) + '</button>' : '');
+      }
+      html += '<div class="gsl s' + s.h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(s.h) + '<span class="gsn">' + sn(s.h) + '</span><span class="mono dim">' + oddsTxt(s.odds) + ' · ' + money(s.stake) + '</span>' + res + '</div>';
+      if (GS.recall === pl && !settled) {
+        var fee = G.recallFee(R, pl);
+        html += '<div class="grc"><span class="note">' + T('Change place {p} for a {f} fee, at the odds of now:', { p: placeName(pl), f: money(fee) }) + '</span>' + [0, 1, 2, 3].filter(function (h) { return h !== s.h && G.canRecall(R, pl, h); }).map(function (h) {
+          return '<button type="button" class="gcell s' + h + '" data-grecall-to="' + pl + ',' + h + '"' + (R.cash < fee ? ' disabled' : '') + '>' + gl(h) + ' <b class="mono">' + oddsTxt(b[h][pl].odds) + '</b><small class="mono">' + pct(b[h][pl].p) + '</small></button>';
+        }).join('') + '</div>';
+      }
+    }
+    html += '<p class="note">' + T('Cash {m} · slip {s} · re-calls cost a fee each', { m: money(R.cash), s: money(G.staked(R)) }) + '</p>';
+    $('#gslip').innerHTML = html;
+  }
+  var WHY = { locked: 'Not unlocked yet. Open it in Reputation.', caught: 'You are out of this race.', confiscated: 'The stewards took it.', uses: 'No uses left this race.', night: 'Used up for tonight.', cash: 'Not enough cash.', phase: 'Not now.', none: 'No such card left.', top: 'It is already on top.', same: 'Both cards are the same suit.', finished: 'That horse has already finished.', lead: 'That horse is already in front.', empty: 'The deck is empty.', target: 'Pick a target first.' };
+  function renderTools() {
+    var R = GS.run, html = '';
+    G.TOOL_ORDER.forEach(function (id) {
+      var T0 = G.TOOLS[id], ts = G.toolState(R, id), lock = ts.why === 'locked';
+      html += '<button type="button" class="gtool k-' + T0.kind + (GS.tool === id ? ' on' : '') + (lock ? ' lock' : '') + '" data-gtool="' + id + '"' + (ts.ok ? '' : ' aria-disabled="true"') + ' title="' + T(T0.blurb) + '"><b>' + (lock ? '🔒 ' : '') + toolName(id) + '</b><span class="mono">' + money(ts.cost) + (ts.heat ? ' · ' + T('Heat +{h}', { h: ts.heat }) : '') + '</span><small>' + (lock ? T('locked') : TP(ts.left, '{n} use left', '{n} uses left')) + '</small></button>';
+    });
+    $('#gtools').innerHTML = html;
+    var tg = GS.tool, el = $('#gtarget');
+    if (!tg) { el.innerHTML = ''; return; }
+    var tt = G.TOOLS[tg];
+    el.innerHTML = '<div class="gtgt"><span><b>' + toolName(tg) + '</b> · ' + T(tt.blurb) + '</span><div>' + [0, 1, 2, 3].map(function (h) {
+      return '<button type="button" class="gcell s' + h + '" data-gtarget="' + h + '"' + (R.race.finished.indexOf(h) >= 0 && tt.target === 'horse' ? ' disabled' : '') + '>' + gl(h) + ' ' + sn(h) + '</button>';
+    }).join('') + '<button type="button" class="btn small" data-gtarget="x">' + T('Cancel') + '</button></div></div>';
+  }
+  function renderLog() { $('#glog').innerHTML = GS.log.slice(-6).reverse().map(function (t) { return '<li>' + t + '</li>'; }).join(''); }
+
+  /* tools */
+  function runTool(id, arg) {
+    var R = GS.run, T0 = G.TOOLS[id]; stopAuto();
+    var ts = G.toolState(R, id);
+    if (!ts.ok) { Sfx.deny(); log(T(WHY[ts.why] || 'Not now.')); refreshAny(); return; }
+    if (T0.target && arg == null) { GS.tool = GS.tool === id ? null : id; Sfx.pick(); refreshAny(); return; }
+    var res = G.useTool(R, id, arg);
+    GS.tool = null;
+    if (!res.ok) { Sfx.deny(); log(T(WHY[res.why] || 'Not now.')); refreshAny(); return; }
+    res.events.forEach(function (ev) {
+      if (ev.t === 'tool') {
+        var s = arg != null ? sn(arg) : '';
+        var m = { peek: 'You peek at the top of the deck.', burn: 'A card goes in the bin.', swap: 'The top two cards swap places.', stack: 'A {s} card is on top now.', shave: 'A plain {s} card quietly disappears.', riffle: 'The deck is reshuffled.', mud: 'Mud in the {s} lane.', wind: 'A tailwind for {s}.', hurdle: 'A hurdle in front of {s}.', lane: '{s} slips past {o}.' }[id];
+        log(T(m, { s: s, o: ev.msg != null ? sn(ev.msg) : '' }));
+        if (id === 'peek') Sfx.peek(); else if (id === 'burn') Sfx.burn(); else if (G.TOOLS[id].kind === 'deck') Sfx.shuffle(); else Sfx.trap();
+      } else if (ev.t === 'inspect') {
+        log(T('Steward inspection! Fine {m}, and the {t} is confiscated.', { m: money(ev.fine), t: toolName(ev.id) })); Sfx.warn(); FX.banner(T('INSPECTION'), null, 'big'); FX.shake(0.6);
+      } else if (ev.t === 'caught') {
+        log(T('CAUGHT! Disqualified, fined {m}. Your slip is void.', { m: money(ev.fine) }) + (ev.refund ? ' ' + T('Your alibi returns {m}.', { m: money(ev.refund) }) : '')); Sfx.warn(); Sfx.miss(); FX.banner(T('CAUGHT'), null, 'big'); FX.shake(1);
+      }
+    });
+    saveRun(); refreshAny();
+  }
+  function refreshAny() {
+    var R = GS.run; if (!R) return;
+    if (R.phase === 'book') renderBook(); else if (R.phase === 'race') { renderRace(); updateLanes(); }
+  }
+
+  /* drawing cards */
+  function slipHorses(R) { var m = {}; R.race.slip.forEach(function (s) { if (s) m[s.h] = 1; }); return m; }
+  function livePs(R) {
+    var b = G.board(R), out = [];
+    R.race.slip.forEach(function (s, pl) { out.push(s && R.race.finished.length <= pl ? b[s.h][pl].p : null); });
+    return out;
+  }
+  function doDraw(auto) {
+    var R = GS.run; if (!R || R.phase !== 'race' || R.race.done) return null;
+    var before = GS.prevP || livePs(R), mine = slipHorses(R);
+    var ev = G.draw(R); if (!ev) return null;
+    GS.last = ev;
+    Sfx.draw(ev.horse, !!mine[ev.horse], ev.card.r);
+    var stop = false, why = null, r = R.race;
+    if (ev.note === 'hurdle') log(T('{s} wastes a card on the hurdle.', { s: sn(ev.horse) }));
+    if (ev.place) {
+      var picked = !!mine[ev.horse];
+      log(T('{s} crosses the line: {p}.', { s: sn(ev.horse), p: ord(ev.place) })); Sfx.finish(ev.place, picked); stop = true; why = 'cross';
+      var sl = r.slip[ev.place - 1];
+      if (sl) { if (sl.h === ev.horse && !r.caught) Sfx.hit(1); else Sfx.miss(); }
+    }
+    var now = livePs(R);
+    for (var i = 0; i < now.length; i++) if (before[i] != null && now[i] != null && Math.abs(now[i] - before[i]) >= 0.15) { stop = true; why = why || 'odds'; }
+    if (ev.done) { stop = true; GS.doneShown = true; log(T('The race is over.')); }
+    if (stop) GS.prevP = now; else GS.prevP = before;
+    if (GS.auto === 2 && !ev.done) stop = false;
+    if (stop && GS.auto) { stopAuto(); if (why === 'odds') log(T('Auto stopped: the odds moved.')); }
+    saveRun();
+    renderRace(); updateLanes();
+    return ev;
+  }
+  function tick() {
+    GS.timer = null;
+    if (!GS.auto) return;
+    var ev = doDraw(true);
+    if (ev && GS.auto && !ev.done) GS.timer = setTimeout(tick, GS.auto === 2 ? 70 : 420);
+  }
+  function startAuto(mode) { stopAuto(); GS.auto = mode; GS.prevP = livePs(GS.run); renderControls(); GS.timer = setTimeout(tick, 120); }
+  function stopAuto() { GS.auto = 0; if (GS.timer) { clearTimeout(GS.timer); GS.timer = null; } if (GS.run && GS.run.phase === 'race' && $('#gctl')) renderControls(); }
+
+  $('#s-grace').addEventListener('click', function (e) {
+    var R = GS.run; if (!R) return; var t = e.target, c;
+    if (t.closest('[data-gquit]')) { quit(); return; }
+    if (t.closest('[data-gdraw]')) { GS.prevP = livePs(R); doDraw(false); return; }
+    if (t.closest('[data-gauto]')) { if (GS.auto === 1) stopAuto(); else startAuto(1); return; }
+    if (t.closest('[data-gfast]')) { if (GS.auto === 2) stopAuto(); else startAuto(2); return; }
+    if (t.closest('[data-gresult]')) { toResult(); return; }
+    c = t.closest('[data-gtool]'); if (c) { runTool(c.dataset.gtool); return; }
+    c = t.closest('[data-gtarget]'); if (c) { if (c.dataset.gtarget === 'x') { GS.tool = null; refreshAny(); } else runTool(GS.tool, +c.dataset.gtarget); return; }
+    c = t.closest('[data-grecall]'); if (c) { var pl = +c.dataset.grecall; GS.recall = GS.recall === pl ? null : pl; stopAuto(); renderSlip(); return; }
+    c = t.closest('[data-grecall-to]');
+    if (c) { var p = c.dataset.grecallTo.split(','); stopAuto(); if (G.recall(R, +p[0], +p[1])) { Sfx.chip(); log(T('Place {p} switched to {s}.', { p: placeName(+p[0]), s: sn(+p[1]) })); GS.recall = null; GS.prevP = null; saveRun(); renderRace(); updateLanes(); } else Sfx.deny(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (GS_screen() !== 'grace' || e.repeat || e.ctrlKey || e.metaKey || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.code === 'Space' || e.code === 'Enter') { if (e.target.closest && e.target.closest('button')) return; e.preventDefault(); var R = GS.run; if (R && R.race.done) toResult(); else if (!GS.auto) { GS.prevP = livePs(R); doDraw(false); } }
+  });
+  function GS_screen() { var s = $('.screen:not([hidden])'); return s ? s.id.replace('s-', '') : ''; }
+
+  function toResult() {
+    var R = GS.run; stopAuto();
+    var res = G.settle(R); if (!res) { show(); return; }
+    GS.recall = null; GS.tool = null;
+    saveRun(); go('gback');
+    if (res.perfect) { Sfx.champion(); FX.confetti(innerWidth / 2, innerHeight * 0.3, 90); FX.banner(T('PERFECT ORDER'), null, 'big'); }
+    if (res.pay + res.bonus > 0 && !res.caught) FX.win(res.pay + res.bonus, innerWidth / 2, innerHeight * 0.35);
+  }
+
+  /* ---------- result + backroom ---------- */
+  onEnter.gback = renderBack;
+  function renderBack() {
+    var R = GS.run; if (!R) return; var res = R.result || R.results[R.results.length - 1], el = $('#s-gback');
+    var html = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Race {n} of {m}', { n: res.raceNo, m: R.races }) + ' · ' + T('Result') + '</h2>' + bankHTML(R) + '</header>';
+    if (res.caught) html += '<div class="gbanner bad">' + T('Caught and disqualified: your slip was void.') + '</div>';
+    html += '<div class="gcols"><div><h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
+      var b = res.bets.filter(function (x) { return x.pl === pl; })[0];
+      return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
+    }).join('') + '</div></div><div><h3 class="lbl">' + T('Your night so far') + '</h3><div class="stmt">';
+    function line(label, v, cls) { return '<div class="row' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span><b class="mono ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'dim') + '">' + money(v, true) + '</b></div>'; }
+    html += line(T('Winning calls'), res.pay);
+    if (res.bonus) html += line(T('Perfect order'), res.bonus);
+    if (res.insured) html += line(T('Safety net'), res.insured);
+    html += line(T('Stakes'), -res.stakes);
+    if (res.spent) html += line(T('Tools'), -res.spent);
+    if (res.fees) html += line(T('Re-call fees'), -res.fees);
+    if (res.fines) html += line(T('Fines'), -res.fines);
+    if (res.alibi) html += line(T('Alibi'), res.alibi);
+    html += '<div class="row total"><span>' + T('Net this race') + '</span><b class="mono ' + (res.net >= 0 ? 'gold' : 'neg') + '">' + money(res.net, true) + '</b></div></div></div></div>';
+    if (R.phase === 'result') {
+      html += '<div class="actions"><button type="button" class="btn primary" data-gnext>' + (R.raceNo >= R.races ? T('Count up the night') : T('To the backroom')) + '</button></div>';
+    } else if (R.phase === 'back') {
+      var b = R.back;
+      html += '<h3 class="lbl sect-h">' + T('The backroom') + '</h3><p class="note">' + T('Between races the fixers sell favors that last the whole night. You may buy one favor. Everything costs cash, and cash is your score.') + '</p><div class="offers">' +
+        b.offers.map(function (id) {
+          var f = G.favorById(id), price = G.favorPrice(R, id), can = !b.bought && R.cash >= price;
+          return '<div class="offer"><span class="kindlbl">' + T('Favor') + '</span><h4>' + T(f.name) + '</h4><p>' + T(f.blurb) + '</p><div class="offer-foot"><b class="mono gold">' + money(price) + '</b><button type="button" class="btn small primary" data-gfavor="' + id + '"' + (can ? '' : ' disabled') + '>' + T('Buy') + '</button></div></div>';
+        }).join('') + '</div>' +
+        '<h3 class="lbl sect-h">' + T('Services') + '</h3><div class="offers">' +
+        '<div class="offer"><span class="kindlbl">' + T('Service') + '</span><h4>' + T('Cool off') + '</h4><p>' + T('Slip out for a while. Heat drops by {n}.', { n: CFG.coolAmt }) + '</p><div class="offer-foot"><b class="mono gold">' + money(CFG.coolPrice) + '</b><button type="button" class="btn small" data-gcool' + (R.heat > 0 && R.cash >= CFG.coolPrice ? '' : ' disabled') + '>' + T('Cool off') + '</button></div></div>' +
+        '<div class="offer"><span class="kindlbl">' + T('Service') + '</span><h4>' + T('Loan shark') + '</h4><p>' + T('Borrow {a} now, owe {o} when the night ends. Twice a night at most.', { a: money(CFG.loan), o: money(R.fx.loanOwe) }) + '</p><div class="offer-foot"><b class="mono gold">' + T('owe {m}', { m: money(R.fx.loanOwe) }) + '</b><button type="button" class="btn small" data-gloan' + (G.canLoan(R) ? '' : ' disabled') + '>' + T('Borrow') + '</button></div></div></div>' +
+        (R.favors.length ? '<p class="note">' + T('Your favors:') + ' ' + R.favors.map(function (id) { return T(G.favorById(id).name); }).join(', ') + '</p>' : '') +
+        heatHTML(R) +
+        '<div class="actions"><button type="button" class="btn primary" data-gnext>' + T('Start race {n}', { n: R.raceNo + 1 }) + '</button></div>';
+    }
+    el.innerHTML = html;
+  }
+  $('#s-gback').addEventListener('click', function (e) {
+    var R = GS.run; if (!R) return; var t = e.target, c;
+    if (t.closest('[data-gquit]')) { quit(); return; }
+    if (t.closest('[data-gnext]')) {
+      if (R.phase === 'result') { G.toBackroom(R); saveRun(); if (R.phase === 'over') { overHook(); } show(); }
+      else if (R.phase === 'back') { G.nextRace(R); GS.log = []; GS.last = null; GS.prevP = null; GS.doneShown = false; saveRun(); show(); }
+      return;
+    }
+    c = t.closest('[data-gfavor]'); if (c) { if (G.buyFavor(R, c.dataset.gfavor)) { Sfx.buy(); saveRun(); renderBack(); } else Sfx.deny(); return; }
+    if (t.closest('[data-gcool]')) { if (G.coolOff(R)) { Sfx.buy(); saveRun(); renderBack(); } else Sfx.deny(); return; }
+    if (t.closest('[data-gloan]')) { if (G.takeLoan(R)) { Sfx.chip(); saveRun(); renderBack(); } else Sfx.deny(); }
+  });
+
+  /* ---------- night over ---------- */
+  function overHook() {
+    if (GS.recorded) return; GS.recorded = true;
+    GM.record(GS.meta, GS.run.over); GM.save(GS.meta); clearRun();
+  }
+  onEnter.gover = function () {
+    var R = GS.run; if (!R) return; overHook(); var o = R.over, el = $('#s-gover');
+    el.innerHTML = '<header class="bar"><h2>' + T('Night over') + '</h2><div class="cashchip sp">' + T('{n} RP', { n: GS.meta.sp }) + '</div></header>' +
+      '<div class="gover"><div class="gbig ' + (o.profit >= 0 ? 'pos' : 'neg') + '">' + money(o.profit, true) + '</div><p class="lede">' + (o.profit > 0 ? T('You walked out ahead.') : o.profit === 0 ? T('You broke even.') : T('The house had a good night.')) + '</p></div>' +
+      '<div class="stmt gstats">' +
+      '<div class="row"><span>' + T('Cash at the end') + '</span><b class="mono">' + money(R.cash) + '</b></div>' +
+      (R.debt ? '<div class="row"><span>' + T('Debt repaid') + '</span><b class="mono neg">−' + money(R.debt) + '</b></div>' : '') +
+      '<div class="row"><span>' + T('Final bankroll') + '</span><b class="mono gold">' + money(o.final) + '</b></div>' +
+      '<div class="row"><span>' + T('Places called right') + '</span><b class="mono">' + o.hits + ' / ' + (R.stats.races * 4) + '</b></div>' +
+      '<div class="row"><span>' + T('Perfect orders') + '</span><b class="mono">' + o.perfects + '</b></div>' +
+      '<div class="row"><span>' + T('Tools used') + '</span><b class="mono">' + R.stats.tools + '</b></div>' +
+      '<div class="row"><span>' + T('Times caught · inspections') + '</span><b class="mono">' + o.caught + ' · ' + R.stats.inspections + '</b></div>' +
+      '<div class="row total"><span>' + T('Reputation earned') + '</span><b class="mono gold">+' + o.rp + ' RP</b></div></div>' +
+      '<div class="actions"><button type="button" class="btn primary" data-go="gsetup">' + T('Another night') + '</button><button type="button" class="btn" data-go="grep">' + T('Reputation') + '</button><button type="button" class="btn ghost" data-go="menu">' + T('Menu') + '</button></div>';
+    if (o.profit > 0) { Sfx.champion(); FX.confetti(innerWidth / 2, innerHeight * 0.3, 80); }
+  };
+
+  /* ---------- Reputation: the skill tree ---------- */
+  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡' };
+  var NS = 'http://www.w3.org/2000/svg';
+  function npos(n) { var a = n.a * Math.PI / 180, r = [0, 135, 245, 345, 440][n.r]; return { x: 500 + r * Math.cos(a), y: 500 + r * Math.sin(a) }; }
+  function brOf(n) { return GM.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }
+  function nstate(n) {
+    var st = GS.meta;
+    if (GM.owned(st, n.id) && GM.costOf(st, n.id) == null) return 'max';
+    if (GM.owned(st, n.id)) return 'own';
+    if (!GM.isOpen(st, n.id)) return 'locked';
+    return GM.canBuy(st, n.id) ? 'aff' : 'open';
+  }
+  onEnter.grep = function () {
+    $('#s-grep').innerHTML = '<header class="bar"><button type="button" class="backbtn" data-go="gsetup">&larr; <span>' + T('Back') + '</span></button><h2>' + T('Reputation') + '</h2><div class="cashchip sp" id="grp-sp"></div></header>' +
+      '<p class="lede sm">' + T('Reputation Points come from your nights. Spend them on a skill tree that grows as you buy: new tools, a cooler head, a fatter bankroll, a better book.') + '</p>' +
+      '<div class="treewrap" id="gtreewrap"><svg id="gtree" viewBox="0 0 1000 1000" role="group" aria-label="' + T('Skill tree') + '"></svg></div><div class="nodeinfo" id="gnodeinfo"></div>' +
+      '<div class="actions"><button type="button" class="btn ghost small" id="gReset"></button></div>';
+    GS.tree.seen = null; renderRep();
+    var w = $('#gtreewrap'); w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; w.scrollTop = (w.scrollHeight - w.clientHeight) / 2;
+  };
+  function renderRep() {
+    var st = GS.meta, html = '', seen2 = {};
+    $('#grp-sp').textContent = T('{n} RP', { n: st.sp });
+    [135, 245, 345, 440].forEach(function (r) { html += '<circle class="ring" cx="500" cy="500" r="' + r + '"/>'; });
+    var vis = function (n) { return GM.owned(st, n.id) || GM.isOpen(st, n.id); };
+    GM.NODES.forEach(function (n) {
+      if (!vis(n)) return; var p = npos(n);
+      n.parents.forEach(function (pid) {
+        var pp = pid === 'root' ? { x: 500, y: 500 } : npos(GM.nodeById(pid));
+        if (pid !== 'root' && !vis(GM.nodeById(pid))) return;
+        html += '<line class="edge' + (GM.owned(st, n.id) && GM.owned(st, pid) ? ' on' : '') + '" x1="' + pp.x.toFixed(1) + '" y1="' + pp.y.toFixed(1) + '" x2="' + p.x.toFixed(1) + '" y2="' + p.y.toFixed(1) + '" style="--c:' + brOf(n).color + '"/>';
+      });
+    });
+    html += '<g class="nd root" transform="translate(500 500)"><circle r="40"/><text class="ic" y="10" text-anchor="middle">🃏</text></g>';
+    GM.NODES.forEach(function (n) {
+      if (!vis(n)) return;
+      var p = npos(n), s = nstate(n), lv = GM.level(st, n.id), mx = GM.maxOf(n), pips = '';
+      if (mx > 1) for (var k = 0; k < mx; k++) pips += '<circle class="pip' + (k < lv ? ' on' : '') + '" cx="' + ((k - (mx - 1) / 2) * 9).toFixed(1) + '" cy="35" r="3"/>';
+      var fresh = GS.tree.seen && !GS.tree.seen[n.id]; seen2[n.id] = 1;
+      html += '<g class="nd st-' + s + (fresh ? ' new' : '') + (GS.tree.sel === n.id ? ' sel' : '') + '" data-gnode="' + n.id + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')" style="--c:' + brOf(n).color + '" tabindex="0" role="button" aria-label="' + T(n.name) + '"><circle r="26"/><text class="ic" y="9" text-anchor="middle">' + (ICONS[n.id] || '•') + '</text>' + pips + '</g>';
+    });
+    $('#gtree').innerHTML = html; GS.tree.seen = seen2;
+    var box = $('#gnodeinfo'), n = GS.tree.sel ? GM.nodeById(GS.tree.sel) : null;
+    if (!n || n.id === 'root') {
+      box.innerHTML = '<p class="note" style="margin:0">' + T('Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.') + '</p><div class="legend">' + GM.BRANCHES.map(function (b) { return '<span style="--c:' + b.color + '"><i></i>' + T(b.name) + '</span>'; }).join('') + '</div>';
+    } else {
+      var s2 = nstate(n), lv2 = GM.level(st, n.id), mx2 = GM.maxOf(n), cost = GM.costOf(st, n.id), br = brOf(n), pp = '';
+      for (var q = 0; q < mx2; q++) pp += '<i class="' + (q < lv2 ? 'on' : '') + '"></i>';
+      var btn = s2 === 'max' ? '<button type="button" class="btn small" disabled>' + T('Maxed') + '</button>' : s2 === 'locked' ? '<button type="button" class="btn small" disabled>' + T('Open a neighbouring node first') + '</button>' : '<button type="button" class="btn small primary" data-gbuy="' + n.id + '"' + (s2 === 'aff' ? '' : ' disabled') + '>' + T('Buy · {c} RP', { c: cost }) + '</button>';
+      box.innerHTML = '<div class="ni"><span class="nic" aria-hidden="true">' + (ICONS[n.id] || '•') + '</span><div class="nt"><h4>' + T(n.name) + '</h4><span class="nb" style="--c:' + br.color + '">' + T(br.name) + '</span></div></div><p>' + T(n.blurb) + '</p><div class="row"><div class="pips" aria-hidden="true">' + pp + '</div><span class="lv">' + (mx2 > 1 ? T('Level {n} / {m}', { n: lv2, m: mx2 }) : (lv2 ? T('Owned') : T('Not owned'))) + '</span>' + btn + '</div>';
+    }
+    $('#gReset').textContent = GS.resetArm ? T('Really reset everything?') : T('Reset Reputation');
+  }
+  $('#s-grep').addEventListener('click', function (e) {
+    var g = e.target.closest('[data-gnode]');
+    if (g) { GS.tree.sel = g.dataset.gnode; Sfx.pick(); renderRep(); return; }
+    var b = e.target.closest('[data-gbuy]');
+    if (b) { if (GM.buy(GS.meta, b.dataset.gbuy)) { GM.save(GS.meta); Sfx.buy(); renderRep(); } else Sfx.deny(); return; }
+    if (e.target.closest('#gReset')) {
+      if (!GS.resetArm) { GS.resetArm = 1; renderRep(); setTimeout(function () { GS.resetArm = 0; if (GS_screen() === 'grep') renderRep(); }, 4000); return; }
+      GS.resetArm = 0; GS.meta = GM.reset(); GS.tree.sel = null; renderRep();
+    }
+  });
+  $('#s-grep').addEventListener('keydown', function (e) { if (e.code === 'Enter' || e.code === 'Space') { var g = e.target.closest('[data-gnode]'); if (g) { e.preventDefault(); GS.tree.sel = g.dataset.gnode; Sfx.pick(); renderRep(); } } });
+
+  /* language switch: rebuild whatever is on screen */
+  I.onChange(function () {
+    var s = GS_screen();
+    if (s === 'gsetup') renderSetup(); else if (s === 'gbook') renderBook(); else if (s === 'grace') { buildRace(); renderRace(); updateLanes(true); } else if (s === 'gback') renderBack(); else if (s === 'gover') onEnter.gover(); else if (s === 'grep') renderRepAll();
+    $('#gnight-sub').textContent = T('No horse of your own: call the finishing order, rig the race, don’t get caught.');
+  });
+  function renderRepAll() { onEnter.grep(); }
+  window.__gamble = { GS: GS, G: G, show: show, doDraw: doDraw };
+  onEnter.menu();   // the menu was drawn before this file loaded: draw it again so the Continue button shows up
 })();
 
 </script>

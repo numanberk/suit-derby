@@ -80,7 +80,7 @@
     S.screen = name;
     $$('.screen').forEach(function (el) { el.hidden = el.id !== 's-' + name; });
     window.scrollTo(0, 0);
-    Sfx.music.mode(name === 'game' ? (S.run && S.run.mod === 'derby' ? 'final' : 'race') : 'chill');
+    Sfx.music.mode(name === 'game' ? (S.run && S.run.mod === 'derby' ? 'final' : 'race') : name === 'grace' ? 'race' : 'chill');
     if (onEnter[name]) onEnter[name]();
   }
   document.addEventListener('click', function (e) {
@@ -1394,4 +1394,5 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   requestAnimationFrame(frame);
   window.__derby = { S: S, E: E, M: M, go: go, scene: scene, FX: FX };
+  window.__ui = { go: go, onEnter: onEnter, money: money, ord: ord, horseSVG: horseSVG };
 })();

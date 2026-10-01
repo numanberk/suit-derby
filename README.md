@@ -21,6 +21,17 @@ crowd and a galloping hoofbeat sit under the race and swell when something happe
 buying goes cha-ching, and the lap payout counts up with rising ticks. Sound starts after your first tap,
 the speaker button (menu and race screen) or the **M** key mutes it, and the choice is saved.
 
+### v12: Gambler's Night (a second game mode)
+A separate mode from the horse game (its own menu entry, own save, own progression). You are not an owner: you are a gambler, and your job is to call the finishing order of all four horses and then bend the race your way without getting caught.
+- **Card time.** There is no clock. Every card drawn moves one horse (plain card 1 step, face card 2); the race ends when 3 horses cross the line (10 steps). Each race builds a fresh deck with uneven suit counts, shown on the deck sheet, so the deck is the form guide and card counting matters.
+- **Read, Call, Rig.** Study the deck sheet and the odds board, call a horse for each place (full order for the perfect-order bonus, which pays more the longer the shot) and lock the slip before the first card. Odds come from simulating the rest of the deck and lock with the slip. After the lock a place can still be changed for a fee (20% of its stake) at the odds of that moment.
+- **Tools** (cash plus Heat, limited uses per race): Peek, Burn, Stack, Mud, Swap, Tailwind, Shave, Hurdle, Riffle, Lane Swap. Four are open from the start; the rest are unlocked in Reputation. They nudge the odds but never decide a race.
+- **Heat and stewards.** Every trick adds Heat; it cools a little per card and between races. From 5 Heat each trick risks a steward inspection (fine and the tool is confiscated). At 10 Heat you are caught: slip void and a fine.
+- **Backroom.** Between races buy one favor out of three (12 favors that last the night), cool off, or borrow from the loan shark. Everything costs cash, and cash is your score.
+- **Reputation:** a fogged skill tree of its own (25 nodes, 4 branches: Toolbox, Nerve, Bankroll, The Book), earned in RP at the end of a night. Save/resume of a night mid-race, Turkish, phone layout.
+- Tests and balance: `node testg.js`, `node simg.js plain|rig|rigmax|ceil [nights]`, `python3 gplaytest.py`.
+- **Open decision (revisit later):** how strong rigging should be (decision 5, "nudges, but come back to it"). Right now a careful rigger earns about +20% on stakes, plain likeliest-order play breaks even.
+
 ### v11: gadgets, round cards, pit crews, rivals, skill tree
 - **Gadgets** (permanent, 2 slots, charges refill each lap): Banana (slows the leader), Draft (surge your horse when it is close behind another), Cut (skip a rival card in the deck window). Keys **Q / W / E**.
 - **Round cards** (one-time, hand of 3, carry over): Veto (throw away the next rival card), Wild (turn the next rival card into your suit), Double Up (double your next card). Keys **R / T / Y**.
@@ -97,7 +108,10 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     build.py         inlines everything into dist/suit-derby.html, dist/artifact.html and dist/site/ (offline-installable)
     fonts/           woff2 files and fonts.css that build.py embeds
     icons/           app icons (make_icons.py redraws them)
+    gamble.js        Gambler's Night engine (pure JS) + its Reputation tree
+    gamble_ui.js     Gambler's Night screens
     sim.js           balance simulation:  node sim.js
+    simg.js / testg.js / gplaytest.py   Gambler's Night balance, engine tests, browser test
     sim11.js         crews, jockeys and abilities:  node sim11.js crews
     sim_catchup.js   seat fairness and comeback checks:  node sim_catchup.js
     playtest.py      headless full-run test (calls, shop, card table) (needs python playwright + chromium)

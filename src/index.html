@@ -25,6 +25,8 @@
       <button type="button" class="mrow resume" id="resumeBtn" hidden><span class="mt" data-i18n="Continue run">Continue run</span><span class="md" id="resume-sub"></span></button>
       <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
       <button type="button" class="mrow daily" id="dailyBtn"><span class="mt" data-i18n="Daily Derby">Daily Derby</span><span class="md" id="daily-sub"></span></button>
+      <button type="button" class="mrow gnight resume" id="gResume" hidden><span class="mt" data-i18n="Continue night">Continue night</span><span class="md" id="gresume-sub"></span></button>
+      <button type="button" class="mrow gnight" data-go="gsetup"><span class="mt" data-i18n="Gambler’s Night">Gambler’s Night</span><span class="md" id="gnight-sub" data-i18n="No horse of your own: call the finishing order, rig the race, don’t get caught.">No horse of your own: call the finishing order, rig the race, don’t get caught.</span></button>
       <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
       <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a run works">How a run works</span></button>
     </nav>
@@ -241,6 +243,14 @@
     <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 
+  <!-- GAMBLER'S NIGHT -->
+  <section class="screen" id="s-gsetup" hidden aria-label="Gambler’s Night"></section>
+  <section class="screen" id="s-gbook" hidden aria-label="The book"></section>
+  <section class="screen" id="s-grace" hidden aria-label="The race"></section>
+  <section class="screen" id="s-gback" hidden aria-label="Result and backroom"></section>
+  <section class="screen" id="s-gover" hidden aria-label="Night over"></section>
+  <section class="screen" id="s-grep" hidden aria-label="Reputation"></section>
+
   <!-- RULES -->
   <section class="screen" id="s-rules" hidden aria-label="Rules">
     <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="Rules">Rules</h2></header>
@@ -263,8 +273,10 @@
 <script src="audio.js"></script>
 <script src="meta.js"></script>
 <script src="engine.js"></script>
+<script src="gamble.js"></script>
 <script src="fx.js"></script>
 <script src="scene.js"></script>
 <script src="app.js"></script>
+<script src="gamble_ui.js"></script>
 </body>
 </html>
