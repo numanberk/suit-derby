@@ -586,7 +586,7 @@
     'Gadgets and round cards': 'Aletler ve tur kartları'
   });
   Object.assign(I18n.dict.tr, {
-    'Cosmetics': 'Görünümler', 'Stable sections': 'Ahır bölümleri', 'In use': 'Kullanımda', 'Use': 'Kullan', 'Classic': 'Klasik', 'Stadium': 'Stadyum',
+    'Back': 'Geri', 'Next: {t}': 'Sonraki: {t}', 'Cosmetics': 'Görünümler', 'Stable sections': 'Ahır bölümleri', 'In use': 'Kullanımda', 'Use': 'Kullan', 'Classic': 'Klasik', 'Stadium': 'Stadyum',
     'The plain suit-coloured coat.': 'Sade, takım renginde tüy.', 'The floodlit stadium.': 'Işıklarla aydınlanmış stadyum.',
     'Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.': 'Tüyler ve pistler sadece görüntü içindir. Ahır Puanıyla satın al, sonra Kurulumda ya da burada seç.',
     'Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.': 'Ne işe yaradığını görmek için bir düğüme dokun. Ortadan başlarsın ve ağaç sen satın aldıkça büyür: yeni düğümler sahip olduklarının yanında belirir.'

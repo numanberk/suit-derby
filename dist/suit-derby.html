@@ -202,7 +202,7 @@ h1, h2, h3, p { margin: 0; }
 .kit { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 18px; min-height: 26px; }
 .kit span { font: 600 11px var(--f-mono); padding: 3px 8px; border-radius: 5px; background: var(--raise); border: 1px solid var(--line); }
 .kit span.q { border-color: var(--ink-dim); }
-.pitbar { position: sticky; bottom: 0; margin-top: 22px; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--ground) 70%, transparent); display: flex; justify-content: flex-end; }
+.pitbar { gap: 10px; position: sticky; bottom: 0; margin-top: 22px; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--ground) 70%, transparent); display: flex; justify-content: flex-end; }
 .pitbar .btn { min-width: 200px; }
 
 /* run over */
@@ -826,7 +826,7 @@ h1, h2, h3, p { margin: 0; }
       </div>
     </div>
 
-    <div class="pitbar"><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
+    <div class="pitbar"><button type="button" class="btn ghost" id="prevTab" hidden>&larr; <span data-i18n="Back">Back</span></button><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
   </section>
 
   <!-- RUN OVER -->
@@ -1555,7 +1555,7 @@ if (typeof module !== 'undefined') module.exports = I18n;
     'Gadgets and round cards': 'Aletler ve tur kartları'
   });
   Object.assign(I18n.dict.tr, {
-    'Cosmetics': 'Görünümler', 'Stable sections': 'Ahır bölümleri', 'In use': 'Kullanımda', 'Use': 'Kullan', 'Classic': 'Klasik', 'Stadium': 'Stadyum',
+    'Back': 'Geri', 'Next: {t}': 'Sonraki: {t}', 'Cosmetics': 'Görünümler', 'Stable sections': 'Ahır bölümleri', 'In use': 'Kullanımda', 'Use': 'Kullan', 'Classic': 'Klasik', 'Stadium': 'Stadyum',
     'The plain suit-coloured coat.': 'Sade, takım renginde tüy.', 'The floodlit stadium.': 'Işıklarla aydınlanmış stadyum.',
     'Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.': 'Tüyler ve pistler sadece görüntü içindir. Ahır Puanıyla satın al, sonra Kurulumda ya da burada seç.',
     'Tap a node to see what it does. You start in the middle and the tree grows as you buy: new nodes appear next to the ones you own.': 'Ne işe yaradığını görmek için bir düğüme dokun. Ortadan başlarsın ve ağaç sen satın aldıkça büyür: yeni düğümler sahip olduklarının yanında belirir.'
@@ -4867,8 +4867,25 @@ const Scene = (() => {
     });
     renderPitTabs();
   }
+  /* the pit stop is a short sequence: Result, Pit crew, Bets, then the lap. Next and Back walk through it; the tabs jump anywhere. */
+  function pitSeq() { return S.run && S.run.phase === 'prep' ? ['crew', 'bets'] : PTABS; }
+  function renderPitBar() {
+    var R = S.run; if (!R) return;
+    var prep = R.phase === 'prep', seq = pitSeq(), k = seq.indexOf(S.pitTab), last = k < 0 || k === seq.length - 1, nb = $('#nextLap');
+    var name = function (t) { return t === 'result' ? T('Result') : t === 'crew' ? (prep ? T('Starting pick') : T('Pit crew')) : T('Bets'); };
+    $('#prevTab').hidden = k <= 0;
+    if (!last) {
+      nb.textContent = T('Next: {t}', { t: name(seq[k + 1]) }) + ' →';
+      nb.disabled = prep && !!R.startPicks && seq[k + 1] === 'bets';
+    } else {
+      nb.disabled = prep && !!R.startPicks;
+      nb.textContent = S.skipCrew && !R.crewsUsed.length && !prep ? T('No pit crew yet: start anyway') : R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
+    }
+    nb.classList.toggle('primary', true);
+  }
   function renderPitTabs() {
     var R = S.run; if (!R) return;
+    renderPitBar();
     var prep = R.phase === 'prep', cb = $('#badge-crew'), bb = $('#badge-bets');
     $('#tab-crew-l').textContent = prep ? T('Starting pick') : T('Pit crew');
     cb.hidden = S.pitTab === 'crew' || !(prep ? !!R.startPicks : !R.crewsUsed.length); cb.textContent = '!';
@@ -4956,8 +4973,7 @@ const Scene = (() => {
     renderBoard();
     renderCrew();
     renderKit(); renderSets(); renderPitTabs();
-    $('#nextLap').disabled = prep && !!R.startPicks;
-    $('#nextLap').textContent = S.skipCrew && !R.crewsUsed.length && !prep ? T('No pit crew yet: start anyway') : R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
+    renderPitBar();
     renderDeck('#pit-deckbar', '#pit-deckleg', E.deckCounts(R, false), R.me, E.chaosCount(R, false));
     saveRun();
   }
@@ -5150,8 +5166,11 @@ const Scene = (() => {
     if (r) { Sfx.buy(); crewDone(T('Scrapped a gadget for {m}.', { m: money(r) })); }
   });
   $('#reroll').addEventListener('click', function () { if (E.reroll(S.run)) { Sfx.shuffle(); renderPitState(); } else Sfx.deny(); });
+  function stepTab(d) { var seq = pitSeq(), k = seq.indexOf(S.pitTab) + d; if (k < 0 || k >= seq.length) return false; Sfx.pick(); setPitTab(seq[k]); window.scrollTo(0, 0); return true; }
+  $('#prevTab').addEventListener('click', function () { stepTab(-1); });
   $('#nextLap').addEventListener('click', function () {
     var R = S.run;
+    if (stepTab(1)) return;
     if (R.phase === 'shop' && !R.crewsUsed.length && !S.skipCrew) { S.skipCrew = 1; Sfx.deny(); setPitTab('crew'); renderPitState(); return; }
     S.skipCrew = 0; beginLap();
   });

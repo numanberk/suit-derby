@@ -186,7 +186,7 @@ h1, h2, h3, p { margin: 0; }
 .kit { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 18px; min-height: 26px; }
 .kit span { font: 600 11px var(--f-mono); padding: 3px 8px; border-radius: 5px; background: var(--raise); border: 1px solid var(--line); }
 .kit span.q { border-color: var(--ink-dim); }
-.pitbar { position: sticky; bottom: 0; margin-top: 22px; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--ground) 70%, transparent); display: flex; justify-content: flex-end; }
+.pitbar { gap: 10px; position: sticky; bottom: 0; margin-top: 22px; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--ground) 70%, transparent); display: flex; justify-content: flex-end; }
 .pitbar .btn { min-width: 200px; }
 
 /* run over */

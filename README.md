@@ -30,6 +30,7 @@ the speaker button (menu and race screen) or the **M** key mutes it, and the cho
 - **Player jockeys, coats and track themes** picked at Setup (unlocked in the Stable).
 - **The Stable is a skill tree:** start at the centre and branch out (treasury, yard, ring, shop, codex, club, paddock, luck). Codex nodes unlock new upgrades.
 - **Fogged tree and Cosmetics tab:** skill-tree nodes only appear once a neighbouring node is owned. Coats and tracks moved out of the tree into their own Stable tab (buy, then Use there or at Setup). The Stable has three tabs: Skill tree, Cosmetics, Trophies.
+- **Pit stop flow:** the main button walks through Result, Pit crew and Bets ("Next: Pit crew →"), then becomes "Start lap". A Back button appears after the first step, and the tabs still jump anywhere.
 - Saves are v2: old v10 runs in progress are not resumable. Balance: `node sim11.js quick|crews|jockeys|abilities`.
 
 ### v10: saving, offline, calmer pit stop, finish drama

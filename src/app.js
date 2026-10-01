@@ -767,8 +767,25 @@
     });
     renderPitTabs();
   }
+  /* the pit stop is a short sequence: Result, Pit crew, Bets, then the lap. Next and Back walk through it; the tabs jump anywhere. */
+  function pitSeq() { return S.run && S.run.phase === 'prep' ? ['crew', 'bets'] : PTABS; }
+  function renderPitBar() {
+    var R = S.run; if (!R) return;
+    var prep = R.phase === 'prep', seq = pitSeq(), k = seq.indexOf(S.pitTab), last = k < 0 || k === seq.length - 1, nb = $('#nextLap');
+    var name = function (t) { return t === 'result' ? T('Result') : t === 'crew' ? (prep ? T('Starting pick') : T('Pit crew')) : T('Bets'); };
+    $('#prevTab').hidden = k <= 0;
+    if (!last) {
+      nb.textContent = T('Next: {t}', { t: name(seq[k + 1]) }) + ' →';
+      nb.disabled = prep && !!R.startPicks && seq[k + 1] === 'bets';
+    } else {
+      nb.disabled = prep && !!R.startPicks;
+      nb.textContent = S.skipCrew && !R.crewsUsed.length && !prep ? T('No pit crew yet: start anyway') : R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
+    }
+    nb.classList.toggle('primary', true);
+  }
   function renderPitTabs() {
     var R = S.run; if (!R) return;
+    renderPitBar();
     var prep = R.phase === 'prep', cb = $('#badge-crew'), bb = $('#badge-bets');
     $('#tab-crew-l').textContent = prep ? T('Starting pick') : T('Pit crew');
     cb.hidden = S.pitTab === 'crew' || !(prep ? !!R.startPicks : !R.crewsUsed.length); cb.textContent = '!';
@@ -856,8 +873,7 @@
     renderBoard();
     renderCrew();
     renderKit(); renderSets(); renderPitTabs();
-    $('#nextLap').disabled = prep && !!R.startPicks;
-    $('#nextLap').textContent = S.skipCrew && !R.crewsUsed.length && !prep ? T('No pit crew yet: start anyway') : R.nextMod === 'derby' ? T('Start the final lap · ×2 points') : T('Start lap {n} of {m}', { n: R.lapNo + 1, m: R.laps });
+    renderPitBar();
     renderDeck('#pit-deckbar', '#pit-deckleg', E.deckCounts(R, false), R.me, E.chaosCount(R, false));
     saveRun();
   }
@@ -1050,8 +1066,11 @@
     if (r) { Sfx.buy(); crewDone(T('Scrapped a gadget for {m}.', { m: money(r) })); }
   });
   $('#reroll').addEventListener('click', function () { if (E.reroll(S.run)) { Sfx.shuffle(); renderPitState(); } else Sfx.deny(); });
+  function stepTab(d) { var seq = pitSeq(), k = seq.indexOf(S.pitTab) + d; if (k < 0 || k >= seq.length) return false; Sfx.pick(); setPitTab(seq[k]); window.scrollTo(0, 0); return true; }
+  $('#prevTab').addEventListener('click', function () { stepTab(-1); });
   $('#nextLap').addEventListener('click', function () {
     var R = S.run;
+    if (stepTab(1)) return;
     if (R.phase === 'shop' && !R.crewsUsed.length && !S.skipCrew) { S.skipCrew = 1; Sfx.deny(); setPitTab('crew'); renderPitState(); return; }
     S.skipCrew = 0; beginLap();
   });

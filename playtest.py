@@ -129,6 +129,11 @@ async def main():
                 if laps == 2: await leak(pg, 'pit')
                 if laps == 2: await pg.screenshot(path=shot('pit.png'), full_page=True)
                 if laps == 2:
+                    await pg.click('[data-ptab="result"]')
+                    await pg.click('#nextLap'); assert await pg.evaluate('__derby.S.pitTab') == 'crew', 'next walks result -> crew'
+                    await pg.click('#nextLap'); assert await pg.evaluate('__derby.S.pitTab') == 'bets', 'next walks crew -> bets'
+                    await pg.screenshot(path=shot('pit-bets-next.png'))
+                    await pg.click('#prevTab'); assert await pg.evaluate('__derby.S.pitTab') == 'crew', 'back'
                     await pg.click('[data-ptab="crew"]'); await pg.screenshot(path=shot('pit-crew.png'), full_page=True)
                     await pg.click('[data-ptab="bets"]'); await pg.screenshot(path=shot('pit-bets.png'), full_page=True)
                 await pit_actions(pg, laps)
