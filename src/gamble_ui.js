@@ -51,6 +51,8 @@
   var prevMenu = onEnter.menu;
   onEnter.menu = function () {
     prevMenu();
+    $('#menu-rp').textContent = T('Permanent upgrades · {n} RP', { n: GS.meta.sp });
+    $('#menu-stats').textContent = GS.meta.nights ? T('{n} nights · best {p}', { n: GS.meta.nights, p: money(GS.meta.best, true) }) : T('No nights yet.');
     var sv = loadRun(), b = $('#gResume'); b.hidden = !sv;
     if (sv) { var r = sv.run; $('#gresume-sub').textContent = T('Race {n} of {m}', { n: r.raceNo, m: r.races }) + ' · ' + money(r.cash) + (r.phase === 'back' || r.phase === 'result' ? ' · ' + T('in the backroom') : ''); }
   };
@@ -67,7 +69,7 @@
   }
 
   /* ---------- setup ---------- */
-  onEnter.gsetup = renderSetup;
+  onEnter.gsetup = function () { renderSetup(); U.guideOnce(); };
   function renderSetup() {
     var fx = GM.effects(GS.meta), el = $('#s-gsetup');
     if (GS.len === CFG.nightLong && !fx.longNight) GS.len = CFG.night;
@@ -510,7 +512,6 @@
   I.onChange(function () {
     var s = GS_screen();
     if (s === 'gsetup') renderSetup(); else if (s === 'gbook') renderBook(); else if (s === 'grace') { buildRace(); renderRace(); updateLanes(true); } else if (s === 'gback') renderBack(); else if (s === 'gover') onEnter.gover(); else if (s === 'grep') renderRepAll();
-    $('#gnight-sub').textContent = T('No horse of your own: call the finishing order, rig the race, don’t get caught.');
   });
   function renderRepAll() { onEnter.grep(); }
   window.__gamble = { GS: GS, G: G, show: show, doDraw: doDraw };

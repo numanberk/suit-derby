@@ -18,229 +18,16 @@
     <div class="langrow"><button type="button" class="sndbtn" id="sndMenu" data-snd="fx"></button><button type="button" class="sndbtn" id="musMenu" data-snd="music"></button><span class="langlbl mono" data-i18n="Language">Language</span><div class="langsw" id="langsw" role="group" data-i18n-label="Language" aria-label="Language"></div></div>
     <div class="menu-hero">
       <h1>Suit Derby</h1>
-      <p class="lede" data-i18n="Four suits race through one deck. Rig the deck, win the run.">Four suits race through one deck. Rig the deck, win the run.</p>
+      <p class="lede" data-i18n="Four suits race through one deck. Call the order, rig the race, keep your nerve.">Four suits race through one deck. Call the order, rig the race, keep your nerve.</p>
     </div>
     <div class="lineup" id="lineup" aria-hidden="true"></div>
     <nav class="menu-list" data-i18n-label="Main menu" aria-label="Main menu">
-      <button type="button" class="mrow resume" id="resumeBtn" hidden><span class="mt" data-i18n="Continue run">Continue run</span><span class="md" id="resume-sub"></span></button>
-      <button type="button" class="mrow primary" data-go="setup"><span class="mt" data-i18n="Play">Play</span><span class="md" data-i18n="Start a 5 or 10 lap run">Start a 5 or 10 lap run</span></button>
-      <button type="button" class="mrow daily" id="dailyBtn"><span class="mt" data-i18n="Daily Derby">Daily Derby</span><span class="md" id="daily-sub"></span></button>
       <button type="button" class="mrow gnight resume" id="gResume" hidden><span class="mt" data-i18n="Continue night">Continue night</span><span class="md" id="gresume-sub"></span></button>
-      <button type="button" class="mrow gnight" data-go="gsetup"><span class="mt" data-i18n="Gambler’s Night">Gambler’s Night</span><span class="md" id="gnight-sub" data-i18n="No horse of your own: call the finishing order, rig the race, don’t get caught.">No horse of your own: call the finishing order, rig the race, don’t get caught.</span></button>
-      <button type="button" class="mrow" data-go="stable"><span class="mt" data-i18n="The Stable">The Stable</span><span class="md" id="menu-sp">Permanent upgrades</span></button>
-      <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a run works">How a run works</span></button>
+      <button type="button" class="mrow primary" data-go="gsetup"><span class="mt" data-i18n="Gambler’s Night">Gambler’s Night</span><span class="md" id="gnight-sub" data-i18n="Call the finishing order, rig the race, don’t get caught.">Call the finishing order, rig the race, don’t get caught.</span></button>
+      <button type="button" class="mrow" data-go="grep"><span class="mt" data-i18n="Reputation">Reputation</span><span class="md" id="menu-rp"></span></button>
+      <button type="button" class="mrow" data-go="rules"><span class="mt" data-i18n="Rules">Rules</span><span class="md" data-i18n="How a night works">How a night works</span></button>
     </nav>
     <p class="mstats mono" id="menu-stats"></p>
-  </section>
-
-  <!-- SETUP -->
-  <section class="screen" id="s-setup" hidden aria-label="New run">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="New run">New run</h2></header>
-    <h3 class="lbl pickhead" data-i18n="Choose your horse">Choose your horse</h3>
-    <div class="picks" role="radiogroup" data-i18n-label="Horse" aria-label="Horse" id="picks"></div>
-    <h3 class="lbl" data-i18n="Length">Length</h3>
-    <div class="pills" role="radiogroup" data-i18n-label="Number of laps" aria-label="Number of laps" id="lapPills"></div>
-    <h3 class="lbl" data-i18n="Your jockey">Your jockey</h3>
-    <div class="jpick" role="radiogroup" data-i18n-label="Your jockey" aria-label="Your jockey" id="jockeyPick"></div>
-    <div class="styles"><div><h3 class="lbl" data-i18n="Horse coat">Horse coat</h3><div class="spills" id="skinPick" role="radiogroup"></div></div>
-    <div><h3 class="lbl" data-i18n="Track">Track</h3><div class="spills" id="themePick" role="radiogroup"></div></div></div>
-    <div class="rivalbox" id="rivalBox"></div>
-    <div id="stakeBox"><h3 class="lbl" data-i18n="Stakes">Stakes</h3>
-    <div class="pills" role="radiogroup" data-i18n-label="Stakes" aria-label="Stakes" id="stakePills"></div></div>
-    <p class="note warn" id="setup-save" hidden data-i18n="Starting a new run replaces your saved run.">Starting a new run replaces your saved run.</p>
-    <p class="note" id="setup-perks"></p>
-    <div class="actions"><button type="button" class="btn primary" id="startRun" data-i18n="Start run">Start run</button></div>
-  </section>
-
-  <!-- GAME -->
-  <section class="screen" id="s-game" hidden aria-label="Race">
-    <div class="gbar">
-      <button type="button" class="btn ghost" id="quit">Quit</button>
-      <div class="gcenter"><span class="glap" id="glap">Lap 1 / 5</span><span class="gmod mono" id="gmod" hidden></span><span class="gclock mono" id="gclock">0:00.0</span></div>
-      <div class="gcash" id="gcash" data-i18n-title="Run cash. Lost when the run ends." title="Run cash. Lost when the run ends.">$0</div>
-    </div>
-    <div class="stage" id="stagebox">
-      <canvas id="stage" data-i18n-label="Race track: four horses in four lanes" aria-label="Race track: four horses in four lanes"></canvas>
-      <div class="overlay" id="overlay" hidden><div class="big" id="ovtxt"></div></div>
-      <div class="hzcall" id="hzcall" hidden>
-        <b data-i18n="BRACE!">BRACE!</b>
-        <div class="hzmeter" aria-hidden="true"><i id="hzfill"></i><s></s><u></u></div>
-        <small data-i18n="Wait for the gold zone. Too early is a stumble.">Wait for the gold zone. Too early is a stumble.</small>
-      </div>
-    </div>
-    <div class="tickbar" aria-hidden="true"><i id="tick"></i></div>
-    <div class="statrow mono" id="statrow"><span class="gritpill" id="gritpill" hidden></span></div>
-    <div class="abrow" id="abrow" hidden></div>
-    <div class="actrow">
-      <button type="button" class="btn act brace" id="brace" disabled><span class="a-t" data-i18n="Brace">Brace</span><span class="a-s mono" id="bracesub" data-i18n="no hazard near">no hazard near</span></button>
-      <button type="button" class="btn act trap" id="trap" disabled><span class="a-t" data-i18n="Trap">Trap</span><span class="a-s mono" id="trapsub">none</span></button>
-      <button type="button" class="btn act spur" id="spur" disabled><i class="sp-fill" id="spfill"></i><span class="a-t" data-i18n="Spur">Spur</span><span class="a-s mono" id="spsub">charging</span></button>
-    </div>
-    <div class="cockpit">
-      <div class="cp-card">
-        <div class="hud">
-          <div class="card" aria-hidden="true"><div class="cardin" id="cardin"><div class="face" id="face"></div><div class="back"></div></div></div>
-          <div class="hinfo">
-            <div class="dname" id="dname">Shuffling</div>
-            <div class="dline" id="dline">First card comes out soon.</div>
-            <div class="hist" id="hist" data-i18n-label="Recent cards" aria-label="Recent cards"></div>
-          </div>
-        </div>
-        <div class="deckbar" id="deckbar" data-i18n-label="Cards left in the deck" aria-label="Cards left in the deck"></div>
-        <div class="deckleg mono" id="deckleg"></div>
-      </div>
-      <div class="cp-bets">
-        <div class="betshead"><h3 class="lbl" data-i18n="Next card: pick a suit">Next card: pick a suit</h3><span class="streak mono" id="streak"></span></div>
-        <div class="bets" id="bets"></div>
-        <div class="peekrow" id="peekrow">
-          <button type="button" class="btn small" id="peek"></button>
-          <span class="peeked mono" id="peeked"></span>
-          <button type="button" class="btn small" id="burn"></button>
-        </div>
-        <div class="betctl">
-          <div class="chips" id="chips" role="radiogroup" data-i18n-label="Stake" aria-label="Stake"></div>
-          <button type="button" class="btn small" id="rebet" data-i18n="Rebet">Rebet</button>
-          <span class="betinfo mono" id="betinfo"></span>
-        </div>
-      </div>
-    </div>
-    <div class="calls mono" id="calls" hidden></div>
-    <div class="glow">
-      <div class="pts mono" id="pts" data-i18n-label="Championship points" aria-label="Championship points"></div>
-      <div class="ctrls">
-        <button type="button" data-sp="1" aria-pressed="true">1&times;</button>
-        <button type="button" data-sp="2" aria-pressed="false">2&times;</button>
-        <button type="button" data-sp="4" aria-pressed="false">4&times;</button>
-        <button type="button" id="pause">Pause</button>
-        <button type="button" id="skip" disabled data-i18n="Skip">Skip</button>
-        <button type="button" id="snd" class="sndbtn" data-snd="fx"></button>
-        <button type="button" id="mus" class="sndbtn" data-snd="music"></button>
-      </div>
-    </div>
-    <div class="ticker" id="ticker"></div>
-  </section>
-
-  <!-- PIT STOP -->
-  <section class="screen" id="s-pit" hidden aria-label="Pit stop">
-    <header class="bar">
-      <h2 id="pit-title">Lap 1 complete</h2>
-      <div class="cashwrap"><div class="cashchip" id="pit-cash">$0</div><div class="cashsub mono" id="pit-cash-sub"></div></div>
-    </header>
-    <div class="nextstrip" id="nextstrip"></div>
-    <div class="ptabs" id="ptabs" role="tablist" data-i18n-label="Pit stop sections" aria-label="Pit stop sections">
-      <button type="button" role="tab" data-ptab="result" id="tab-result"><span data-i18n="Result">Result</span></button>
-      <button type="button" role="tab" data-ptab="crew" id="tab-crew"><span id="tab-crew-l">Pit crew</span><i class="tbadge" id="badge-crew" hidden></i></button>
-      <button type="button" role="tab" data-ptab="bets" id="tab-bets"><span data-i18n="Bets">Bets</span><i class="tbadge" id="badge-bets" hidden></i></button>
-    </div>
-
-    <div class="pane" data-pane="result" role="tabpanel">
-      <div class="pit-top">
-        <div class="pit-res">
-          <div class="bigplace" id="pit-place">1st</div>
-          <div class="stmt" id="pit-stmt"></div>
-        </div>
-        <div class="pit-stand">
-          <h3 class="lbl" id="pit-stand-h">Championship</h3>
-          <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="pit-standings"></tbody></table>
-          <div class="deckbar sm" id="pit-deckbar"></div>
-          <div class="deckleg mono" id="pit-deckleg"></div>
-        </div>
-      </div>
-      <div class="rivals" id="rivals"></div>
-      <div class="intel" id="intel"></div>
-      <div class="recap" id="recap" hidden></div>
-    </div>
-
-    <div class="pane" data-pane="crew" role="tabpanel" hidden>
-      <div class="sect first" id="crewhead"></div>
-      <div class="crewbody" id="crewbody">
-        <div class="csect" data-crew="shop">
-          <div class="shophead"><h3 class="lbl" data-i18n="Pit shop">Pit shop</h3><button type="button" class="btn small" id="reroll">Reroll</button></div>
-          <div class="tiers mono" id="tiers"></div>
-          <div class="offers" id="offers"></div>
-        </div>
-        <div class="csect" data-crew="market"><div class="shophead"><h3 class="lbl" data-i18n="Black Market">Black Market</h3></div><div class="offers" id="market"></div></div>
-        <div class="csect" data-crew="train"><div class="shophead"><h3 class="lbl" data-i18n="Training Gallop">Training Gallop</h3></div><div class="offers" id="drills"></div></div>
-        <div class="csect" data-crew="den">
-          <div class="shophead"><h3 class="lbl" data-i18n="Wheel of Fortune">Wheel of Fortune</h3><span class="hint mono" id="wheel-hint"></span></div>
-          <div class="wheel" id="wheel"></div>
-          <div class="shophead"><h3 class="lbl" data-i18n="Card table">Card table</h3><span class="hint mono" id="table-hint"></span></div>
-          <div class="table" id="table"></div>
-        </div>
-        <div class="csect" data-crew="event"><div class="eventbox" id="event"></div></div>
-      </div>
-      <div class="sets" id="sets"></div>
-      <div class="kit" id="kit"></div>
-    </div>
-
-    <div class="pane" data-pane="bets" role="tabpanel" hidden>
-      <div class="sect first">
-        <div class="shophead"><h3 class="lbl" data-i18n="Call the order">Call the order</h3><span class="hint mono" id="board-hint" data-i18n="Odds lock when the lap starts">Odds lock when the lap starts</span></div>
-        <div class="board" id="board"></div>
-        <p class="boardfoot" id="boardfoot"></p>
-      </div>
-    </div>
-
-    <div class="pitbar"><button type="button" class="btn ghost" id="prevTab" hidden>&larr; <span data-i18n="Back">Back</span></button><button type="button" class="btn primary" id="nextLap">Start lap 1</button></div>
-  </section>
-
-  <!-- RUN OVER -->
-  <section class="screen" id="s-over" hidden aria-label="Run complete">
-    <header class="bar"><h2 data-i18n="Run complete">Run complete</h2></header>
-    <div class="over-top">
-      <div class="bigplace" id="over-rank">Champion</div>
-      <p class="lede" id="over-sub"></p>
-    </div>
-    <div class="pit-top">
-      <div>
-        <h3 class="lbl" data-i18n="Final standings">Final standings</h3>
-        <table class="tbl"><thead><tr><th data-i18n="Pos">Pos</th><th data-i18n="Horse">Horse</th><th class="num" data-i18n="Pts">Pts</th></tr></thead><tbody id="over-standings"></tbody></table>
-      </div>
-      <div>
-        <h3 class="lbl" data-i18n="Stable Points">Stable Points</h3>
-        <div class="stmt" id="over-stmt"></div>
-        <p class="forfeit" id="over-forfeit"></p>
-      </div>
-    </div>
-    <div class="sect" id="over-new" hidden></div>
-    <div class="sect"><h3 class="lbl" data-i18n="Run stats">Run stats</h3><div class="rstats" id="over-stats"></div></div>
-    <div class="sect share" id="over-share" hidden>
-      <h3 class="lbl" data-i18n="Daily result">Daily result</h3>
-      <pre class="sharebox mono" id="sharetxt"></pre>
-      <button type="button" class="btn small" id="shareBtn" data-i18n="Copy result">Copy result</button>
-    </div>
-    <div class="actions">
-      <button type="button" class="btn primary" data-go="setup" data-i18n="Play again">Play again</button>
-      <button type="button" class="btn" data-go="stable" data-i18n="The Stable">The Stable</button>
-      <button type="button" class="btn ghost" data-go="menu" data-i18n="Menu">Menu</button>
-    </div>
-  </section>
-
-  <!-- STABLE -->
-  <section class="screen" id="s-stable" hidden aria-label="The Stable">
-    <header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span data-i18n="Menu">Menu</span></button><h2 data-i18n="The Stable">The Stable</h2><div class="cashchip sp" id="stable-sp">0 SP</div></header>
-    <p class="lede sm" data-i18n="Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.">Permanent upgrades, paid for with Stable Points. You earn points at the end of every run.</p>
-    <div class="stabs" id="stabs" role="tablist" data-i18n-label="Stable sections" aria-label="Stable sections">
-      <button type="button" role="tab" data-stab="tree" aria-selected="true" data-i18n="Skill tree">Skill tree</button>
-      <button type="button" role="tab" data-stab="wardrobe" aria-selected="false" data-i18n="Cosmetics">Cosmetics</button>
-      <button type="button" role="tab" data-stab="trophies" aria-selected="false" data-i18n="Trophies">Trophies</button>
-    </div>
-    <div data-stabpane="tree">
-    <div class="treewrap" id="treewrap"><svg id="tree" viewBox="0 0 1000 1000" role="group" data-i18n-label="Skill tree" aria-label="Skill tree"></svg></div>
-    <div class="nodeinfo" id="nodeinfo"></div>
-    <h3 class="lbl sect-h" data-i18n="Codex">Codex</h3>
-    <p class="lede sm" id="codex-sub"></p>
-    <div class="codex" id="codex"></div>
-    </div>
-    <div data-stabpane="wardrobe" hidden>
-      <p class="lede sm" data-i18n="Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.">Coats and tracks are only for show. Buy them with Stable Points, then pick what you ride on at Setup or right here.</p>
-      <div id="wardrobe"></div>
-    </div>
-    <div data-stabpane="trophies" hidden>
-      <p class="lede sm" id="trophy-sub"></p>
-      <div class="trophies" id="trophies"></div>
-    </div>
-    <div class="actions"><button type="button" class="btn ghost small" id="resetMeta">Reset all progress</button></div>
   </section>
 
   <!-- GAMBLER'S NIGHT -->
@@ -271,11 +58,8 @@
 <script src="i18n.js"></script>
 <script src="lang_tr.js"></script>
 <script src="audio.js"></script>
-<script src="meta.js"></script>
-<script src="engine.js"></script>
 <script src="gamble.js"></script>
 <script src="fx.js"></script>
-<script src="scene.js"></script>
 <script src="app.js"></script>
 <script src="gamble_ui.js"></script>
 </body>

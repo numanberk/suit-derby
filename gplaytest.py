@@ -19,7 +19,18 @@ async def main():
         await pg.goto(URL); await pg.wait_for_timeout(300)
         if LANG_ID != 'en': await pg.click(f'[data-lang="{LANG_ID}"]')
         await leak(pg, 'menu'); await pg.screenshot(path=shot('menu.png'))
-        await pg.click('#s-menu [data-go="gsetup"]'); await leak(pg, 'setup'); await pg.screenshot(path=shot('setup.png'), full_page=True)
+        txt = await pg.evaluate("document.querySelector('#s-menu').innerText"); print('menu text:', txt.replace('\n', ' | ')[:300])
+        # rules page: ten sections, ten tools listed
+        await pg.click('#s-menu [data-go="rules"]'); await leak(pg, 'rules'); await pg.screenshot(path=shot('rules.png'), full_page=True)
+        assert await pg.locator('#rules section').count() == 10 and await pg.locator('#rules .toolrules li').count() == 10, 'rules content'
+        await pg.click('#s-rules [data-go="menu"]')
+        # the first-run guide opens once, on the first visit to Gambler's Night
+        await pg.click('#s-menu [data-go="gsetup"]')
+        assert await pg.locator('#guide:not([hidden])').count() == 1, 'guide opens on first visit'
+        await leak(pg, 'guide'); await pg.screenshot(path=shot('guide.png'))
+        for i in range(5): await pg.click('#gnext')
+        assert await pg.locator('#guide[hidden]').count() == 1, 'guide closes'
+        await leak(pg, 'setup'); await pg.screenshot(path=shot('setup.png'), full_page=True)
         await pg.click('#gStart'); await leak(pg, 'book'); await pg.screenshot(path=shot('book.png'), full_page=True)
         stats = {'races': 0, 'tools': 0, 'recalls': 0, 'auto': 0}
         for race in range(5):
@@ -81,13 +92,14 @@ async def main():
         assert await pg.locator('#gResume:not([hidden])').count() == 1, 'resume button'
         await pg.reload(); await pg.wait_for_timeout(300)
         if LANG_ID != 'en': await pg.click(f'[data-lang="{LANG_ID}"]')
+        assert await pg.locator('#guide[hidden]').count() == 1, 'guide stays closed after a reload'
         await pg.click('#gResume'); await pg.wait_for_timeout(300)
         d1 = await pg.evaluate('__gamble.GS.run.race.draws'); print('resume draws', d0, d1); assert d0 == d1 == 5
         # phone
         pg2 = await b.new_page(viewport={'width': 390, 'height': 844}); pg2.on('pageerror', lambda e: errs.append('PHONE ' + str(e)))
         await pg2.goto(URL)
         if LANG_ID != 'en': await pg2.click(f'[data-lang="{LANG_ID}"]')
-        await pg2.click('#s-menu [data-go="gsetup"]'); await pg2.click('#gStart'); await pg2.screenshot(path=shot('phone-book.png'), full_page=True)
+        await pg2.click('#s-menu [data-go="gsetup"]'); await pg2.click('#gskip'); await pg2.click('#gStart'); await pg2.screenshot(path=shot('phone-book.png'), full_page=True)
         print('phone book scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
         await pg2.click('[data-gbest]'); await pg2.click('[data-glock]'); await pg2.wait_for_timeout(300)
         for i in range(6): await pg2.click('[data-gdraw]'); await pg2.wait_for_timeout(60)

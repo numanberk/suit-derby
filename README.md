@@ -1,126 +1,50 @@
-# Suit Derby
+# Suit Derby: Gambler's Night
 
-A browser game: four suit horses race through one shared deck. A run is 5 or 10 laps.
-Every lap is a full race; you earn run cash, spend it on upgrades in a pit shop between laps,
-and lose whatever is left when the run ends. Stable Points earned at the end of a run buy
-permanent perks in The Stable.
+A browser game. You own no horse: you are a gambler at a card-driven horse race. Four suit horses
+run through one shuffled deck, and **every card drawn is the only way time passes**. For each race you
+call the full finishing order, lock your slip, and then bend the deck and the track with tools
+without letting the stewards catch you. What you hold at the end of the night is your score, and it earns
+Reputation Points for a permanent skill tree.
 
-### v8: music
-Two generated tracks (no audio files). A relaxed one plays on the menu, setup, pit stop and results screens
-(warm keys, soft beat, a small hook that arrives on the second pass). The race has a driving track that starts
-with kick, bass and hats, then adds a plucked arpeggio and clap, then a pad and a lead hook as your horse gets
-further along the lap, and gets busier in the last stretch. It swells as the lap runs out (about +5 dB in the last stretch) and dips under big wins and when you pause.
-Music has its own on/off button (note icon, next to the speaker) and the **N** key; **M** still mutes effects.
-Both choices are saved separately.
+### v13: the horse game is gone
+The old owner mode (laps, pit stops, Stable, Daily Derby, real-time Brace/Spur) was removed. Gambler's Night is now the
+whole game: the menu is Gambler's Night / Reputation / Rules, the Rules page and a five-card first-run guide were rewritten
+for it (English and Turkish), the Turkish dictionary and CSS were pruned to what is still used (page 515 KB to 195 KB).
+The leftover horse save (`suitderby.run`) is deleted on load; the Reputation save (`suitderby.g1`) and night save (`suitderby.grun`) are unchanged.
 
-### v7: sound
-All sound is synthesized live with WebAudio (no audio files). Every card drawn is a soft mallet note on a
-pentatonic scale, so the race plays a little tune; a next-card hit streak climbs the scale; wins escalate
-from a coin ping to a coin shower, a brass fanfare and a jackpot siren; misses are a soft low blip. A quiet
-crowd and a galloping hoofbeat sit under the race and swell when something happens. Buttons tick, chips click,
-buying goes cha-ching, and the lap payout counts up with rising ticks. Sound starts after your first tap,
-the speaker button (menu and race screen) or the **M** key mutes it, and the choice is saved.
-
-### v12: Gambler's Night (a second game mode)
-A separate mode from the horse game (its own menu entry, own save, own progression). You are not an owner: you are a gambler, and your job is to call the finishing order of all four horses and then bend the race your way without getting caught.
-- **Card time.** There is no clock. Every card drawn moves one horse (plain card 1 step, face card 2); the race ends when 3 horses cross the line (10 steps). Each race builds a fresh deck with uneven suit counts, shown on the deck sheet, so the deck is the form guide and card counting matters.
+### How it plays
+- **Card time.** Every card drawn moves one horse (plain card 1 step, face card 2); the race ends when 3 horses cross the line (10 steps). Each race builds a fresh deck with uneven suit counts, shown on the deck sheet, so the deck is the form guide and card counting matters.
 - **Read, Call, Rig.** Study the deck sheet and the odds board, call a horse for each place (full order for the perfect-order bonus, which pays more the longer the shot) and lock the slip before the first card. Odds come from simulating the rest of the deck and lock with the slip. After the lock a place can still be changed for a fee (20% of its stake) at the odds of that moment.
 - **Tools** (cash plus Heat, limited uses per race): Peek, Burn, Stack, Mud, Swap, Tailwind, Shave, Hurdle, Riffle, Lane Swap. Four are open from the start; the rest are unlocked in Reputation. They nudge the odds but never decide a race.
 - **Heat and stewards.** Every trick adds Heat; it cools a little per card and between races. From 5 Heat each trick risks a steward inspection (fine and the tool is confiscated). At 10 Heat you are caught: slip void and a fine.
-- **Backroom.** Between races buy one favor out of three (12 favors that last the night), cool off, or borrow from the loan shark. Everything costs cash, and cash is your score.
-- **Reputation:** a fogged skill tree of its own (25 nodes, 4 branches: Toolbox, Nerve, Bankroll, The Book), earned in RP at the end of a night. Save/resume of a night mid-race, Turkish, phone layout.
-- Tests and balance: `node testg.js`, `node simg.js plain|rig|rigmax|ceil [nights]`, `python3 gplaytest.py`.
-- **Open decision (revisit later):** how strong rigging should be (decision 5, "nudges, but come back to it"). Right now a careful rigger earns about +20% on stakes, plain likeliest-order play breaks even.
-
-### v11: gadgets, round cards, pit crews, rivals, skill tree
-- **Gadgets** (permanent, 2 slots, charges refill each lap): Banana (slows the leader), Draft (surge your horse when it is close behind another), Cut (skip a rival card in the deck window). Keys **Q / W / E**.
-- **Round cards** (one-time, hand of 3, carry over): Veto (throw away the next rival card), Wild (turn the next rival card into your suit), Double Up (double your next card). Keys **R / T / Y**.
-- **Starting pick:** one of three free upgrades before lap 1.
-- **Pit crews:** each stop you choose one of three crews: the Shop (always) plus two of Black Market, Training Gallop, Gambler's Den, Trackside Event. Every crew has a gold sink.
-- **Named rival jockeys** (Rosa Valentine, Duke Carat, Clover Quinn, Silas Vane) with their own quirks and taunts. The old "Owner's Pick" perk was removed (Stable Points refunded).
-- **Player jockeys, coats and track themes** picked at Setup (unlocked in the Stable).
-- **The Stable is a skill tree:** start at the centre and branch out (treasury, yard, ring, shop, codex, club, paddock, luck). Codex nodes unlock new upgrades.
-- **Fogged tree and Cosmetics tab:** skill-tree nodes only appear once a neighbouring node is owned. Coats and tracks moved out of the tree into their own Stable tab (buy, then Use there or at Setup). The Stable has three tabs: Skill tree, Cosmetics, Trophies.
-- **Pit stop flow:** the main button walks through Result, Pit crew and Bets ("Next: Pit crew →"), then becomes "Start lap". A Back button appears after the first step, and the tabs still jump anywhere.
-- Saves are v2: old v10 runs in progress are not resumable. Balance: `node sim11.js quick|crews|jockeys|abilities`.
-
-### v10: saving, offline, calmer pit stop, finish drama
-- **Save and resume.** The whole run (including the random generator) is saved after every pit action and every 3 seconds in a lap, so closing the tab loses nothing. Menu: **Continue run**. A run resumes exactly where it stopped (mid-lap too, paused).
-- **Offline.** `dist/suit-derby.html` embeds its fonts (latin and latin-ext, so Turkish too), so the single file works with no network. `dist/site/` is the same page plus `sw.js`, a web manifest and icons: host that folder (GitHub Pages) and the game installs as an app and opens offline after one visit. The service worker is only registered over http(s). (The claude.ai artifact copy needs the page itself to load, so it is online only.)
-- **Pit stop in tabs.** Result, Shop and Bets, with a one-line strip for the next-lap modifier, draft and trap tokens. Badges show affordable offers and calls made.
-- **Photo finish.** When two horses reach the line almost together the game drops into slow motion with cinema bars, a heartbeat riser, a camera flash and a "wins by 0.04s" banner (about 15% of laps).
-- **Derby Day music.** A faster, fuller final-lap track, plus new sounds (photo finish, shutter).
-
-### v9: comeback and depth
-- **Trap tokens.** Finish 3rd (1) or 4th (2) and keep tokens (cap 3). **Trap** (X) drops a bear-trap in front of the leading rival (70% trip chance).
-- **Grit.** The further a horse trails the leader, the faster its stamina refills, up to +90%.
-- **Derby Day.** The final lap is worth double points. **Lap modifiers** (Mud Run, Quickdraw, Headwind, Clear Track, Golden Lap, Chaos Night) are announced at the pit stop and priced in by the bookie.
-- **Underdog draft.** Last in the standings: +1 shop slot and a free reroll; 3rd: a free reroll. Prizes are flatter (130/95/65/40), so the 1st:4th income gap dropped from about 5x to about 3x.
-- **Peek and burn.** $10 shows the next card (bets close until it is drawn), $25 discards it.
-- **Horse traits** (one per suit), **set bonuses** for owning several upgrade types, and new upgrades: Underdog Sponsor, Grit Amplifier, Trap Master, Echo Chamber, Phoenix.
-- **Trophies** (saved in the Stable) unlock four of those upgrades; **stakes** levels 0 to 4 open by winning; a **Daily Derby** on a date seed with a shareable result; a **first-run guide**; a **race recap** ("Why 3rd?") and a **run stats** screen.
-- **Brace is harder:** the window is shorter (7.5 units), the gold zone narrower (19% of the bar), and a tap in the first 30% of the bar (hatched) stumbles. The slow-motion during a hazard is 0.6x instead of 0.4x. The crowd is half as loud.
-- Balance tools: `node sim.js quick`, and `node sim_catchup.js` for seat fairness, comeback rate and income gap.
-
-### v6: Turkish language
-Pick **English** or **Türkçe** with the switch at the top of the menu. The choice is remembered in this
-browser (and defaults to Turkish on Turkish-language browsers). Every screen, upgrade, perk, the rules
-and the canvas labels are translated. To add a language, copy `src/lang_tr.js`, translate the values
-(the English text is the key), and add it to `LANGS` in `src/i18n.js`.
-
-### v5: a race you play, not just watch
-- **Stamina Spur for every horse.** Stamina refills all lap; a Spur spends it all and the surge grows faster than the stamina (full bar is about 3x a half bar), so waiting pays but going early works. Rivals spur too, each with its own patience.
-- **Hazards.** Every horse meets 3 per lap. Tap Brace (Space or B) when it lights up: gold zone = perfect jump (surge and $8), miss = stumble. The game slows while a hazard is open.
-- **Next-card bets.** Bet on the suit of the next card at the exact odds of the cards left. Hit streaks refill your stamina. Scout Lens marks suits that will not come next.
-- **Underdog fund.** At every pit stop a suit under 22% of the deck gets free cards, so no horse is starved out of a run.
-- **Stadium view and win effects.** Canvas race scene with a following camera, crowd, hazards, dust and speed lines; coins, confetti, shockwaves, a BIG WIN banner and screen shake (`src/scene.js`, `src/fx.js`).
-
-### v4: longer races, small deck
-- The deck is 40 cards (10 per suit, ranks 5 to Ace) and cards are drawn without being put back, so a suit that has come up a lot runs dry and trailing horses get the next cards.
-- Each card is a small push (`surgeBase` + rank x `surgeVal`), draws come every 2.4 s, and a lap takes about a minute.
-- Every upgrade was re-tuned for the small deck (card counts roughly halved) and checked with `node sim.js iso`.
-
-### What v3 adds
-- **Level start.** Every horse begins with 26 cards and no upgrades. The shop opens after lap 1.
-- **Call the order.** Before every lap, pick a horse for 1st, 2nd, 3rd and 4th with a stake each.
-  Odds come from a Monte-Carlo bookie (`quote()` in the engine) and lock when the lap starts.
-  Combos on total winnings for 2, 3 or 4 correct calls; every correct call also earns a Stable Point.
-- **Locked 1st call.** Your own horse is always your 1st-place call (stake adjustable, can't be removed). 2nd to 4th are optional.
-- **Luck.** Horseshoe, Jackpot, Coin of Fate, Loaded Dice and Chaos Cards, plus a higher/lower card table.
-- **Tiered upgrades.** Common $50, Rare $110, Epic $210, Legendary $380. The shop shows the rarity odds.
-- **Rival AI** buys upgrades too, and you see what they took.
+- **Backroom.** Between races buy one favor out of three (12 favors that last the night), cool off, or borrow from the loan shark.
+- **Reputation:** a fogged skill tree (25 nodes, 4 branches: Toolbox, Nerve, Bankroll, The Book), earned in RP at the end of a night. A night is saved after every move and resumes from the menu.
+- Balance (`node simg.js`): plain likeliest-order play is about break-even (+0.6%); careful rigging at Heat 6 or less is about +21%; unrestricted rigging about +9% with roughly one inspection a night.
+- **Open decision (revisit later):** how strong rigging should be (the "nudges" question).
 
 ## Play
 Open `dist/suit-derby.html` in a browser. It is one self-contained file
-(it only asks Google Fonts for typefaces; it works without them).
+(it only asks Google Fonts for typefaces in the artifact build; the standalone file embeds them).
 
 ## Layout
-    src/index.html   page structure: menu, setup, game, pit stop, run over, Stable, rules
+    src/index.html   page structure: menu, the six Gambler's Night screens, rules, guide
     src/style.css    all styling
-    src/engine.js    game rules: deck, laps, upgrades, cash, shop (no DOM, runs in Node)
-    src/audio.js     WebAudio engine (Sfx): effects, crowd, hoofbeats, the two music tracks, both switches
+    src/gamble.js    engine (pure JS, runs in Node): deck, quotes, tools, Heat, settle, Reputation tree
+    src/gamble_ui.js the screens: setup, book, race, backroom, night over, Reputation
+    src/app.js       shell: navigation, sound buttons, language switch, menu, rules, first-run guide
+    src/audio.js     WebAudio engine (Sfx): effects, music, both switches
     src/i18n.js      translator: t('English text', {params}), language switch, saved choice
-    src/lang_tr.js   Turkish dictionary and Turkish rules page
-    src/meta.js      Stable perks and saved progress (localStorage)
-    src/scene.js     the canvas race scene (camera, crowd, horses, hazards)
+    src/lang_tr.js   Turkish dictionary
     src/fx.js        win effects: coins, confetti, banner, shake
-    src/app.js       screens, input, HUD, bets
     build.py         inlines everything into dist/suit-derby.html, dist/artifact.html and dist/site/ (offline-installable)
-    fonts/           woff2 files and fonts.css that build.py embeds
-    icons/           app icons (make_icons.py redraws them)
-    gamble.js        Gambler's Night engine (pure JS) + its Reputation tree
-    gamble_ui.js     Gambler's Night screens
-    sim.js           balance simulation:  node sim.js
-    simg.js / testg.js / gplaytest.py   Gambler's Night balance, engine tests, browser test
-    sim11.js         crews, jockeys and abilities:  node sim11.js crews
-    sim_catchup.js   seat fairness and comeback checks:  node sim_catchup.js
-    playtest.py      headless full-run test (calls, shop, card table) (needs python playwright + chromium)
+    fonts/ icons/    embedded fonts, app icons (make_icons.py redraws them)
+    simg.js          balance simulation:  node simg.js plain|rig|rigmax|ceil [nights]
+    testg.js         engine tests:        node testg.js
+    gplaytest.py     browser test of a full night, Reputation, resume, phone (LANG_ID=tr for Turkish; needs python playwright + chromium)
 
 ## Tuning
-All numbers live in `CFG` at the top of `src/engine.js` (lap length, prizes, points, AI upgrade
-chance, shop size) and in the `UPGRADES` list below it. Stable perks and their costs are in
-`ITEMS` in `src/meta.js`. After changing them, run `node sim.js` to see champion rates for
-a no-purchase, a random-buyer and a greedy-buyer player.
+All numbers live in `CFG`, `TOOLS` and `FAVORS` at the top of `src/gamble.js`, and the Reputation nodes in `Gamble.Meta`.
+After changing them run `node testg.js` and `node simg.js`.
 
 ## Build
     python3 build.py
