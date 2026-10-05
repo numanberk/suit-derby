@@ -77,8 +77,8 @@
     el.innerHTML = '<header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Gambler’s Night') + '</h2><div class="cashchip sp">' + T('{n} RP', { n: GS.meta.sp }) + '</div></header>' +
       '<p class="lede">' + T('You are not an owner tonight. You are a gambler with a pocket full of tricks. Call the order all four horses will finish in, then bend the deck and the track your way. Do not get caught.') + '</p>' +
       '<div class="gsteps">' +
-      '<div class="gstep"><b>1 · ' + T('Read') + '</b><p>' + T('Study the deck sheet. Every card moves one horse. More cards means more steps, and the odds come from the cards.') + '</p></div>' +
-      '<div class="gstep"><b>2 · ' + T('Call') + '</b><p>' + T('Pick a horse for each place, then lock your slip before the first card. Odds lock with it.') + '</p></div>' +
+      '<div class="gstep"><b>1 · ' + T('Read') + '</b><p>' + T('Study the deck sheet and the board. The book prices every race from a flawed view of the deck, and it tells you which flaw. Beat it.') + '</p></div>' +
+      '<div class="gstep"><b>2 · ' + T('Call') + '</b><p>' + T('Pick a horse for each place and size each stake, add a head-to-head or two, then lock your slip before the first card.') + '</p></div>' +
       '<div class="gstep"><b>3 · ' + T('Rig') + '</b><p>' + T('Cards are time. Between draws, spend cash on tools that nudge the deck or the track.') + '</p></div>' +
       '<div class="gstep"><b>4 · ' + T('Stay clean') + '</b><p>' + T('Every trick adds Heat. Too much and the stewards inspect you, fine you, or throw out your slip.') + '</p></div></div>' +
       '<details class="gtl"><summary>' + T('All tools and Heat') + '</summary><ul>' + G.TOOL_ORDER.map(function (id) {
@@ -120,32 +120,64 @@
     if (!r.pk || !r.deck.length) return '';
     return '<div class="gtop"><span class="lbl">' + T('Top of the deck') + '</span>' + r.deck.slice(0, r.pk).map(function (c) { return cardHTML(c); }).join('') + '</div>';
   }
+  function quirkHTML(r) {
+    var id = G.quirkOf(r), q = G.QUIRKS[id];
+    return '<div class="gqk q-' + id + '"><span class="lbl">' + T('Tonight’s book') + '</span><b>' + T(q.name) + '</b><p>' + T(q.blurb) + '</p></div>';
+  }
+  /* Bookie's Tell: a mark where the book's price is off. Level 2 also shows by how many points. */
+  function tellHTML(R, c) {
+    var m = G.tellMark(R, c); if (!m) return '';
+    var pts = Math.round(Math.abs(c.d) * 100);
+    return '<i class="gtell ' + (m > 0 ? 'up' : 'dn') + '" title="' + T(m > 0 ? 'The book undersells this.' : 'The book oversells this.') + '">' + (m > 0 ? '▲' : '▼') + (R.fx.tell > 1 ? pts : '') + '</i>';
+  }
+  function pickLines(R) {
+    var r = R.race, du = G.duelsOf(R), html = '';
+    function line(kind, idx, label, odds, stake) {
+      return '<div class="gpick"><span class="gpn">' + label + '</span><span class="mono dim">' + oddsTxt(odds) + '</span><span class="gps"><button type="button" class="gpb" data-gstep="' + kind + ',' + idx + ',-1" aria-label="' + T('Smaller stake') + '"' + (stake <= R.fx.chips[0] ? ' disabled' : '') + '>−</button><b class="mono">' + money(stake) + '</b><button type="button" class="gpb" data-gstep="' + kind + ',' + idx + ',1" aria-label="' + T('Bigger stake') + '"' + (stake >= R.fx.chips[R.fx.chips.length - 1] ? ' disabled' : '') + '>+</button></span></div>';
+    }
+    var b = G.board(R), db = r.dbets.some(Boolean) ? G.duelBoard(R) : [];
+    r.slip.forEach(function (s, pl) { if (s) html += line('p', pl, '<b class="mono">' + placeName(pl) + '</b>' + gl(s.h) + ' ' + sn(s.h), b[s.h][pl].odds, s.stake); });
+    r.dbets.forEach(function (d, i) { if (d && du[i]) { var row = db[i], over = du[i][0] === d.h ? du[i][1] : du[i][0]; html += line('d', i, gl(d.h) + ' ' + T('{s} ahead of {o}', { s: sn(d.h), o: sn(over) }), d.h === row.a ? row.oa : row.ob, d.stake); } });
+    return html ? '<div class="gpicks">' + html + '</div>' : '';
+  }
+  function duelsHTML(R) {
+    var r = R.race, rows = G.duelBoard(R);
+    return '<h3 class="lbl gduh">' + T('Head to head') + '</h3><div class="gduels">' + rows.map(function (d, i) {
+      var cur = r.dbets[i];
+      function btn(h, other, o, p, t) {
+        var on = cur && cur.h === h, c = { d: t - p };
+        return '<button type="button" class="gcell gdbtn s' + h + (on ? ' on' : '') + '" data-gduel="' + i + ',' + h + '" aria-pressed="' + on + '">' + '<span class="gdn">' + gl(h) + ' ' + T('{s} ahead', { s: sn(h) }) + '</span><b class="mono">' + oddsTxt(o) + '</b><small class="mono">' + pct(p) + '</small>' + tellHTML(R, c) + '</button>';
+      }
+      return '<div class="gduel">' + btn(d.a, d.b, d.oa, d.pa, d.ta) + '<span class="gvs mono">' + T('vs') + '</span>' + btn(d.b, d.a, d.ob, d.pb, d.tb) + '</div>';
+    }).join('') + '</div>';
+  }
   function renderBook() {
-    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length;
+    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length, nd = r.dbets.filter(Boolean).length;
     var full = n === 4, order = full ? r.slip.map(function (s) { return s.h; }) : null;
+    var placeTotal = r.slip.reduce(function (a, s) { return a + (s ? s.stake : 0); }, 0), total = G.staked(R);
     var pm = full ? G.perfectMult(R, order) : 0, pc = full ? G.orderChance(R, order) : 0;
     var rows = '<div class="gboard" role="group" aria-label="' + T('Call the order') + '"><span class="gb-h"></span>' + [0, 1, 2, 3].map(function (pl) { return '<span class="gb-h mono">' + placeName(pl) + '</span>'; }).join('');
     for (var h = 0; h < 4; h++) {
       rows += '<span class="gb-n s' + h + '">' + gl(h) + ' ' + sn(h) + '</span>';
       for (var pl = 0; pl < 4; pl++) {
         var on = r.slip[pl] && r.slip[pl].h === h, c = b[h][pl];
-        rows += '<button type="button" class="gcell s' + h + (on ? ' on' : '') + '" data-gcell="' + pl + ',' + h + '" aria-pressed="' + on + '"><b class="mono">' + oddsTxt(c.odds) + '</b><small class="mono">' + pct(c.p) + '</small></button>';
+        rows += '<button type="button" class="gcell s' + h + (on ? ' on' : '') + '" data-gcell="' + pl + ',' + h + '" aria-pressed="' + on + '"><b class="mono">' + oddsTxt(c.odds) + '</b><small class="mono">' + pct(c.p) + '</small>' + tellHTML(R, c) + '</button>';
       }
     }
     rows += '</div>';
     var chips = R.fx.chips.map(function (v) { return '<button type="button" class="gchip' + (R.chip === v ? ' on' : '') + '" data-gchip="' + v + '"' + (v > R.cash ? ' disabled' : '') + '>' + money(v) + '</button>'; }).join('');
-    var total = R.chip * n;
     var pk = G.toolState(R, 'peek');
     el.innerHTML = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Race {n} of {m}', { n: R.raceNo, m: R.races }) + '</h2>' + bankHTML(R) + '</header>' +
       heatHTML(R) +
       '<div class="gcols"><div><h3 class="lbl">' + T('The deck') + '</h3><div class="dsheet">' + deckSheet(R) + '</div>' +
-      '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' + topHTML(R) + '</div>' +
-      '<div><h3 class="lbl">' + T('Call the order') + '</h3>' + rows +
-      '<div class="gslipbar"><span class="lbl">' + T('Stake per place') + '</span><div class="gchips">' + chips + '</div></div>' +
-      '<p class="gsum">' + (n ? T('{n} places · {m} at stake', { n: n, m: money(total) }) : T('Pick a horse for each place you want to back. A horse can hold one place.')) +
-      (n && total > R.cash ? '<br><span class="neg">' + T('Not enough cash for that. Pick a smaller chip or back fewer places.') + '</span>' : '') +
-      (full ? '<br><span class="gold">' + T('Perfect order: {c} chance, pays {m} extra', { c: pc < 0.01 ? '&lt;1%' : pct(pc), m: money(Math.round(total * pm)) }) + '</span>' : '') + '</p>' +
-      '<div class="actions gact"><button type="button" class="btn" data-gbest>' + T('Fill with the likeliest order') + '</button>' +
+      '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' +
+      '<p class="note">' + T('The board is the book’s opinion. The deck sheet is the truth. Compare them.') + '</p>' + topHTML(R) + '</div>' +
+      '<div>' + quirkHTML(r) + '<h3 class="lbl">' + T('Call the order') + '</h3>' + rows + duelsHTML(R) +
+      '<div class="gslipbar"><span class="lbl">' + T('Stake for every pick') + '</span><div class="gchips">' + chips + '</div></div>' + pickLines(R) +
+      '<p class="gsum">' + (n + nd ? T('{n} bets · {m} at stake', { n: n + nd, m: money(total) }) : T('Pick a horse for each place you want to back. A horse can hold one place.')) +
+      (total > R.cash ? '<br><span class="neg">' + T('Not enough cash for that. Pick a smaller chip or back fewer places.') + '</span>' : '') +
+      (full ? '<br><span class="gold">' + T('Perfect order: {c} chance, pays {m} extra', { c: pc < 0.01 ? '&lt;1%' : pct(pc), m: money(Math.round(placeTotal * pm)) }) + '</span>' : '') + '</p>' +
+      '<div class="actions gact"><button type="button" class="btn" data-gbest' + (n === 4 ? ' disabled' : '') + '>' + T('Back the board’s favorite') + '</button>' +
       '<button type="button" class="btn" data-gtool="peek"' + (pk.ok ? '' : ' disabled') + '>' + T('Peek · {m}', { m: money(pk.cost) }) + ' <small>' + pk.left + '/' + pk.max + '</small></button>' +
       '<button type="button" class="btn primary" data-glock' + (G.canLock(R) ? '' : ' disabled') + '>' + T('Lock in your call') + '</button></div>' +
       '<p class="note">' + T('Odds lock when you do. After that you can still change a pick, for a fee, at the odds of that moment.') + '</p>' +
@@ -156,8 +188,10 @@
     var R = GS.run; if (!R) return; var t = e.target;
     var c = t.closest('[data-gcell]');
     if (c) { var p = c.dataset.gcell.split(','); if (G.pick(R, +p[0], +p[1])) { Sfx.pick(); saveRun(); renderBook(); } return; }
+    c = t.closest('[data-gduel]'); if (c) { var d = c.dataset.gduel.split(','); if (G.duelPick(R, +d[0], +d[1])) { Sfx.pick(); saveRun(); renderBook(); } return; }
+    c = t.closest('[data-gstep]'); if (c) { var q = c.dataset.gstep.split(','); if (G.stepStake(R, q[0], +q[1], +q[2])) { Sfx.chip(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gchip]'); if (c) { if (G.setChip(R, +c.dataset.gchip)) { Sfx.chip(); saveRun(); renderBook(); } return; }
-    if (t.closest('[data-gbest]')) { G.pickBest(R); Sfx.shuffle(); saveRun(); renderBook(); return; }
+    if (t.closest('[data-gbest]')) { if (G.pickFavorite(R)) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gtool]'); if (c) { runTool(c.dataset.gtool); return; }
     if (t.closest('[data-glock]')) {
       if (G.lock(R)) { Sfx.chip(); GS.last = null; GS.prevP = null; GS.doneShown = false; GS.auto = 0; log(T('Slip locked. The race is on.')); saveRun(); show(); } else Sfx.deny();
@@ -254,6 +288,15 @@
         }).join('') + '</div>';
       }
     }
+    (r.duels || []).forEach(function (du, i) {
+      var d = r.dbets[i]; if (!d) return;
+      var over = du[0] === d.h ? du[1] : du[0], fa = r.finished.indexOf(d.h), fb = r.finished.indexOf(over), settled = r.done || fa >= 0 || fb >= 0, res;
+      if (settled) {
+        var hit = r.done && r.order ? r.order.indexOf(d.h) < r.order.indexOf(over) : (fa >= 0 && (fb < 0 || fa < fb));
+        res = '<span class="gres ' + (hit && !r.caught ? 'pos' : 'neg') + '">' + (r.caught ? T('void') : hit ? '✓ ' + money(Math.round(d.stake * d.odds), true) : '✗') + '</span>';
+      } else res = '<span class="glive mono dim">' + T('pending') + '</span>';
+      html += '<div class="gsl gduelrow s' + d.h + '"><b class="mono">⇄</b>' + gl(d.h) + '<span class="gsn">' + T('{s} ahead of {o}', { s: sn(d.h), o: sn(over) }) + '</span><span class="mono dim">' + oddsTxt(d.odds) + ' · ' + money(d.stake) + '</span>' + res + '<span></span></div>';
+    });
     html += '<p class="note">' + T('Cash {m} · slip {s} · re-calls cost a fee each', { m: money(R.cash), s: money(G.staked(R)) }) + '</p>';
     $('#gslip').innerHTML = html;
   }
@@ -378,8 +421,11 @@
     if (res.caught) html += '<div class="gbanner bad">' + T('Caught and disqualified: your slip was void.') + '</div>';
     html += '<div class="gcols"><div><h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
       var b = res.bets.filter(function (x) { return x.pl === pl; })[0];
-      return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
-    }).join('') + '</div></div><div><h3 class="lbl">' + T('Your night so far') + '</h3><div class="stmt">';
+      return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.sharp ? '★ ' : '') + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
+    }).join('') + '</div>' + (res.sharp ? '<p class="note gold">' + TP(res.sharp, '★ Sharp call: a long shot landed. Bonus Reputation tonight.', '★ Sharp calls: long shots landed. Bonus Reputation tonight.') + '</p>' : '') +
+      (res.duels && res.duels.length ? '<h3 class="lbl sect-h">' + T('Head to head') + '</h3><div class="gfinal">' + res.duels.map(function (d) {
+        return '<div class="gfr s' + d.h + '"><b class="mono">⇄</b>' + gl(d.h) + '<span class="gsn">' + T('{s} ahead of {o}', { s: sn(d.h), o: sn(d.over) }) + '</span><span class="mono ' + (d.hit && !res.caught ? 'pos' : 'dim') + '">' + oddsTxt(d.odds) + '</span><span class="mono ' + (d.pay ? 'pos' : 'neg') + '">' + (d.pay ? money(d.pay, true) : '−' + money(d.stake)) + '</span></div>';
+      }).join('') + '</div>' : '') + '</div><div><h3 class="lbl">' + T('Your night so far') + '</h3><div class="stmt">';
     function line(label, v, cls) { return '<div class="row' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span><b class="mono ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'dim') + '">' + money(v, true) + '</b></div>'; }
     html += line(T('Winning calls'), res.pay);
     if (res.bonus) html += line(T('Perfect order'), res.bonus);
@@ -436,6 +482,7 @@
       '<div class="row"><span>' + T('Final bankroll') + '</span><b class="mono gold">' + money(o.final) + '</b></div>' +
       '<div class="row"><span>' + T('Places called right') + '</span><b class="mono">' + o.hits + ' / ' + (R.stats.races * 4) + '</b></div>' +
       '<div class="row"><span>' + T('Perfect orders') + '</span><b class="mono">' + o.perfects + '</b></div>' +
+      '<div class="row"><span>' + T('Sharp calls (long shots that landed)') + '</span><b class="mono">' + (o.sharp || 0) + '</b></div>' +
       '<div class="row"><span>' + T('Tools used') + '</span><b class="mono">' + R.stats.tools + '</b></div>' +
       '<div class="row"><span>' + T('Times caught · inspections') + '</span><b class="mono">' + o.caught + ' · ' + R.stats.inspections + '</b></div>' +
       '<div class="row total"><span>' + T('Reputation earned') + '</span><b class="mono gold">+' + o.rp + ' RP</b></div></div>' +
@@ -444,7 +491,7 @@
   };
 
   /* ---------- Reputation: the skill tree ---------- */
-  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡' };
+  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡', e_tell: '👁️' };
   var NS = 'http://www.w3.org/2000/svg';
   function npos(n) { var a = n.a * Math.PI / 180, r = [0, 135, 245, 345, 440][n.r]; return { x: 500 + r * Math.cos(a), y: 500 + r * Math.sin(a) }; }
   function brOf(n) { return GM.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }

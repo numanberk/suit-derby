@@ -22,7 +22,7 @@ async def main():
         txt = await pg.evaluate("document.querySelector('#s-menu').innerText"); print('menu text:', txt.replace('\n', ' | ')[:300])
         # rules page: ten sections, ten tools listed
         await pg.click('#s-menu [data-go="rules"]'); await leak(pg, 'rules'); await pg.screenshot(path=shot('rules.png'), full_page=True)
-        assert await pg.locator('#rules section').count() == 10 and await pg.locator('#rules .toolrules li').count() == 10, 'rules content'
+        assert await pg.locator('#rules section').count() == 12 and await pg.locator('#rules .toolrules li').count() == 10, 'rules content'
         await pg.click('#s-rules [data-go="menu"]')
         # the first-run guide opens once, on the first visit to Gambler's Night
         await pg.click('#s-menu [data-go="gsetup"]')
@@ -35,7 +35,19 @@ async def main():
         stats = {'races': 0, 'tools': 0, 'recalls': 0, 'auto': 0}
         for race in range(5):
             assert await screen(pg) == 's-gbook', 'book screen ' + str(race)
+            assert await pg.locator('.gqk').count() == 1, 'quirk banner'
+            if race == 0: print('quirk:', (await pg.locator('.gqk b').inner_text()), '| duels', await pg.locator('[data-gduel]').count(), '| tell marks', await pg.locator('.gtell').count())
             await pg.click('[data-gbest]')
+            assert await pg.locator('.gcell.on').count() == 1, 'autopilot fills one place'
+            for i in range(3): await pg.click('[data-gbest]')
+            assert await pg.locator('[data-gbest][disabled]').count() == 1, 'autopilot is done when the slip is full'
+            if race == 0:
+                before = await pg.locator('.gsum').inner_text()
+                await pg.click('[data-gstep="p,0,1"]'); await pg.click('[data-gduel]'); await pg.wait_for_timeout(100)
+                after = await pg.locator('.gsum').inner_text(); print('stake summary:', before.replace('\n', ' '), '->', after.replace('\n', ' '))
+                assert await pg.locator('.gpick').count() == 5, 'four places and a duel in the pick list'
+                await pg.screenshot(path=shot('book-picks.png'), full_page=True)
+                await pg.click('[data-gstep="p,0,-1"]'); await pg.click('[data-gduel].on')
             if await pg.locator('[data-glock][disabled]').count() and await pg.locator('[data-gchip]:not([disabled])').count():
                 await pg.locator('[data-gchip]:not([disabled])').first.click()
             while await pg.locator('[data-glock][disabled]').count() and await pg.locator('.gcell.on').count():
@@ -86,7 +98,7 @@ async def main():
         print('tree nodes', n0, '->', await pg.locator('#gtree .nd').count())
         await pg.screenshot(path=shot('rep1.png'))
         # resume: start a night, leave mid-race, continue from the menu
-        await pg.click('#s-grep [data-go="gsetup"]'); await pg.click('#gStart'); await pg.click('[data-gbest]'); await pg.click('[data-glock]'); await pg.wait_for_timeout(200)
+        await pg.click('#s-grep [data-go="gsetup"]'); await pg.click('#gStart'); await pg.click('[data-gbest]'); await pg.click('[data-gduel]'); await pg.click('[data-glock]'); await pg.wait_for_timeout(200)
         for i in range(5): await pg.click('[data-gdraw]'); await pg.wait_for_timeout(60)
         d0 = await pg.evaluate('__gamble.GS.run.race.draws'); await pg.locator('[data-gquit]:visible').first.click(); await pg.wait_for_timeout(200)
         assert await pg.locator('#gResume:not([hidden])').count() == 1, 'resume button'
@@ -101,7 +113,7 @@ async def main():
         if LANG_ID != 'en': await pg2.click(f'[data-lang="{LANG_ID}"]')
         await pg2.click('#s-menu [data-go="gsetup"]'); await pg2.click('#gskip'); await pg2.click('#gStart'); await pg2.screenshot(path=shot('phone-book.png'), full_page=True)
         print('phone book scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))
-        await pg2.click('[data-gbest]'); await pg2.click('[data-glock]'); await pg2.wait_for_timeout(300)
+        await pg2.click('[data-gbest]'); await pg2.click('[data-gduel]'); await pg2.click('[data-glock]'); await pg2.wait_for_timeout(300)
         for i in range(6): await pg2.click('[data-gdraw]'); await pg2.wait_for_timeout(60)
         await pg2.screenshot(path=shot('phone-race.png'), full_page=True)
         print('phone race scrollWidth', await pg2.evaluate('document.documentElement.scrollWidth'))

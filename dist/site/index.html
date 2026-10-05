@@ -439,6 +439,31 @@ h1, h2, h3, p { margin: 0; }
 .rules ul.toolrules li b { color: var(--ink); font-weight: 700; }
 .rules ul.toolrules li .mono { font-size: 12px; color: var(--gold); }
 
+/* v14: the book's quirk, Bookie's Tell, stakes per pick, head to head */
+.gqk { margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); border-left: 4px solid var(--gold); background: var(--track); }
+.gqk .lbl { display: block; margin: 0 0 2px; }
+.gqk b { font: 800 20px/1.1 var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: var(--gold); }
+.gqk p { margin-top: 4px; color: var(--ink-dim); font-size: 14px; }
+.gqk.q-sharp { border-left-color: var(--good); }
+.gqk.q-sharp b { color: var(--good); }
+.gcell { position: relative; }
+.gtell { position: absolute; top: 3px; right: 5px; font: 700 10px/1 var(--f-mono); font-style: normal; }
+.gtell.up { color: var(--good); }
+.gtell.dn { color: var(--bad); }
+.gcell.on .gtell { color: #0d110c; }
+.gduh { margin-top: 16px; }
+.gduels { display: grid; gap: 6px; }
+.gduel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: stretch; }
+.gvs { align-self: center; font-size: 11px; color: var(--ink-dim); }
+.gdbtn .gdn { font: 700 13px var(--f-body); display: inline-flex; gap: 5px; align-items: center; }
+.gpicks { display: grid; gap: 6px; margin-top: 10px; }
+.gpick { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); }
+.gpn { display: flex; gap: 6px; align-items: center; font: 700 14px var(--f-body); min-width: 0; }
+.gps { display: flex; align-items: center; gap: 6px; }
+.gps b { min-width: 3.4ch; text-align: center; }
+.gpb { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--raise); font: 700 16px/1 var(--f-mono); }
+.gpb:disabled { opacity: .35; }
+
 </style>
 </head>
 <body>
@@ -738,9 +763,7 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "{n} RP": "{n} İP",
     "You are not an owner tonight. You are a gambler with a pocket full of tricks. Call the order all four horses will finish in, then bend the deck and the track your way. Do not get caught.": "Bu gece at sahibi değilsin. Cebi hilelerle dolu bir kumarbazsın. Dört atın bitireceği sırayı tahmin et, sonra desteyi ve pisti kendi yoluna çevir. Yakalanma.",
     "Read": "Oku",
-    "Study the deck sheet. Every card moves one horse. More cards means more steps, and the odds come from the cards.": "Deste kâğıdını incele. Her kart bir atı ilerletir. Daha çok kart daha çok adım demek ve oranlar kartlardan gelir.",
     "Call": "Tahmin Et",
-    "Pick a horse for each place, then lock your slip before the first card. Odds lock with it.": "Her sıra için bir at seç, sonra ilk karttan önce kuponunu kilitle. Oranlar onunla birlikte kilitlenir.",
     "Rig": "Hile Yap",
     "Cards are time. Between draws, spend cash on tools that nudge the deck or the track.": "Kartlar zamandır. Çekişler arasında desteyi ya da pisti dürten araçlara para harca.",
     "Stay clean": "Temiz Kal",
@@ -758,12 +781,9 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "Top of the deck": "Destenin üstü",
     "The deck": "Deste",
     "First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.": "İlk {n} adıma ulaşan çizgiyi geçer. Sayı kartı atını 1, resimli kart 2 adım ilerletir. Yarış 3 at çizgiyi geçince biter. Tek sır kartların sırası.",
-    "Stake per place": "Sıra başına bahis",
-    "{n} places · {m} at stake": "{n} sıra · {m} bahis",
     "Pick a horse for each place you want to back. A horse can hold one place.": "Bahis oynamak istediğin her sıra için bir at seç. Bir at tek sırada olabilir.",
     "Not enough cash for that. Pick a smaller chip or back fewer places.": "Buna yetecek para yok. Daha küçük bir fiş seç ya da daha az sıraya oyna.",
     "Perfect order: {c} chance, pays {m} extra": "Kusursuz sıralama: {c} şans, ekstra {m} öder",
-    "Fill with the likeliest order": "En olası sıralamayla doldur",
     "Peek · {m}": "Göz At · {m}",
     "Lock in your call": "Tahminini kilitle",
     "Odds lock when you do. After that you can still change a pick, for a fee, at the odds of that moment.": "Sen kilitleyince oranlar da kilitlenir. Sonrasında bir seçimi, ücret karşılığında, o anın oranıyla yine de değiştirebilirsin.",
@@ -865,7 +885,6 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "One deck, four horses": "Tek deste, dört at",
     "You own no horse tonight. Four horses, one per suit, race through one shuffled deck. Every card drawn moves the horse of that suit one step, or two on a face card.": "Bu gece senin atın yok. Her renkten bir at olmak üzere dört at, karıştırılmış tek bir desteyle yarışır. Çekilen her kart o rengin atını bir adım, resimli kartsa iki adım ilerletir.",
     "There is no clock. Time only moves when a card is drawn.": "Saat yok. Zaman yalnızca bir kart çekildiğinde ilerler.",
-    "Before the first card, pick which horse finishes in each place and put chips on it. The odds come from the cards left in the deck, so read the deck sheet.": "İlk karttan önce hangi atın hangi sırada bitireceğini seç ve üzerine fiş koy. Oranlar destede kalan kartlardan gelir, o yüzden deste tablosunu oku.",
     "Lock your slip and the odds are fixed. A perfect order pays a big bonus.": "Kuponunu kilitlediğinde oranlar sabitlenir. Kusursuz sıralama büyük bir bonus öder.",
     "Rig the race": "Yarışı ayarla",
     "While the cards fall you can spend cash on tools: peek at the next card, burn it, stack the deck, soak a lane in mud, give a horse a tailwind.": "Kartlar düşerken araçlara para harcayabilirsin: sıradaki karta göz at, yak, desteyi diz, bir şeridi çamurla, bir ata arkadan rüzgâr ver.",
@@ -880,20 +899,54 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "A night": "Bir gece",
     "You own no horse. Tonight you are a gambler: a night is a few races, and for each one you call the order all four horses will finish in, stake chips on it, and then run the race card by card. You start with {m}. What you hold when the night ends, minus any debt, is your score, and it earns Reputation Points.": "Senin atın yok. Bu gece bir kumarbazsın: bir gece birkaç yarıştan oluşur; her yarış için dört atın bitireceği sırayı tahmin eder, üzerine fiş koyar, sonra yarışı kart kart oynarsın. {m} ile başlarsın. Gece bittiğinde elindeki para, borçlar düşülerek, skorundur ve İtibar Puanı kazandırır.",
     "Cards are time": "Kartlar zamandır",
-    "There is no clock. Time only moves when a card is drawn: the horse of that suit steps forward once, or twice on a face card (J, Q, K, A). The track is {t} steps long and the race is over when three horses have crossed the line; the fourth is placed by how far it got.": "Saat yok. Zaman yalnızca bir kart çekildiğinde ilerler: o rengin atı bir adım, resimli kartta (V, K, P, A) iki adım ilerler. Pist {t} adım uzunluğundadır ve üç at çizgiyi geçince yarış biter; dördüncü, ne kadar ilerlediğine göre sıralanır.",
-    "Every race has its own shuffled deck, and drawn cards are never put back. Each suit holds 8 to 11 plain cards and 1 or 2 face cards. The deck sheet on the call screen shows what is left, so you can read which horses the deck favors.": "Her yarışın kendi karıştırılmış destesi vardır ve çekilen kartlar geri konmaz. Her renkte 8 ila 11 sayı kartı ve 1 ya da 2 resimli kart bulunur. Tahmin ekranındaki deste tablosu kalanları gösterir; böylece deste hangi atları tutuyor görebilirsin.",
     "Calling the order": "Sıralamayı tahmin etme",
-    "Choose a horse for each place you want to back, and a chip size ({c}). The odds are the exact chance from the cards still in the deck, minus the book’s cut of about {cut}%, so safe picks pay little and long shots pay a lot.": "Oynamak istediğin her sıra için bir at ve bir fiş boyutu ({c}) seç. Oranlar, destede kalan kartlardan hesaplanan kesin şanstır; buradan bahisçinin yaklaşık %{cut} payı düşülür. Güvenli seçimler az, uzun şanslar çok öder.",
-    "Back all four places and get them all right and a <b>perfect order</b> bonus is paid on top: the longer the shot, the bigger it is. <b>Fill with the likeliest order</b> picks the most probable finish for you.": "Dört sırayı da oynayıp hepsini doğru bilirsen üstüne <b>kusursuz sıralama</b> bonusu ödenir: şans ne kadar uzaksa bonus o kadar büyüktür. <b>En olası sıralamayla doldur</b> senin için en olası bitişi seçer.",
     "Locking and re-calls": "Kilitleme ve yeniden tahmin",
     "Lock your slip before the first card: the stakes are paid and the odds are fixed. You can still change a pick while the race runs, but every re-call costs {f}% of that slip’s stake and is priced at the odds of that moment. A place that is already decided cannot be changed.": "Kuponunu ilk karttan önce kilitle: bahisler ödenir ve oranlar sabitlenir. Yarış sürerken bir seçimi yine değiştirebilirsin, ama her yeniden tahmin o kuponun bahsinin %{f} kadar tutar ve o anın oranıyla fiyatlanır. Sonuçlanmış bir sıra değiştirilemez.",
     "Between cards you can spend cash on tools that bend the deck or the track. Every tool has a price, a limit per race and a Heat cost. More tools unlock in Reputation.": "Kartlar arasında desteyi ya da pisti eğen araçlara para harcayabilirsin. Her aracın bir fiyatı, yarış başına bir sınırı ve bir Şüphe bedeli vardır. Daha fazla araç İtibar’da açılır.",
     "Heat and the stewards": "Şüphe ve komiserler",
     "Every trick adds Heat. It cools a little with every card drawn clean and between races. From {w} Heat each trick can bring a steward inspection: a fine, and the tool is taken away. At {c} Heat you are caught: that race’s slip is void and you are fined. Tools that only look add no Heat.": "Her hile Şüphe artırır. Hilesiz çekilen her kartla ve yarışlar arasında biraz soğur. {w} Şüpheden itibaren her hile bir komiser denetimi getirebilir: ceza kesilir ve araç elinden alınır. {c} Şüpheye ulaşırsan yakalanırsın: o yarışın kuponu geçersiz olur ve ceza yersin. Yalnızca bakan araçlar Şüphe eklemez.",
     "After every race you visit the backroom. Buy one <b>favor</b> from the offers (it lasts the whole night: cheaper tools, faster cooling, better odds and more), pay {p} to cool off by {a} Heat, or take a loan of {l} that you repay with {o} at the end of the night (two loans at most).": "Her yarıştan sonra arka odaya uğrarsın. Sunulanlardan bir <b>iyilik</b> satın al (bütün gece sürer: daha ucuz araçlar, daha hızlı soğuma, daha iyi oranlar ve fazlası), {a} Şüphe soğutmak için {p} öde ya da gece sonunda {o} ile geri ödeyeceğin {l} borç al (en fazla iki borç).",
-    "When the night ends you earn Reputation Points: for your profit, for every place you called right, and a big bonus for each perfect order. Spend them in the Reputation tree on new tools, more chips, a bigger bankroll, cooler nerves and a sharper eye on the book. Nothing in it is lost between nights.": "Gece bittiğinde kârın, doğru bildiğin her sıra ve her kusursuz sıralama için büyük bir bonus olarak İtibar Puanı kazanırsın. Bunları İtibar ağacında yeni araçlara, daha fazla fişe, daha kalın bir kasaya, daha soğuk bir kafaya ve bahisçiye karşı daha keskin bir göze harcarsın. Geceler arasında hiçbir şey kaybolmaz.",
     "Walking out and coming back": "Çekilmek ve geri dönmek",
-    "Between races, before you lock a slip, you can walk out and keep what you have. The night is saved after every move: close the page and press Continue night on the menu.": "Yarışlar arasında, bir kuponu kilitlemeden önce masadan kalkıp elindekini koruyabilirsin. Gece her hamleden sonra kaydedilir: sayfayı kapat ve menüden Geceye devam et’e bas."
+    "Between races, before you lock a slip, you can walk out and keep what you have. The night is saved after every move: close the page and press Continue night on the menu.": "Yarışlar arasında, bir kuponu kilitlemeden önce masadan kalkıp elindekini koruyabilirsin. Gece her hamleden sonra kaydedilir: sayfayı kapat ve menüden Geceye devam et’e bas.",
+    "Tonight’s book": "Bu geceki bahisçi",
+    "Counts cards, not steps": "Kartı sayar, adımı saymaz",
+    "Tonight’s book counts cards, not steps. It underrates suits with extra face cards and overrates suits without.": "Bu geceki bahisçi kartları sayar, adımları değil. Fazladan resimli kartı olan renkleri hafife alır, olmayanları abartır.",
+    "Loves a favorite": "Favoriyi sever",
+    "Tonight’s book loves a favorite: short odds on the favorites, fat odds on the long shots.": "Bu geceki bahisçi favoriyi sever: favorilere kısa, uzun şanslara yüksek oranlar verir.",
+    "Shrugs at the middle": "Ortayı umursamaz",
+    "Tonight’s book shrugs at the middle: 2nd and 3rd are priced too evenly.": "Bu geceki bahisçi ortayı umursamaz: 2. ve 3. sıralar fazla eşit fiyatlanır.",
+    "A sharp book": "Keskin bir bahisçi",
+    "A sharp book tonight: no mistakes, fair prices. Look for an edge with your tools instead.": "Bu gece bahisçi keskin: hata yok, adil fiyatlar. Avantajı araçlarında ara.",
+    "The book undersells this.": "Bahisçi bunun şansını gerçekte olduğundan düşük görüyor.",
+    "The book oversells this.": "Bahisçi bunun şansını gerçekte olduğundan yüksek görüyor.",
+    "Smaller stake": "Daha küçük bahis",
+    "Bigger stake": "Daha büyük bahis",
+    "ahead of {o}": "{o} önünde",
+    "Head to head": "Yüz yüze",
+    "{s} ahead": "{s} önde",
+    "vs": "karşı",
+    "Stake for every pick": "Her seçim için bahis",
+    "{n} bets · {m} at stake": "{n} bahis · {m} risk altında",
+    "The board is the book’s opinion. The deck sheet is the truth. Compare them.": "Tablo bahisçinin görüşüdür. Deste tablosu gerçektir. İkisini karşılaştır.",
+    "Back the board’s favorite": "Tablonun favorisine oyna",
+    "{s} ahead of {o}": "{s}, {o} önünde",
+    "pending": "bekliyor",
+    "★ Sharp call: a long shot landed. Bonus Reputation tonight.": "★ Keskin tahmin: uzun bir şans tuttu. Bu gece bonus İtibar.",
+    "★ Sharp calls: long shots landed. Bonus Reputation tonight.": "★ Keskin tahminler: uzun şanslar tuttu. Bu gece bonus İtibar.",
+    "Sharp calls (long shots that landed)": "Keskin tahminler (tutan uzun şanslar)",
+    "Study the deck sheet and the board. The book prices every race from a flawed view of the deck, and it tells you which flaw. Beat it.": "Deste tablosunu ve tabloyu incele. Bahisçi her yarışı desteye kusurlu bakarak fiyatlar ve hangi kusuru olduğunu söyler. Onu yen.",
+    "Pick a horse for each place and size each stake, add a head-to-head or two, then lock your slip before the first card.": "Her sıra için bir at seç, her bahsin boyutunu ayarla, bir iki yüz yüze ekle, sonra ilk karttan önce kuponunu kilitle.",
+    "Bookie’s Tell": "Bahisçinin Tiki",
+    "The board marks the cells where the book is wrong: ▲ it undersells, ▼ it oversells. A second level catches smaller mistakes.": "Tablo, bahisçinin yanıldığı hücreleri işaretler: ▲ olduğundan düşük, ▼ olduğundan yüksek fiyatlar. İkinci seviye daha küçük hataları yakalar.",
+    "Before the first card, pick which horse finishes in each place and put chips on it. The book prices every race from a flawed view of the deck and tells you which flaw, so compare the board with the deck sheet.": "İlk karttan önce hangi atın hangi sırada bitireceğini seç ve üzerine fiş koy. Bahisçi her yarışı desteye kusurlu bakarak fiyatlar ve hangi kusuru olduğunu söyler; o yüzden tabloyu deste tablosuyla karşılaştır.",
+    "There is no clock. Time only moves when a card is drawn: the horse of that suit steps forward once, or twice on a face card (J, Q, K). The track is {t} steps long and the race is over when three horses have crossed the line; the fourth is placed by how far it got.": "Saat yok. Zaman yalnızca bir kart çekildiğinde ilerler: o rengin atı bir adım, resimli kartta (V, K, P) iki adım ilerler. Pist {t} adım uzunluğundadır ve üç at çizgiyi geçince yarış biter; dördüncü, ne kadar ilerlediğine göre sıralanır.",
+    "Every race has its own shuffled deck, and drawn cards are never put back. Each suit holds 8 to 11 plain cards and up to 3 face cards, so some decks are very lopsided. The deck sheet on the call screen shows what is left, and the steps count tells you which horses the deck favors.": "Her yarışın kendi karıştırılmış destesi vardır ve çekilen kartlar geri konmaz. Her renkte 8 ila 11 sayı kartı ve en çok 3 resimli kart bulunur; bu yüzden bazı desteler çok dengesizdir. Tahmin ekranındaki deste tablosu kalanları gösterir, adım sayısı da destenin hangi atları tuttuğunu söyler.",
+    "Choose a horse for each place you want to back, then size each stake with the + and − buttons (chips: {c}). Every cell on the board is the book’s chance and its price: the odds are that chance minus the book’s cut of about {cut}%, so safe picks pay little and long shots pay a lot.": "Oynamak istediğin her sıra için bir at seç, sonra her bahsin boyutunu + ve − düğmeleriyle ayarla (fişler: {c}). Tablodaki her hücre bahisçinin şansı ve fiyatıdır: oran, bu şanstan bahisçinin yaklaşık %{cut} payı düşülerek bulunur; güvenli seçimler az, uzun şanslar çok öder.",
+    "Back all four places and get them all right and a <b>perfect order</b> bonus is paid on top: the longer the shot, the bigger it is. <b>Back the board’s favorite</b> fills one empty place with the biggest favorite on the board. The rest is up to you.": "Dört sırayı da oynayıp hepsini doğru bilirsen üstüne <b>kusursuz sıralama</b> bonusu ödenir: şans ne kadar uzaksa bonus o kadar büyüktür. <b>Tablonun favorisine oyna</b> boş bir sırayı tablodaki en büyük favoriyle doldurur. Gerisi sana kalmış.",
+    "The book’s quirk": "Bahisçinin huyu",
+    "The book does not read the deck perfectly, and every race it tells you how it errs. <b>Counts cards, not steps:</b> it underrates suits with extra face cards. <b>Loves a favorite:</b> favorites are priced too short and long shots too fat. <b>Shrugs at the middle:</b> 2nd and 3rd are priced too evenly. Now and then it is <b>a sharp book</b> and makes no mistakes. The deck sheet shows the truth, so compare it with the board and back the cells the book gets wrong.": "Bahisçi desteyi kusursuz okumaz ve her yarış nasıl yanıldığını söyler. <b>Kartı sayar, adımı saymaz:</b> fazladan resimli kartı olan renkleri hafife alır. <b>Favoriyi sever:</b> favoriler fazla kısa, uzun şanslar fazla yüksek fiyatlanır. <b>Ortayı umursamaz:</b> 2. ve 3. sıralar fazla eşit fiyatlanır. Arada bir <b>keskin bir bahisçi</b> çıkar ve hata yapmaz. Deste tablosu gerçeği gösterir; onu tabloyla karşılaştır ve bahisçinin yanıldığı hücrelere oyna.",
+    "Every race the book also offers three duels: which of two horses finishes ahead. Pick one side of any duel you like and stake it as usual. Duels are priced by the same book, quirk and all, and are decided by the final order. They do not count towards a perfect order.": "Her yarış bahisçi üç düello da sunar: iki attan hangisi önde bitirir. Beğendiğin düellonun bir tarafını seç ve her zamanki gibi bahis koy. Düellolar aynı bahisçi tarafından, huyuyla birlikte fiyatlanır ve nihai sıralamaya göre sonuçlanır. Kusursuz sıralamaya sayılmazlar.",
+    "When the night ends you earn Reputation Points: for your profit, for every place you called right, and a big bonus for each perfect order. Sharp calls, long shots that land, pay extra too. Spend them in the Reputation tree on new tools, more chips, a bigger bankroll, cooler nerves and a sharper eye on the book. Nothing in it is lost between nights.": "Gece bittiğinde kârın, doğru bildiğin her sıra ve her kusursuz sıralama için büyük bir bonus olarak İtibar Puanı kazanırsın. Keskin tahminler, yani tutan uzun şanslar, ayrıca fazla öder. Bunları İtibar ağacında yeni araçlara, daha fazla fişe, daha kalın bir kasaya, daha soğuk bir kafaya ve bahisçiye karşı daha keskin bir göze harcarsın. Geceler arasında hiçbir şey kaybolmaz."
   });
 })();
 
@@ -1426,18 +1479,40 @@ const Gamble = (() => {
     night: 5, nightLong: 8,
     startCash: 300,
     edge: 0.88,           // the book keeps 10%
-    minOdds: 1.15, maxOdds: 30,
+    minOdds: 1.05, maxOdds: 12,
     mc: 480,              // simulations behind every quote
     chips: [5, 10, 25, 50, 100],
-    perfectK: 0.06, perfectMin: 0.75, perfectMax: 30,   // a perfect order pays total stake x clamp(K / its chance): long shots pay big
+    perfectK: 0.06, perfectMin: 0.1, perfectMax: 30,   // a perfect order pays total stake x clamp(K / its chance): long shots pay big
     recallFee: 0.2,       // of the stake of the place you change
     heatMax: 10, warnHeat: 5,
     coolDraw: 0.06, coolRace: 1.5,
     fineBase: 15, fineHeat: 3, dqFine: 40,
     effectLen: 3,         // draws a mud / tailwind lasts for the horse
     inspectPer: 0.12,     // chance per heat point above 4
-    loan: 100, loanOwe: 130, coolPrice: 25, coolAmt: 3, favorOffers: 3
+    loan: 100, loanOwe: 130, coolPrice: 25, coolAmt: 3, favorOffers: 3,
+    minSteps: 10, stepSpan: 6, plainMin: 7, plainMax: 11, faceMax: 3,   // a suit is worth 10-15 steps in all (7-11 plain cards, 0-3 face cards worth 2 each): some decks are lopsided, none is hopeless
+    quirkGamma: 1.25,     // "loves a favorite": the book raises every chance to this power, then renormalises
+    midFlat: 0.55, stepsBlur: 0.8,         // "shrugs at the middle": 2nd and 3rd are pulled this far towards an even split
+    hintMin: [0.08, 0.05],  // Bookie's Tell: how far (in chance) the book must be off before a cell is marked, by level
+    duels: 3, duelMin: 1.05, // head-to-head offers per race, and their lowest price
+    sharpOdds: 4, sharpRp: 2 // a place that hits at these odds or longer is a sharp call and pays extra Reputation
   };
+
+  /* ---------- the book's quirk: every race, the book prices from a flawed view of the deck, and says so ---------- */
+  const QUIRKS = {
+    steps: { name: 'Counts cards, not steps', blurb: 'Tonight’s book counts cards, not steps. It underrates suits with extra face cards and overrates suits without.', w: 3 },
+    fav:   { name: 'Loves a favorite', blurb: 'Tonight’s book loves a favorite: short odds on the favorites, fat odds on the long shots.', w: 3 },
+    mid:   { name: 'Shrugs at the middle', blurb: 'Tonight’s book shrugs at the middle: 2nd and 3rd are priced too evenly.', w: 3 },
+    sharp: { name: 'A sharp book', blurb: 'A sharp book tonight: no mistakes, fair prices. Look for an edge with your tools instead.', w: 1 }
+  };
+  const QUIRK_ORDER = ['steps', 'fav', 'mid', 'sharp'];
+  function pickQuirk(rng, last) {
+    const pool = QUIRK_ORDER.filter(id => id !== last);
+    let x = rng() * pool.reduce((a, id) => a + QUIRKS[id].w, 0);
+    for (const id of pool) { x -= QUIRKS[id].w; if (x < 0) return id; }
+    return pool[0];
+  }
+  const quirkOf = race => race.quirk || 'sharp';
 
   /* ---------- tools ---------- */
   const TOOLS = {
@@ -1488,7 +1563,7 @@ const Gamble = (() => {
 
   /* ---------- effects: the base (Reputation tree) plus favors bought this night ---------- */
   function combine(base, favors) {
-    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0 }, base || {});
+    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0, tell: 0 }, base || {});
     fx.tools = (fx.tools || []).slice();
     (favors || []).forEach(id => {
       const f = favorById(id); if (!f) return;
@@ -1506,13 +1581,17 @@ const Gamble = (() => {
   function makeRace(run) {
     const rng = run.rng, comp = [], deck = [];
     for (let s = 0; s < 4; s++) {
-      const n = 8 + Math.floor(rng() * 4), f = 1 + Math.floor(rng() * 2);
+      const S = CFG.minSteps + Math.floor(rng() * CFG.stepSpan);
+      const fLo = Math.max(0, Math.ceil((S - CFG.plainMax) / 2)), fHi = Math.min(CFG.faceMax, Math.floor((S - CFG.plainMin) / 2));
+      const f = fLo + Math.floor(rng() * (fHi - fLo + 1)), n = S - 2 * f;
       comp.push({ n, f });
       for (let k = 0; k < n; k++) deck.push({ s, r: 2 + Math.floor(rng() * 9) });
       for (let k = 0; k < f; k++) deck.push({ s, r: 11 + Math.floor(rng() * 3) });
     }
     shuffle(deck, rng);
+    const quirk = pickQuirk(rng, run.lastQuirk); run.lastQuirk = quirk;
     return {
+      quirk, duels: null, dbets: [null, null, null],
       deck, comp, prog: [0, 0, 0, 0], reach: [0, 0, 0, 0], finished: [], draws: 0, order: null, done: false,
       lane: [0, 1, 2, 3].map(() => ({ mud: 0, wind: 0, hurdle: false })),
       uses: {}, slip: [null, null, null, null], locked: false, pk: 0, tampered: false, caught: false, confiscated: {},
@@ -1536,7 +1615,7 @@ const Gamble = (() => {
     return run;
   }
   function pack(run) { const o = JSON.parse(JSON.stringify(run, (k, v) => (k === '_q' ? undefined : v))); o.rngState = run.rng.state(); return o; }
-  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); return run; }
+  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); if (run.race && !run.race.dbets) run.race.dbets = [null, null, null]; return run; }
 
   /* ---------- odds: the book simulates the rest of the deck in random order ---------- */
   function remainingCodes(race) { return race.deck.map(c => c.s * 2 + (stepOf(c) - 1)); }
@@ -1558,20 +1637,50 @@ const Gamble = (() => {
     return fin.concat(rest);
   }
   /* returns { P[h][pl], orders: Map(code -> count), n } for the current state of the race */
-  function quote(run) {
-    const r = run.race;
-    const key = r.prog.join(',') + '|' + r.lane.map(l => l.mud + ':' + l.wind + ':' + (l.hurdle ? 1 : 0)).join(',') + '|' + r.deck.length + '|' + remainingCodes(r).reduce((a, c) => a + c, 0) + '|' + r.finished.join('');
-    if (run._q && run._q.key === key) return run._q.q;
-    const rng = mulberry32((run.seed ^ Math.imul(run.raceNo, 2654435761) ^ Math.imul(r.draws + 1, 40503) ^ (r.deck.length * 977)) >>> 0);
-    const codes = remainingCodes(r), P = [0, 1, 2, 3].map(() => [0, 0, 0, 0]), orders = {};
-    const N = CFG.mc;
-    for (let i = 0; i < N; i++) {
-      const o = simulate(r.prog, r.lane, codes, CFG.track, rng, r.finished);
-      for (let pl = 0; pl < 4; pl++) P[o[pl]][pl]++;
-      const k = o.join(''); orders[k] = (orders[k] || 0) + 1;
+  const zeros = () => [0, 1, 2, 3].map(() => [0, 0, 0, 0]);
+  /* what a book that only counts cards sees: every suit holds the deck's average share of face cards */
+  function bookCodes(race) {
+    const cnt = [0, 0, 0, 0], fc = [0, 0, 0, 0]; let faces = 0;
+    race.deck.forEach(c => { cnt[c.s]++; if (c.r >= 11) { faces++; fc[c.s]++; } });
+    const share = race.deck.length ? faces / race.deck.length : 0, codes = [];
+    for (let s = 0; s < 4; s++) {
+      const f = Math.min(cnt[s], Math.round(CFG.stepsBlur * cnt[s] * share + (1 - CFG.stepsBlur) * fc[s]));
+      for (let k = 0; k < cnt[s]; k++) codes.push(s * 2 + (k < f ? 1 : 0));
     }
-    for (let h = 0; h < 4; h++) for (let pl = 0; pl < 4; pl++) P[h][pl] /= N;
-    const q = { P, orders, n: N };
+    return codes;
+  }
+  /* returns { P[h][pl], H[x][y], orders, n } (the truth for the cards still in the deck) plus B and HB: the same two tables as
+     the book sees them tonight (its quirk), which are the ones it prices from */
+  function quote(run) {
+    const r = run.race, qk = quirkOf(r);
+    const key = qk + '|' + r.prog.join(',') + '|' + r.lane.map(l => l.mud + ':' + l.wind + ':' + (l.hurdle ? 1 : 0)).join(',') + '|' + r.deck.length + '|' + remainingCodes(r).reduce((a, c) => a + c, 0) + '|' + r.finished.join('');
+    if (run._q && run._q.key === key) return run._q.q;
+    const seed0 = (run.seed ^ Math.imul(run.raceNo, 2654435761) ^ Math.imul(r.draws + 1, 40503) ^ (r.deck.length * 977)) >>> 0;
+    const N = CFG.mc, orders = {};
+    function sims(codes, keep) {
+      const rng = mulberry32(seed0), P = zeros(), H = zeros();
+      for (let i = 0; i < N; i++) {
+        const o = simulate(r.prog, r.lane, codes, CFG.track, rng, r.finished);
+        for (let pl = 0; pl < 4; pl++) P[o[pl]][pl]++;
+        for (let a = 0; a < 4; a++) for (let b = a + 1; b < 4; b++) H[o[a]][o[b]]++;
+        if (keep) { const k = o.join(''); orders[k] = (orders[k] || 0) + 1; }
+      }
+      for (let h = 0; h < 4; h++) { for (let pl = 0; pl < 4; pl++) P[h][pl] /= N; for (let y = 0; y < 4; y++) H[h][y] /= N; }
+      return { P, H };
+    }
+    const T = sims(remainingCodes(r), true);
+    let B = T.P, HB = T.H;
+    if (qk === 'steps') { const b = sims(bookCodes(r), false); B = b.P; HB = b.H; }
+    else if (qk === 'fav') {
+      const g = CFG.quirkGamma; B = zeros(); HB = zeros();
+      for (let pl = 0; pl < 4; pl++) { let s = 0; for (let h = 0; h < 4; h++) s += Math.pow(T.P[h][pl], g); for (let h = 0; h < 4; h++) B[h][pl] = s > 0 ? Math.pow(T.P[h][pl], g) / s : 0; }
+      for (let x = 0; x < 4; x++) for (let y = 0; y < 4; y++) if (x !== y) { const a = Math.pow(T.H[x][y], g), b = Math.pow(T.H[y][x], g); HB[x][y] = a + b > 0 ? a / (a + b) : 0.5; }
+    } else if (qk === 'mid') {
+      const lam = CFG.midFlat, el = [0, 1, 2, 3].filter(h => r.finished.indexOf(h) < 0);
+      B = T.P.map(row => row.slice());
+      for (let pl = 1; pl <= 2; pl++) if (pl >= r.finished.length && el.length) for (let h = 0; h < 4; h++) B[h][pl] = el.indexOf(h) >= 0 ? (1 - lam) * T.P[h][pl] + lam / el.length : 0;
+    }
+    const q = { P: T.P, H: T.H, orders, n: N, B, HB };
     run._q = { key, q };
     return q;
   }
@@ -1579,7 +1688,31 @@ const Gamble = (() => {
     if (p <= 0.0005) return CFG.maxOdds;
     return Math.round(Math.max(CFG.minOdds, Math.min(CFG.maxOdds, edgeOf(run) / p)) * 100) / 100;
   }
-  function board(run) { const q = quote(run); return q.P.map(row => row.map(p => ({ p, odds: oddsFor(run, p) }))); }
+  /* the board the player sees: the book's chance and price for every horse and place. t and d are the truth and the book's mistake (d = truth - book) */
+  function board(run) { const q = quote(run); return q.B.map((row, h) => row.map((p, pl) => ({ p, odds: oddsFor(run, p), t: q.P[h][pl], d: q.P[h][pl] - p }))); }
+  /* the mark Bookie's Tell puts on a cell: +1 the book undersells it, -1 it oversells it, 0 nothing (or no Tell) */
+  function tellMark(run, cell) {
+    const lv = run.fx.tell | 0; if (!lv) return 0;
+    const m = CFG.hintMin[Math.min(lv, CFG.hintMin.length) - 1];
+    return cell.d >= m ? 1 : cell.d <= -m ? -1 : 0;
+  }
+  /* head-to-head offers: which suit finishes ahead of which. Picked once per race from the pairs the book is not sure about */
+  const PAIRS = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
+  function duelsOf(run) {
+    const r = run.race; if (r.duels) return r.duels;
+    if (r.locked || r.draws > 0) return [];
+    const q = quote(run), rng = mulberry32((run.seed ^ Math.imul(run.raceNo, 40503) ^ 0x9e3779b9) >>> 0);
+    const ok = PAIRS.filter(([x, y]) => q.HB[x][y] >= 0.2 && q.HB[x][y] <= 0.8);
+    const pool = shuffle((ok.length >= CFG.duels ? ok : PAIRS).slice(), rng).slice(0, CFG.duels);
+    r.duels = pool.map(([x, y]) => (rng() < 0.5 ? [y, x] : [x, y]));
+    return r.duels;
+  }
+  const duelOdds = (run, p) => Math.round(Math.max(CFG.duelMin, Math.min(CFG.maxOdds, edgeOf(run) / Math.max(p, 0.0005))) * 100) / 100;
+  /* one row per duel: horse a and horse b, with the book's chance and price that each finishes ahead, and the truth */
+  function duelBoard(run) {
+    const q = quote(run);
+    return duelsOf(run).map(([a, b]) => ({ a, b, pa: q.HB[a][b], pb: q.HB[b][a], oa: duelOdds(run, q.HB[a][b]), ob: duelOdds(run, q.HB[b][a]), ta: q.H[a][b], tb: q.H[b][a] }));
+  }
   /* chance that a whole order comes in, e.g. [2,0,1,3] = horse 2 first, 0 second ... */
   function orderChance(run, order) { const q = quote(run); return (q.orders[order.join('')] || 0) / q.n; }
   /* what a complete, correct order would pay on top, as a multiple of the total stake */
@@ -1591,8 +1724,28 @@ const Gamble = (() => {
   function bestOrder(run) { const q = quote(run); let b = null, c = -1; for (const k in q.orders) if (q.orders[k] > c) { c = q.orders[k]; b = k.split('').map(Number); } return b; }
 
   /* ---------- the slip ---------- */
-  const staked = run => run.race.slip.reduce((a, b) => a + (b ? b.stake : 0), 0);
-  function setChip(run, v) { if (run.fx.chips.indexOf(v) < 0 || run.race.locked) return false; run.chip = v; return true; }
+  const staked = run => run.race.slip.reduce((a, b) => a + (b ? b.stake : 0), 0) + (run.race.dbets || []).reduce((a, b) => a + (b ? b.stake : 0), 0);
+  /* the chip button sets the stake of every pick on the slip and of every pick you make next; a pick's own stake can then be stepped */
+  function setChip(run, v) {
+    if (run.fx.chips.indexOf(v) < 0 || run.race.locked) return false;
+    run.chip = v; run.race.slip.forEach(s => { if (s) s.stake = v; }); (run.race.dbets || []).forEach(s => { if (s) s.stake = v; });
+    return true;
+  }
+  /* step the stake of one pick up or down the chip list. kind 'p' = a place (idx 0-3), 'd' = a head-to-head (idx = duel) */
+  function stepStake(run, kind, idx, dir) {
+    const r = run.race; if (run.phase !== 'book' || r.locked) return false;
+    const s = kind === 'd' ? (r.dbets || [])[idx] : r.slip[idx]; if (!s) return false;
+    const ch = run.fx.chips, i = ch.indexOf(s.stake), j = Math.max(0, Math.min(ch.length - 1, (i < 0 ? ch.indexOf(run.chip) : i) + dir));
+    if (ch[j] === s.stake) return false;
+    s.stake = ch[j]; return true;
+  }
+  function duelPick(run, i, h) {
+    const r = run.race; if (run.phase !== 'book' || r.locked) return false;
+    const d = duelsOf(run)[i]; if (!d || d.indexOf(h) < 0) return false;
+    if (!r.dbets) r.dbets = [null, null, null];
+    r.dbets[i] = r.dbets[i] && r.dbets[i].h === h ? null : { h, stake: run.chip, odds: 0 };
+    return true;
+  }
   /* before the lock: choose a horse for a place (a horse can only hold one place); the same pick again clears it */
   function pick(run, pl, h) {
     const r = run.race; if (run.phase !== 'book' || r.locked) return false;
@@ -1601,12 +1754,47 @@ const Gamble = (() => {
     r.slip[pl] = { h, stake: run.chip, odds: 0 };
     return true;
   }
+  /* the true likeliest order: a bot's helper, the screen does not offer it */
   function pickBest(run) { const o = bestOrder(run); o.forEach((h, pl) => { run.race.slip[pl] = { h, stake: run.chip, odds: 0 }; }); }
-  function canLock(run) { const r = run.race; const n = r.slip.filter(Boolean).length; return run.phase === 'book' && !r.locked && n > 0 && n * run.chip <= run.cash; }
+  /* the screen's autopilot: it fills ONE place, with the board's biggest favorite among the places still empty */
+  function pickFavorite(run) {
+    const r = run.race; if (run.phase !== 'book' || r.locked) return null;
+    const b = board(run); let best = null;
+    for (let pl = 0; pl < 4; pl++) if (!r.slip[pl]) for (let h = 0; h < 4; h++) if (!r.slip.some(s => s && s.h === h) && (!best || b[h][pl].p > best.p)) best = { h, pl, p: b[h][pl].p };
+    if (best) r.slip[best.pl] = { h: best.h, stake: run.chip, odds: 0 };
+    return best;
+  }
+  const PERMS = (() => { const out = []; (function go(a, rest) { if (!rest.length) { out.push(a); return; } rest.forEach((h, i) => go(a.concat(h), rest.filter((_, j) => j !== i))); })([], [0, 1, 2, 3]); return out; })();
+  /* bot helper: the order the BOARD says is likeliest (what a player who just follows the percentages would call) */
+  function pickBook(run) {
+    const q = quote(run); let best = null, bs = -1;
+    PERMS.forEach(o => { const s = o.reduce((a, h, pl) => a * Math.max(1e-6, q.B[h][pl]), 1); if (s > bs) { bs = s; best = o; } });
+    best.forEach((h, pl) => { run.race.slip[pl] = { h, stake: run.chip, odds: 0 }; });
+  }
+  /* bot helper: back the cells and duels whose true value beats the book's price by at least `min` (a share of the stake) */
+  function pickValue(run, min) {
+    const r = run.race, q = quote(run), b = board(run); min = min == null ? 0.05 : min;
+    let best = { v: 0, a: [null, null, null, null] };
+    (function go(pl, used, a, v) {
+      if (pl === 4) { if (v > best.v) best = { v, a: a.slice() }; return; }
+      go(pl + 1, used, a.concat(null), v);
+      for (let h = 0; h < 4; h++) if (!(used & (1 << h))) { const ev = q.P[h][pl] * b[h][pl].odds - 1; if (ev >= min) go(pl + 1, used | (1 << h), a.concat(h), v + ev); }
+    })(0, 0, [], 0);
+    best.a.forEach((h, pl) => { r.slip[pl] = h == null ? null : { h, stake: run.chip, odds: 0 }; });
+    duelsOf(run).forEach(([x, y], i) => {
+      const row = duelBoard(run)[i], ea = row.ta * row.oa - 1, eb = row.tb * row.ob - 1;
+      if (Math.max(ea, eb) >= min) r.dbets[i] = { h: ea >= eb ? x : y, stake: run.chip, odds: 0 };
+    });
+  }
+  function canLock(run) {
+    const r = run.race, n = r.slip.filter(Boolean).length + (r.dbets || []).filter(Boolean).length;
+    return run.phase === 'book' && !r.locked && n > 0 && staked(run) <= run.cash;
+  }
   function lock(run) {
     if (!canLock(run)) return false;
-    const r = run.race, b = board(run);
-    r.slip.forEach((s, pl) => { if (s) { s.stake = run.chip; s.odds = b[s.h][pl].odds; run.cash -= s.stake; } });
+    const r = run.race, b = board(run), db = (r.dbets || []).some(Boolean) ? duelBoard(run) : [];
+    r.slip.forEach((s, pl) => { if (s) { s.odds = b[s.h][pl].odds; run.cash -= s.stake; } });
+    (r.dbets || []).forEach((d, i) => { if (d) { const row = db[i]; d.odds = d.h === row.a ? row.oa : row.ob; run.cash -= d.stake; } });
     r.pmult = r.slip.every(Boolean) ? perfectMult(run, r.slip.map(s => s.h)) : 0;
     r.locked = true; run.phase = 'race';
     return true;
@@ -1704,10 +1892,10 @@ const Gamble = (() => {
     // effect
     let msg = null;
     if (id === 'peek') { r.pk = Math.min(r.deck.length, Math.max(r.pk, run.fx.peekN)); }
-    else if (id === 'burn') { r.burned = (r.burned || 0) + 1; r.deck.shift(); r.pk = 0; }
+    else if (id === 'burn') { if (r.deck.length <= 1) return { ok: false, why: 'empty', events: ev }; r.burned = (r.burned || 0) + 1; r.deck.shift(); r.pk = 0; }
     else if (id === 'swap') { if (r.deck.length < 2 || r.deck[0].s === r.deck[1].s) return { ok: false, why: 'same', events: ev }; const t = r.deck[0]; r.deck[0] = r.deck[1]; r.deck[1] = t; r.pk = 0; }
     else if (id === 'stack') { const i = r.deck.findIndex(c => c.s === arg); if (i < 0) return { ok: false, why: 'none', events: ev }; if (i === 0) return { ok: false, why: 'top', events: ev }; const c = r.deck.splice(i, 1)[0]; r.deck.unshift(c); r.pk = 0; }
-    else if (id === 'shave') { const idx = []; r.deck.forEach((c, i) => { if (c.s === arg && c.r < 11) idx.push(i); }); if (!idx.length) return { ok: false, why: 'none', events: ev }; r.deck.splice(idx[Math.floor(run.rng() * idx.length)], 1); r.pk = 0; r.shaved = (r.shaved || 0) + 1; r.comp[arg].n--; }
+    else if (id === 'shave') { if (r.deck.length <= 2) return { ok: false, why: 'empty', events: ev }; const idx = []; r.deck.forEach((c, i) => { if (c.s === arg && c.r < 11) idx.push(i); }); if (!idx.length) return { ok: false, why: 'none', events: ev }; r.deck.splice(idx[Math.floor(run.rng() * idx.length)], 1); r.pk = 0; r.shaved = (r.shaved || 0) + 1; r.comp[arg].n--; }
     else if (id === 'riffle') { shuffle(r.deck, run.rng); r.pk = 0; }
     else if (id === 'mud') { r.lane[arg].mud += CFG.effectLen; }
     else if (id === 'wind') { r.lane[arg].wind += CFG.effectLen; }
@@ -1745,24 +1933,32 @@ const Gamble = (() => {
   function settle(run) {
     const r = run.race;
     if (!r.done || run.phase !== 'race') return null;
-    const bets = [];
-    let pay = 0, stakes = 0, hits = 0, all = true;
+    const bets = [], duels = [];
+    let pay = 0, stakes = 0, placeStakes = 0, hits = 0, sharp = 0, all = true;
     for (let pl = 0; pl < 4; pl++) {
       const s = r.slip[pl];
       if (!s) { all = false; continue; }
       const hit = r.order[pl] === s.h;
       const p = hit && !r.caught ? Math.round(s.stake * s.odds) : 0;
-      stakes += s.stake; pay += p; if (hit) hits++; else all = false;
-      bets.push({ pl, h: s.h, stake: s.stake, odds: s.odds, hit, pay: p, actual: r.order[pl] });
+      stakes += s.stake; placeStakes += s.stake; pay += p; if (hit) hits++; else all = false;
+      const sh = hit && !r.caught && s.odds >= CFG.sharpOdds; if (sh) sharp++;
+      bets.push({ pl, h: s.h, stake: s.stake, odds: s.odds, hit, pay: p, actual: r.order[pl], sharp: sh });
     }
+    (r.duels || []).forEach(([x, y], i) => {
+      const d = (r.dbets || [])[i]; if (!d) return;
+      const w = d.h === x ? y : x, hit = r.order.indexOf(d.h) < r.order.indexOf(w);
+      const p = hit && !r.caught ? Math.round(d.stake * d.odds) : 0;
+      stakes += d.stake; pay += p;
+      duels.push({ h: d.h, over: w, stake: d.stake, odds: d.odds, hit, pay: p });
+    });
     const perfect = all && !r.caught && bets.length === 4;
-    const bonus = perfect ? Math.round(stakes * r.pmult) : 0;
-    const insured = !hits && !r.caught && run.fx.insure ? Math.round(stakes * run.fx.insure) : 0;
+    const bonus = perfect ? Math.round(placeStakes * r.pmult) : 0;
+    const insured = !hits && !r.caught && run.fx.insure ? Math.round(placeStakes * run.fx.insure) : 0;
     run.cash += pay + bonus + insured;
     const net = pay + bonus + insured - stakes - r.fees - r.spent - r.fines + (r.alibi || 0);
-    const res = { raceNo: run.raceNo, order: r.order.slice(), bets, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, draws: r.draws };
+    const res = { raceNo: run.raceNo, order: r.order.slice(), bets, duels, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, sharp, draws: r.draws, quirk: quirkOf(r) };
     run.result = res; run.results.push(res);
-    run.stats.races++; run.stats.hits += hits; if (perfect) run.stats.perfects++; run.stats.bestNet = Math.max(run.stats.bestNet, net);
+    run.stats.races++; run.stats.hits += hits; run.stats.sharp = (run.stats.sharp || 0) + sharp; if (perfect) run.stats.perfects++; run.stats.bestNet = Math.max(run.stats.bestNet, net);
     run.phase = 'result';
     return res;
   }
@@ -1804,8 +2000,9 @@ const Gamble = (() => {
   }
   function finish(run) {
     const final = run.cash - run.debt, profit = final - run.startCash;
-    const rp = Math.max(0, Math.round(profit / 10)) + run.stats.hits + run.stats.perfects * 6 + (profit > 0 ? 5 : 0);
-    run.over = { final, profit, rp, hits: run.stats.hits, perfects: run.stats.perfects, caught: run.stats.caught };
+    const sharp = run.stats.sharp || 0;
+    const rp = Math.max(0, Math.round(profit / 10)) + run.stats.hits + run.stats.perfects * 6 + sharp * CFG.sharpRp + (profit > 0 ? 5 : 0);
+    run.over = { final, profit, rp, hits: run.stats.hits, perfects: run.stats.perfects, caught: run.stats.caught, sharp };
     run.phase = 'over';
     return true;
   }
@@ -1852,7 +2049,8 @@ const Gamble = (() => {
       N('e_perf', 'eye', 'Perfect Pay', 'A perfect order pays half a stake more.', [20, 35], ['e_sharp'], 164, 2),
       N('e_net', 'eye', 'Backroom Network', 'One more favor on offer in the backroom.', [20, 35], ['e_view'], 196, 2),
       N('e_calls', 'eye', 'Late Money', 'Re-calls cost 25% less.', [25, 40], ['e_perf', 'e_net'], 180, 3),
-      N('e_tip', 'eye', 'Tip-off', 'The top card of every deck is shown before you call.', [40], ['e_calls'], 180, 4)
+      N('e_tip', 'eye', 'Tip-off', 'The top card of every deck is shown before you call.', [40], ['e_calls'], 180, 4),
+      N('e_tell', 'eye', 'Bookie’s Tell', 'The board marks the cells where the book is wrong: ▲ it undersells, ▼ it oversells. A second level catches smaller mistakes.', [30, 50], ['e_perf'], 150, 3)
     ];
     const ROOT = { id: 'root', name: 'The Book', costs: [], parents: [] };
     const nodeById = id => (id === 'root' ? ROOT : NODES.find(n => n.id === id));
@@ -1873,7 +2071,7 @@ const Gamble = (() => {
         startCash: CFG.startCash + 30 * L('p_deep'), disc: 0.05 * L('p_haggle'), cool: 0.25 * L('n_cool'), heatCap: L('n_skin'), watch: 0.15 * L('n_watch'),
         fineMul: -0.2 * L('n_law'), greased: L('n_palm') ? 1 : 0, alibi: L('n_alibi') ? 1 : 0, loanOwe: CFG.loanOwe - 10 * L('p_shark'), insure: 0.15 * L('p_safe'),
         edge: 0.01 * L('e_sharp'), peekN: 1 + L('e_view'), perfectPlus: 0.5 * L('e_perf'), offers: CFG.favorOffers + L('e_net'), recallMul: 1 - 0.25 * L('e_calls'), tip: L('e_tip') ? 1 : 0,
-        extraUse: L('t_belt')
+        extraUse: L('t_belt'), tell: L('e_tell')
       };
     }
     function record(st, over) { st.sp += over.rp; st.nights++; st.best = Math.max(st.best, Math.round(over.profit)); }
@@ -1887,6 +2085,7 @@ const Gamble = (() => {
   })();
 
   return { Meta, SUITS, CFG, TOOLS, TOOL_ORDER, FAVORS, favorById, newNight, pack, unpack, mulberry32, combine, makeRace,
+    QUIRKS, quirkOf, tellMark, duelsOf, duelBoard, stepStake, duelPick, pickFavorite, pickBook, pickValue,
     quote, board, orderChance, perfectMult, bestOrder, oddsFor, staked, setChip, pick, pickBest, canLock, lock, recallFee, canRecall, recall, draw,
     toolState, toolCost, toolMax, heatCap, inspectChance, useTool, settle, toBackroom, buyFavor, coolOff, takeLoan, canLoan, nextRace, finish,
     expected, walkOut, stepOf, label, favorPrice, edgeOf, simulate, remainingCodes };
@@ -2145,7 +2344,7 @@ const FX = (() => {
   /* ---------- first-run guide: opens once, the first time Gambler's Night is entered; Rules has it again ---------- */
   var GUIDE = [
     { h: 'One deck, four horses', g: '♥ ♦ ♣ ♠', p: ['You own no horse tonight. Four horses, one per suit, race through one shuffled deck. Every card drawn moves the horse of that suit one step, or two on a face card.', 'There is no clock. Time only moves when a card is drawn.'] },
-    { h: 'Call the order', g: '1 · 2 · 3 · 4', p: ['Before the first card, pick which horse finishes in each place and put chips on it. The odds come from the cards left in the deck, so read the deck sheet.', 'Lock your slip and the odds are fixed. A perfect order pays a big bonus.'] },
+    { h: 'Call the order', g: '1 · 2 · 3 · 4', p: ['Before the first card, pick which horse finishes in each place and put chips on it. The book prices every race from a flawed view of the deck and tells you which flaw, so compare the board with the deck sheet.', 'Lock your slip and the odds are fixed. A perfect order pays a big bonus.'] },
     { h: 'Rig the race', g: '🃏 🤫', p: ['While the cards fall you can spend cash on tools: peek at the next card, burn it, stack the deck, soak a lane in mud, give a horse a tailwind.', 'Every trick costs money, and most of them cost Heat.'] },
     { h: 'Mind the Heat', g: '🔥 👮', p: ['Heat cools a little with every clean card. Past the warning mark, each trick can bring a steward inspection: a fine, and the tool is taken.', 'Reach the cap and you are caught: that race’s slip is void.'] },
     { h: 'Back room, back home', g: '$ → RP', p: ['Between races you can buy a favor, cool off or borrow. What you hold when the night ends is your score.', 'Every night earns Reputation Points for permanent upgrades. Your night is saved after every move.'] }
@@ -2176,14 +2375,16 @@ const FX = (() => {
     }).join('') + '</ul>';
     $('#rules').innerHTML =
       sec('A night', [T('You own no horse. Tonight you are a gambler: a night is a few races, and for each one you call the order all four horses will finish in, stake chips on it, and then run the race card by card. You start with {m}. What you hold when the night ends, minus any debt, is your score, and it earns Reputation Points.', { m: money(C.startCash) })]) +
-      sec('Cards are time', [T('There is no clock. Time only moves when a card is drawn: the horse of that suit steps forward once, or twice on a face card (J, Q, K, A). The track is {t} steps long and the race is over when three horses have crossed the line; the fourth is placed by how far it got.', { t: C.track })]) +
-      sec('The deck', [T('Every race has its own shuffled deck, and drawn cards are never put back. Each suit holds 8 to 11 plain cards and 1 or 2 face cards. The deck sheet on the call screen shows what is left, so you can read which horses the deck favors.')]) +
-      sec('Calling the order', [T('Choose a horse for each place you want to back, and a chip size ({c}). The odds are the exact chance from the cards still in the deck, minus the book’s cut of about {cut}%, so safe picks pay little and long shots pay a lot.', { c: chips, cut: Math.round((1 - C.edge) * 100) }), T('Back all four places and get them all right and a <b>perfect order</b> bonus is paid on top: the longer the shot, the bigger it is. <b>Fill with the likeliest order</b> picks the most probable finish for you.')]) +
+      sec('Cards are time', [T('There is no clock. Time only moves when a card is drawn: the horse of that suit steps forward once, or twice on a face card (J, Q, K). The track is {t} steps long and the race is over when three horses have crossed the line; the fourth is placed by how far it got.', { t: C.track })]) +
+      sec('The deck', [T('Every race has its own shuffled deck, and drawn cards are never put back. Each suit holds 8 to 11 plain cards and up to 3 face cards, so some decks are very lopsided. The deck sheet on the call screen shows what is left, and the steps count tells you which horses the deck favors.')]) +
+      sec('Calling the order', [T('Choose a horse for each place you want to back, then size each stake with the + and − buttons (chips: {c}). Every cell on the board is the book’s chance and its price: the odds are that chance minus the book’s cut of about {cut}%, so safe picks pay little and long shots pay a lot.', { c: chips, cut: Math.round((1 - C.edge) * 100) }), T('Back all four places and get them all right and a <b>perfect order</b> bonus is paid on top: the longer the shot, the bigger it is. <b>Back the board’s favorite</b> fills one empty place with the biggest favorite on the board. The rest is up to you.')]) +
+      sec('The book’s quirk', [T('The book does not read the deck perfectly, and every race it tells you how it errs. <b>Counts cards, not steps:</b> it underrates suits with extra face cards. <b>Loves a favorite:</b> favorites are priced too short and long shots too fat. <b>Shrugs at the middle:</b> 2nd and 3rd are priced too evenly. Now and then it is <b>a sharp book</b> and makes no mistakes. The deck sheet shows the truth, so compare it with the board and back the cells the book gets wrong.')]) +
+      sec('Head to head', [T('Every race the book also offers three duels: which of two horses finishes ahead. Pick one side of any duel you like and stake it as usual. Duels are priced by the same book, quirk and all, and are decided by the final order. They do not count towards a perfect order.')]) +
       sec('Locking and re-calls', [T('Lock your slip before the first card: the stakes are paid and the odds are fixed. You can still change a pick while the race runs, but every re-call costs {f}% of that slip’s stake and is priced at the odds of that moment. A place that is already decided cannot be changed.', { f: Math.round(C.recallFee * 100) })]) +
       sec('Tools', [T('Between cards you can spend cash on tools that bend the deck or the track. Every tool has a price, a limit per race and a Heat cost. More tools unlock in Reputation.'), tools]) +
       sec('Heat and the stewards', [T('Every trick adds Heat. It cools a little with every card drawn clean and between races. From {w} Heat each trick can bring a steward inspection: a fine, and the tool is taken away. At {c} Heat you are caught: that race’s slip is void and you are fined. Tools that only look add no Heat.', { w: C.warnHeat, c: C.heatMax })]) +
       sec('The backroom', [T('After every race you visit the backroom. Buy one <b>favor</b> from the offers (it lasts the whole night: cheaper tools, faster cooling, better odds and more), pay {p} to cool off by {a} Heat, or take a loan of {l} that you repay with {o} at the end of the night (two loans at most).', { p: money(C.coolPrice), a: C.coolAmt, l: money(C.loan), o: money(C.loanOwe) })]) +
-      sec('Reputation', [T('When the night ends you earn Reputation Points: for your profit, for every place you called right, and a big bonus for each perfect order. Spend them in the Reputation tree on new tools, more chips, a bigger bankroll, cooler nerves and a sharper eye on the book. Nothing in it is lost between nights.')]) +
+      sec('Reputation', [T('When the night ends you earn Reputation Points: for your profit, for every place you called right, and a big bonus for each perfect order. Sharp calls, long shots that land, pay extra too. Spend them in the Reputation tree on new tools, more chips, a bigger bankroll, cooler nerves and a sharper eye on the book. Nothing in it is lost between nights.')]) +
       sec('Walking out and coming back', [T('Between races, before you lock a slip, you can walk out and keep what you have. The night is saved after every move: close the page and press Continue night on the menu.')]);
   }
   buildRules();
@@ -2274,8 +2475,8 @@ const FX = (() => {
     el.innerHTML = '<header class="bar"><button type="button" class="backbtn" data-go="menu">&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Gambler’s Night') + '</h2><div class="cashchip sp">' + T('{n} RP', { n: GS.meta.sp }) + '</div></header>' +
       '<p class="lede">' + T('You are not an owner tonight. You are a gambler with a pocket full of tricks. Call the order all four horses will finish in, then bend the deck and the track your way. Do not get caught.') + '</p>' +
       '<div class="gsteps">' +
-      '<div class="gstep"><b>1 · ' + T('Read') + '</b><p>' + T('Study the deck sheet. Every card moves one horse. More cards means more steps, and the odds come from the cards.') + '</p></div>' +
-      '<div class="gstep"><b>2 · ' + T('Call') + '</b><p>' + T('Pick a horse for each place, then lock your slip before the first card. Odds lock with it.') + '</p></div>' +
+      '<div class="gstep"><b>1 · ' + T('Read') + '</b><p>' + T('Study the deck sheet and the board. The book prices every race from a flawed view of the deck, and it tells you which flaw. Beat it.') + '</p></div>' +
+      '<div class="gstep"><b>2 · ' + T('Call') + '</b><p>' + T('Pick a horse for each place and size each stake, add a head-to-head or two, then lock your slip before the first card.') + '</p></div>' +
       '<div class="gstep"><b>3 · ' + T('Rig') + '</b><p>' + T('Cards are time. Between draws, spend cash on tools that nudge the deck or the track.') + '</p></div>' +
       '<div class="gstep"><b>4 · ' + T('Stay clean') + '</b><p>' + T('Every trick adds Heat. Too much and the stewards inspect you, fine you, or throw out your slip.') + '</p></div></div>' +
       '<details class="gtl"><summary>' + T('All tools and Heat') + '</summary><ul>' + G.TOOL_ORDER.map(function (id) {
@@ -2317,32 +2518,64 @@ const FX = (() => {
     if (!r.pk || !r.deck.length) return '';
     return '<div class="gtop"><span class="lbl">' + T('Top of the deck') + '</span>' + r.deck.slice(0, r.pk).map(function (c) { return cardHTML(c); }).join('') + '</div>';
   }
+  function quirkHTML(r) {
+    var id = G.quirkOf(r), q = G.QUIRKS[id];
+    return '<div class="gqk q-' + id + '"><span class="lbl">' + T('Tonight’s book') + '</span><b>' + T(q.name) + '</b><p>' + T(q.blurb) + '</p></div>';
+  }
+  /* Bookie's Tell: a mark where the book's price is off. Level 2 also shows by how many points. */
+  function tellHTML(R, c) {
+    var m = G.tellMark(R, c); if (!m) return '';
+    var pts = Math.round(Math.abs(c.d) * 100);
+    return '<i class="gtell ' + (m > 0 ? 'up' : 'dn') + '" title="' + T(m > 0 ? 'The book undersells this.' : 'The book oversells this.') + '">' + (m > 0 ? '▲' : '▼') + (R.fx.tell > 1 ? pts : '') + '</i>';
+  }
+  function pickLines(R) {
+    var r = R.race, du = G.duelsOf(R), html = '';
+    function line(kind, idx, label, odds, stake) {
+      return '<div class="gpick"><span class="gpn">' + label + '</span><span class="mono dim">' + oddsTxt(odds) + '</span><span class="gps"><button type="button" class="gpb" data-gstep="' + kind + ',' + idx + ',-1" aria-label="' + T('Smaller stake') + '"' + (stake <= R.fx.chips[0] ? ' disabled' : '') + '>−</button><b class="mono">' + money(stake) + '</b><button type="button" class="gpb" data-gstep="' + kind + ',' + idx + ',1" aria-label="' + T('Bigger stake') + '"' + (stake >= R.fx.chips[R.fx.chips.length - 1] ? ' disabled' : '') + '>+</button></span></div>';
+    }
+    var b = G.board(R), db = r.dbets.some(Boolean) ? G.duelBoard(R) : [];
+    r.slip.forEach(function (s, pl) { if (s) html += line('p', pl, '<b class="mono">' + placeName(pl) + '</b>' + gl(s.h) + ' ' + sn(s.h), b[s.h][pl].odds, s.stake); });
+    r.dbets.forEach(function (d, i) { if (d && du[i]) { var row = db[i], over = du[i][0] === d.h ? du[i][1] : du[i][0]; html += line('d', i, gl(d.h) + ' ' + T('{s} ahead of {o}', { s: sn(d.h), o: sn(over) }), d.h === row.a ? row.oa : row.ob, d.stake); } });
+    return html ? '<div class="gpicks">' + html + '</div>' : '';
+  }
+  function duelsHTML(R) {
+    var r = R.race, rows = G.duelBoard(R);
+    return '<h3 class="lbl gduh">' + T('Head to head') + '</h3><div class="gduels">' + rows.map(function (d, i) {
+      var cur = r.dbets[i];
+      function btn(h, other, o, p, t) {
+        var on = cur && cur.h === h, c = { d: t - p };
+        return '<button type="button" class="gcell gdbtn s' + h + (on ? ' on' : '') + '" data-gduel="' + i + ',' + h + '" aria-pressed="' + on + '">' + '<span class="gdn">' + gl(h) + ' ' + T('{s} ahead', { s: sn(h) }) + '</span><b class="mono">' + oddsTxt(o) + '</b><small class="mono">' + pct(p) + '</small>' + tellHTML(R, c) + '</button>';
+      }
+      return '<div class="gduel">' + btn(d.a, d.b, d.oa, d.pa, d.ta) + '<span class="gvs mono">' + T('vs') + '</span>' + btn(d.b, d.a, d.ob, d.pb, d.tb) + '</div>';
+    }).join('') + '</div>';
+  }
   function renderBook() {
-    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length;
+    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length, nd = r.dbets.filter(Boolean).length;
     var full = n === 4, order = full ? r.slip.map(function (s) { return s.h; }) : null;
+    var placeTotal = r.slip.reduce(function (a, s) { return a + (s ? s.stake : 0); }, 0), total = G.staked(R);
     var pm = full ? G.perfectMult(R, order) : 0, pc = full ? G.orderChance(R, order) : 0;
     var rows = '<div class="gboard" role="group" aria-label="' + T('Call the order') + '"><span class="gb-h"></span>' + [0, 1, 2, 3].map(function (pl) { return '<span class="gb-h mono">' + placeName(pl) + '</span>'; }).join('');
     for (var h = 0; h < 4; h++) {
       rows += '<span class="gb-n s' + h + '">' + gl(h) + ' ' + sn(h) + '</span>';
       for (var pl = 0; pl < 4; pl++) {
         var on = r.slip[pl] && r.slip[pl].h === h, c = b[h][pl];
-        rows += '<button type="button" class="gcell s' + h + (on ? ' on' : '') + '" data-gcell="' + pl + ',' + h + '" aria-pressed="' + on + '"><b class="mono">' + oddsTxt(c.odds) + '</b><small class="mono">' + pct(c.p) + '</small></button>';
+        rows += '<button type="button" class="gcell s' + h + (on ? ' on' : '') + '" data-gcell="' + pl + ',' + h + '" aria-pressed="' + on + '"><b class="mono">' + oddsTxt(c.odds) + '</b><small class="mono">' + pct(c.p) + '</small>' + tellHTML(R, c) + '</button>';
       }
     }
     rows += '</div>';
     var chips = R.fx.chips.map(function (v) { return '<button type="button" class="gchip' + (R.chip === v ? ' on' : '') + '" data-gchip="' + v + '"' + (v > R.cash ? ' disabled' : '') + '>' + money(v) + '</button>'; }).join('');
-    var total = R.chip * n;
     var pk = G.toolState(R, 'peek');
     el.innerHTML = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Race {n} of {m}', { n: R.raceNo, m: R.races }) + '</h2>' + bankHTML(R) + '</header>' +
       heatHTML(R) +
       '<div class="gcols"><div><h3 class="lbl">' + T('The deck') + '</h3><div class="dsheet">' + deckSheet(R) + '</div>' +
-      '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' + topHTML(R) + '</div>' +
-      '<div><h3 class="lbl">' + T('Call the order') + '</h3>' + rows +
-      '<div class="gslipbar"><span class="lbl">' + T('Stake per place') + '</span><div class="gchips">' + chips + '</div></div>' +
-      '<p class="gsum">' + (n ? T('{n} places · {m} at stake', { n: n, m: money(total) }) : T('Pick a horse for each place you want to back. A horse can hold one place.')) +
-      (n && total > R.cash ? '<br><span class="neg">' + T('Not enough cash for that. Pick a smaller chip or back fewer places.') + '</span>' : '') +
-      (full ? '<br><span class="gold">' + T('Perfect order: {c} chance, pays {m} extra', { c: pc < 0.01 ? '&lt;1%' : pct(pc), m: money(Math.round(total * pm)) }) + '</span>' : '') + '</p>' +
-      '<div class="actions gact"><button type="button" class="btn" data-gbest>' + T('Fill with the likeliest order') + '</button>' +
+      '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' +
+      '<p class="note">' + T('The board is the book’s opinion. The deck sheet is the truth. Compare them.') + '</p>' + topHTML(R) + '</div>' +
+      '<div>' + quirkHTML(r) + '<h3 class="lbl">' + T('Call the order') + '</h3>' + rows + duelsHTML(R) +
+      '<div class="gslipbar"><span class="lbl">' + T('Stake for every pick') + '</span><div class="gchips">' + chips + '</div></div>' + pickLines(R) +
+      '<p class="gsum">' + (n + nd ? T('{n} bets · {m} at stake', { n: n + nd, m: money(total) }) : T('Pick a horse for each place you want to back. A horse can hold one place.')) +
+      (total > R.cash ? '<br><span class="neg">' + T('Not enough cash for that. Pick a smaller chip or back fewer places.') + '</span>' : '') +
+      (full ? '<br><span class="gold">' + T('Perfect order: {c} chance, pays {m} extra', { c: pc < 0.01 ? '&lt;1%' : pct(pc), m: money(Math.round(placeTotal * pm)) }) + '</span>' : '') + '</p>' +
+      '<div class="actions gact"><button type="button" class="btn" data-gbest' + (n === 4 ? ' disabled' : '') + '>' + T('Back the board’s favorite') + '</button>' +
       '<button type="button" class="btn" data-gtool="peek"' + (pk.ok ? '' : ' disabled') + '>' + T('Peek · {m}', { m: money(pk.cost) }) + ' <small>' + pk.left + '/' + pk.max + '</small></button>' +
       '<button type="button" class="btn primary" data-glock' + (G.canLock(R) ? '' : ' disabled') + '>' + T('Lock in your call') + '</button></div>' +
       '<p class="note">' + T('Odds lock when you do. After that you can still change a pick, for a fee, at the odds of that moment.') + '</p>' +
@@ -2353,8 +2586,10 @@ const FX = (() => {
     var R = GS.run; if (!R) return; var t = e.target;
     var c = t.closest('[data-gcell]');
     if (c) { var p = c.dataset.gcell.split(','); if (G.pick(R, +p[0], +p[1])) { Sfx.pick(); saveRun(); renderBook(); } return; }
+    c = t.closest('[data-gduel]'); if (c) { var d = c.dataset.gduel.split(','); if (G.duelPick(R, +d[0], +d[1])) { Sfx.pick(); saveRun(); renderBook(); } return; }
+    c = t.closest('[data-gstep]'); if (c) { var q = c.dataset.gstep.split(','); if (G.stepStake(R, q[0], +q[1], +q[2])) { Sfx.chip(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gchip]'); if (c) { if (G.setChip(R, +c.dataset.gchip)) { Sfx.chip(); saveRun(); renderBook(); } return; }
-    if (t.closest('[data-gbest]')) { G.pickBest(R); Sfx.shuffle(); saveRun(); renderBook(); return; }
+    if (t.closest('[data-gbest]')) { if (G.pickFavorite(R)) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gtool]'); if (c) { runTool(c.dataset.gtool); return; }
     if (t.closest('[data-glock]')) {
       if (G.lock(R)) { Sfx.chip(); GS.last = null; GS.prevP = null; GS.doneShown = false; GS.auto = 0; log(T('Slip locked. The race is on.')); saveRun(); show(); } else Sfx.deny();
@@ -2451,6 +2686,15 @@ const FX = (() => {
         }).join('') + '</div>';
       }
     }
+    (r.duels || []).forEach(function (du, i) {
+      var d = r.dbets[i]; if (!d) return;
+      var over = du[0] === d.h ? du[1] : du[0], fa = r.finished.indexOf(d.h), fb = r.finished.indexOf(over), settled = r.done || fa >= 0 || fb >= 0, res;
+      if (settled) {
+        var hit = r.done && r.order ? r.order.indexOf(d.h) < r.order.indexOf(over) : (fa >= 0 && (fb < 0 || fa < fb));
+        res = '<span class="gres ' + (hit && !r.caught ? 'pos' : 'neg') + '">' + (r.caught ? T('void') : hit ? '✓ ' + money(Math.round(d.stake * d.odds), true) : '✗') + '</span>';
+      } else res = '<span class="glive mono dim">' + T('pending') + '</span>';
+      html += '<div class="gsl gduelrow s' + d.h + '"><b class="mono">⇄</b>' + gl(d.h) + '<span class="gsn">' + T('{s} ahead of {o}', { s: sn(d.h), o: sn(over) }) + '</span><span class="mono dim">' + oddsTxt(d.odds) + ' · ' + money(d.stake) + '</span>' + res + '<span></span></div>';
+    });
     html += '<p class="note">' + T('Cash {m} · slip {s} · re-calls cost a fee each', { m: money(R.cash), s: money(G.staked(R)) }) + '</p>';
     $('#gslip').innerHTML = html;
   }
@@ -2575,8 +2819,11 @@ const FX = (() => {
     if (res.caught) html += '<div class="gbanner bad">' + T('Caught and disqualified: your slip was void.') + '</div>';
     html += '<div class="gcols"><div><h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
       var b = res.bets.filter(function (x) { return x.pl === pl; })[0];
-      return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
-    }).join('') + '</div></div><div><h3 class="lbl">' + T('Your night so far') + '</h3><div class="stmt">';
+      return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.sharp ? '★ ' : '') + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
+    }).join('') + '</div>' + (res.sharp ? '<p class="note gold">' + TP(res.sharp, '★ Sharp call: a long shot landed. Bonus Reputation tonight.', '★ Sharp calls: long shots landed. Bonus Reputation tonight.') + '</p>' : '') +
+      (res.duels && res.duels.length ? '<h3 class="lbl sect-h">' + T('Head to head') + '</h3><div class="gfinal">' + res.duels.map(function (d) {
+        return '<div class="gfr s' + d.h + '"><b class="mono">⇄</b>' + gl(d.h) + '<span class="gsn">' + T('{s} ahead of {o}', { s: sn(d.h), o: sn(d.over) }) + '</span><span class="mono ' + (d.hit && !res.caught ? 'pos' : 'dim') + '">' + oddsTxt(d.odds) + '</span><span class="mono ' + (d.pay ? 'pos' : 'neg') + '">' + (d.pay ? money(d.pay, true) : '−' + money(d.stake)) + '</span></div>';
+      }).join('') + '</div>' : '') + '</div><div><h3 class="lbl">' + T('Your night so far') + '</h3><div class="stmt">';
     function line(label, v, cls) { return '<div class="row' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span><b class="mono ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'dim') + '">' + money(v, true) + '</b></div>'; }
     html += line(T('Winning calls'), res.pay);
     if (res.bonus) html += line(T('Perfect order'), res.bonus);
@@ -2633,6 +2880,7 @@ const FX = (() => {
       '<div class="row"><span>' + T('Final bankroll') + '</span><b class="mono gold">' + money(o.final) + '</b></div>' +
       '<div class="row"><span>' + T('Places called right') + '</span><b class="mono">' + o.hits + ' / ' + (R.stats.races * 4) + '</b></div>' +
       '<div class="row"><span>' + T('Perfect orders') + '</span><b class="mono">' + o.perfects + '</b></div>' +
+      '<div class="row"><span>' + T('Sharp calls (long shots that landed)') + '</span><b class="mono">' + (o.sharp || 0) + '</b></div>' +
       '<div class="row"><span>' + T('Tools used') + '</span><b class="mono">' + R.stats.tools + '</b></div>' +
       '<div class="row"><span>' + T('Times caught · inspections') + '</span><b class="mono">' + o.caught + ' · ' + R.stats.inspections + '</b></div>' +
       '<div class="row total"><span>' + T('Reputation earned') + '</span><b class="mono gold">+' + o.rp + ' RP</b></div></div>' +
@@ -2641,7 +2889,7 @@ const FX = (() => {
   };
 
   /* ---------- Reputation: the skill tree ---------- */
-  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡' };
+  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡', e_tell: '👁️' };
   var NS = 'http://www.w3.org/2000/svg';
   function npos(n) { var a = n.a * Math.PI / 180, r = [0, 135, 245, 345, 440][n.r]; return { x: 500 + r * Math.cos(a), y: 500 + r * Math.sin(a) }; }
   function brOf(n) { return GM.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }

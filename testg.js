@@ -13,7 +13,7 @@ for (let seed = 1; seed <= 40; seed++) {
   const pk = G.useTool(run, 'peek'); ok(pk.ok && run.race.pk >= 1, 'peek in the book');
   ok(!G.useTool(run, 'burn').ok, 'burn only after the lock');
   const cash0 = run.cash; ok(G.lock(run) && run.cash === cash0 - 40, 'lock takes stakes');
-  ok(run.race.slip.every(s => s.odds >= 1.15), 'odds locked');
+  ok(run.race.slip.every(s => s.odds >= G.CFG.minOdds), 'odds locked');
   let n = 0, finishedOrder = [];
   while (!run.race.done && n < 80) {
     n++;
@@ -63,5 +63,51 @@ for (let seed = 1; seed <= 40; seed++) {
   let deckBefore = r.deck.length; G.useTool(run, 'burn'); ok(r.deck.length === deckBefore - 1, 'burn removes a card');
   ok(!G.useTool(run, 'burn').ok || true, 'burn twice');
   const e = G.draw(run); ok(e.steps >= 0, 'draw after tools');
+}
+
+// v14: the book's quirks, duels, per-place stakes, the one-place autopilot
+{
+  const seen = {};
+  for (let seed = 1; seed <= 120; seed++) {
+    const run = G.newNight({ seed, meta: fxAll, races: 5 }), r = run.race, qk = r.quirk; seen[qk] = (seen[qk] || 0) + 1;
+    ok(G.QUIRKS[qk], 'a quirk is set');
+    r.comp.forEach(c => ok(c.n + 2 * c.f >= G.CFG.minSteps && c.f <= G.CFG.faceMax, 'every suit can reach the line'));
+    const q = G.quote(run);
+    for (let pl = 0; pl < 4; pl++) { let s = 0, sb = 0; for (let h = 0; h < 4; h++) { s += q.P[h][pl]; sb += q.B[h][pl]; } ok(Math.abs(s - 1) < 1e-9 && Math.abs(sb - 1) < 1e-6, 'columns sum to 1 (truth and book)'); }
+    if (qk === 'sharp') ok(q.B === q.P, 'a sharp book prices the truth');
+    const b = G.board(run); ok(b.every(row => row.every(c => Math.abs(c.d - (c.t - c.p)) < 1e-12)), 'board carries the book mistake');
+    // duels: 3 distinct pairs, never the same horse twice in one duel
+    const du = G.duelsOf(run); ok(du.length === 3 && new Set(du.map(d => Math.min(...d) + '' + Math.max(...d))).size === 3 && du.every(d => d[0] !== d[1]), 'three distinct duels');
+    ok(G.duelsOf(run) === du, 'duels are fixed for the race');
+    const dbd = G.duelBoard(run); ok(dbd.every(x => x.oa >= G.CFG.duelMin && x.ob >= G.CFG.duelMin), 'duel prices');
+    // per-place stakes
+    G.pick(run, 0, 1); G.pick(run, 1, 2); ok(G.stepStake(run, 'p', 0, 1) && r.slip[0].stake === 25 && r.slip[1].stake === 10, 'stake of one pick changes alone');
+    ok(!G.stepStake(run, 'p', 3, 1), 'no stake on an empty place'); G.setChip(run, 5); ok(r.slip[0].stake === 5 && r.slip[1].stake === 5, 'chip sets all picks');
+    G.stepStake(run, 'p', 0, 2); ok(r.slip[0].stake === 25, 'steps skip along the chip list');
+    ok(G.duelPick(run, 0, du[0][0]) && r.dbets[0].h === du[0][0] && r.dbets[0].stake === 5, 'duel pick');
+    ok(!G.duelPick(run, 0, [0, 1, 2, 3].find(h => du[0].indexOf(h) < 0)), 'a horse outside the duel is refused');
+    const staked = G.staked(run); ok(staked === 25 + 5 + 5, 'staked adds places and duels');
+    const c0 = run.cash; ok(G.lock(run) && run.cash === c0 - staked, 'lock takes every stake once');
+    ok(r.slip[0].stake === 25 && r.slip[1].stake === 5, 'lock keeps each stake'); ok(r.dbets[0].odds >= G.CFG.duelMin, 'duel odds locked');
+    while (!r.done) G.draw(run);
+    const cash1 = run.cash, res = G.settle(run), o = r.order;
+    ok(res.duels.length === 1, 'duel settled'); const d0 = res.duels[0], hit = o.indexOf(d0.h) < o.indexOf(d0.over); ok(d0.hit === hit, 'duel decided by finishing order');
+    ok(res.pay === res.bets.reduce((a, x) => a + x.pay, 0) + res.duels.reduce((a, x) => a + x.pay, 0), 'pay adds up');
+    ok(Math.abs(res.net - (res.pay + res.bonus + res.insured - res.stakes - res.fees - res.spent - res.fines + res.alibi)) < 1e-9 && res.stakes === staked, 'net with duels');
+    ok(run.cash === cash1 + res.pay + res.bonus + res.insured, 'cash after duels');
+    if (res.sharp) ok(res.bets.filter(x => x.sharp).every(x => x.hit && x.odds >= G.CFG.sharpOdds), 'sharp calls are long-odds hits');
+    // the autopilot fills one place only
+    const r2 = G.newNight({ seed: seed + 500, meta: {}, races: 5 }); const f = G.pickFavorite(r2); ok(f && r2.race.slip.filter(Boolean).length === 1, 'autopilot fills one place');
+    G.pickFavorite(r2); ok(r2.race.slip.filter(Boolean).length === 2 && new Set(r2.race.slip.filter(Boolean).map(s => s.h)).size === 2, 'then the next place, another horse');
+    G.pickBook(r2); ok(r2.race.slip.every(Boolean), 'bot helper fills the order'); G.pickValue(r2, 0.05); ok(r2.race.slip.filter(Boolean).length <= 4, 'value helper');
+  }
+  ok(Object.keys(seen).length === 4, 'all four quirks turn up: ' + JSON.stringify(seen));
+  // a night saved before v14 (no quirk, no duels, no stats.sharp) still plays
+  const old = G.newNight({ seed: 77, meta: {}, races: 5 }); const o = G.pack(old); delete o.race.quirk; delete o.race.duels; delete o.race.dbets; delete o.stats.sharp;
+  const run = G.unpack(o); G.pick(run, 0, 0); ok(G.canLock(run) && G.lock(run), 'old save locks'); while (!run.race.done) G.draw(run); const rs = G.settle(run); ok(rs && rs.duels.length === 0 && rs.quirk === 'sharp', 'old save settles');
+  // Bookie's Tell
+  const rt = G.newNight({ seed: 5, meta: { tell: 1 } }); const bt = G.board(rt); ok(bt.flat().every(c => [-1, 0, 1].indexOf(G.tellMark(rt, c)) >= 0), 'tell marks');
+  const none = G.newNight({ seed: 5, meta: {} }); ok(G.board(none).flat().every(c => G.tellMark(none, c) === 0), 'no tell, no marks');
+  ok(M.effects(all).tell === 2 && M.effects(M.fresh()).tell === 0, 'tell effect');
 }
 console.log(fails ? 'FAILED ' + fails : 'gamble tests ok');

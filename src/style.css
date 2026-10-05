@@ -422,3 +422,28 @@ h1, h2, h3, p { margin: 0; }
 .rules ul.toolrules li { padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--track); color: var(--ink-dim); font-size: 14px; }
 .rules ul.toolrules li b { color: var(--ink); font-weight: 700; }
 .rules ul.toolrules li .mono { font-size: 12px; color: var(--gold); }
+
+/* v14: the book's quirk, Bookie's Tell, stakes per pick, head to head */
+.gqk { margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); border-left: 4px solid var(--gold); background: var(--track); }
+.gqk .lbl { display: block; margin: 0 0 2px; }
+.gqk b { font: 800 20px/1.1 var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: var(--gold); }
+.gqk p { margin-top: 4px; color: var(--ink-dim); font-size: 14px; }
+.gqk.q-sharp { border-left-color: var(--good); }
+.gqk.q-sharp b { color: var(--good); }
+.gcell { position: relative; }
+.gtell { position: absolute; top: 3px; right: 5px; font: 700 10px/1 var(--f-mono); font-style: normal; }
+.gtell.up { color: var(--good); }
+.gtell.dn { color: var(--bad); }
+.gcell.on .gtell { color: #0d110c; }
+.gduh { margin-top: 16px; }
+.gduels { display: grid; gap: 6px; }
+.gduel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: stretch; }
+.gvs { align-self: center; font-size: 11px; color: var(--ink-dim); }
+.gdbtn .gdn { font: 700 13px var(--f-body); display: inline-flex; gap: 5px; align-items: center; }
+.gpicks { display: grid; gap: 6px; margin-top: 10px; }
+.gpick { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--track); }
+.gpn { display: flex; gap: 6px; align-items: center; font: 700 14px var(--f-body); min-width: 0; }
+.gps { display: flex; align-items: center; gap: 6px; }
+.gps b { min-width: 3.4ch; text-align: center; }
+.gpb { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--raise); font: 700 16px/1 var(--f-mono); }
+.gpb:disabled { opacity: .35; }

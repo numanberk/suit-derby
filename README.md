@@ -6,6 +6,17 @@ call the full finishing order, lock your slip, and then bend the deck and the tr
 without letting the stewards catch you. What you hold at the end of the night is your score, and it earns
 Reputation Points for a permanent skill tree.
 
+### v14: a book you can beat
+- **The book has a quirk, and says so.** Every race it prices from a flawed view of the deck, announced above the board: *Counts cards, not steps* (underrates suits with extra face cards), *Loves a favorite* (favorites too short, long shots too fat), *Shrugs at the middle* (2nd and 3rd priced too evenly), or now and then *A sharp book* (no mistakes). The board is the book's opinion, the deck sheet is the truth: back the cells the book gets wrong. `quote()` computes both (`P`/`H` truth, `B`/`HB` the book's view); `board()` carries the book's chance and price plus the truth `t` and the mistake `d`.
+- **Lopsided decks.** Every suit is worth 10 to 15 steps (7-11 plain cards, 0-3 face cards worth 2 each), so there are real favorites and real traps.
+- **Per-pick stakes.** The chip row sets every pick; each pick on the slip has its own - / + stepper.
+- **Head to head.** Three duels per race (which of two horses finishes ahead), priced by the same book, settled on the final order, not part of the perfect order.
+- **Autopilot cut back.** "Back the board's favorite" fills one empty place; the rest is up to you. Long odds are capped at x12 and short ones at x1.05.
+- **Bookie's Tell** (Reputation, The Book branch, two levels): marks cells where the book is off, up-arrow undersold, down-arrow oversold; level 2 shows the gap in points.
+- **Sharp calls.** A place that lands at odds of x4 or more earns +2 Reputation Points and a star on the result.
+- Old saved nights still load (no quirk is treated as a sharp book, no duels).
+- Balance (`node simg.js auto|truth|value|valuerig|rig [nights]`): following the board's favorites is about -6%; backing only the cells the truth says are underpriced is about +20-28% before tools.
+
 ### v13: the horse game is gone
 The old owner mode (laps, pit stops, Stable, Daily Derby, real-time Brace/Spur) was removed. Gambler's Night is now the
 whole game: the menu is Gambler's Night / Reputation / Rules, the Rules page and a five-card first-run guide were rewritten
@@ -29,7 +40,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
 ## Layout
     src/index.html   page structure: menu, the six Gambler's Night screens, rules, guide
     src/style.css    all styling
-    src/gamble.js    engine (pure JS, runs in Node): deck, quotes, tools, Heat, settle, Reputation tree
+    src/gamble.js    engine (pure JS, runs in Node): deck, the book and its quirks, duels, tools, Heat, settle, Reputation tree
     src/gamble_ui.js the screens: setup, book, race, backroom, night over, Reputation
     src/app.js       shell: navigation, sound buttons, language switch, menu, rules, first-run guide
     src/audio.js     WebAudio engine (Sfx): effects, music, both switches
@@ -38,7 +49,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/fx.js        win effects: coins, confetti, banner, shake
     build.py         inlines everything into dist/suit-derby.html, dist/artifact.html and dist/site/ (offline-installable)
     fonts/ icons/    embedded fonts, app icons (make_icons.py redraws them)
-    simg.js          balance simulation:  node simg.js plain|rig|rigmax|ceil [nights]
+    simg.js          balance simulation:  node simg.js auto|truth|value|valuerig|rig [nights]
     testg.js         engine tests:        node testg.js
     gplaytest.py     browser test of a full night, Reputation, resume, phone (LANG_ID=tr for Turkish; needs python playwright + chromium)
 
