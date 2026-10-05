@@ -58,7 +58,7 @@ self.addEventListener('fetch', e => {
 });
 """ % ver)
 (site / 'manifest.webmanifest').write_text(json.dumps({
-    'name': 'Suit Derby', 'short_name': 'Suit Derby', 'description': 'Four suits race through one deck. Call the order, rig the race, keep your nerve.',
+    'name': 'Suit Derby', 'short_name': 'Suit Derby', 'description': 'Four suits race through one deck. Back the weak horse, rig the race, keep your nerve.',
     'start_url': './', 'scope': './', 'display': 'standalone', 'orientation': 'any',
     'background_color': '#0d110c', 'theme_color': '#0d110c',
     'icons': [{'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any maskable'},

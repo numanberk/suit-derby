@@ -1,7 +1,7 @@
 {
  "name": "Suit Derby",
  "short_name": "Suit Derby",
- "description": "Four suits race through one deck. Call the order, rig the race, keep your nerve.",
+ "description": "Four suits race through one deck. Back the weak horse, rig the race, keep your nerve.",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

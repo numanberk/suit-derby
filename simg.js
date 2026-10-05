@@ -1,12 +1,13 @@
-// Gambler's Night balance: node simg.js [auto|truth|value|valuerig|rig|all] [nights]
-//   auto     follows the board: the book's likeliest order, no tools            (what a lazy player does)
-//   truth    the true likeliest order, no tools                                  (needs the deck read perfectly)
-//   value    backs only the cells and duels where the truth beats the book's price
-//   valuerig value + careful rigging (heat <= 6)
+// Gambler's Night balance (v15, the Upset game): node simg.js [weak|value|weakrig|valuerig|hedge|all] [nights]
+//   weak       backs the longest shot to win, no tricks                       (a reckless player)
+//   value      backs the candidate whose true chance beats its price best, no tricks   (reads the deck perfectly)
+//   weakrig    longest shot + careful rigging (heat <= 6)
+//   valuerig   best-value candidate + careful rigging (heat <= 6)
+//   hedge      valuerig + one cover place on the board's favorite
 const G = require('./src/gamble.js');
-const mode = process.argv[2] || 'all', N = +process.argv[3] || 200;
+const mode = process.argv[2] || 'all', N = +process.argv[3] || 100;
 function clone(run) { return G.unpack(G.pack(run)); }
-/* expected payout of the slip if the first `fixed` cards of the deck are known and the rest is random */
+/* expected payout of the upset (and the cover bets) if the first `fixed` cards of the deck are known and the rest is random */
 function evalFixed(run, fixed, sims) {
   const r = run.race, rng = G.mulberry32(run.seed ^ (r.draws * 7919) ^ r.deck.length);
   const all = G.remainingCodes(r), top = all.slice(0, fixed), rest = all.slice(fixed);
@@ -15,8 +16,16 @@ function evalFixed(run, fixed, sims) {
     const o = G.simulate(r.prog, r.lane, rest, G.CFG.track, rng, r.finished, top);
     for (let pl = 0; pl < 4; pl++) P[o[pl]][pl]++;
   }
-  let e = 0; r.slip.forEach((s, pl) => { if (s) e += P[s.h][pl] / sims * s.stake * s.odds; });
+  let e = r.upset ? P[r.upset.h][0] / sims * r.upset.stake * r.upset.odds : 0;
+  r.slip.forEach((s, pl) => { if (s) e += P[s.h][pl] / sims * s.stake * s.odds; });
   return e;
+}
+function chooseUpset(run, how) {
+  const rows = G.upsetBoard(run).filter(x => !x.fav);
+  let pick;
+  if (how === 'weak') pick = rows.slice().sort((a, b) => a.p - b.p)[0];
+  else pick = rows.slice().sort((a, b) => (b.t * b.odds) - (a.t * a.odds))[0];
+  return G.pickUpset(run, pick.h);
 }
 function playNight(seed, o) {
   o = o || {};
@@ -24,8 +33,9 @@ function playNight(seed, o) {
   while (run.phase !== 'over') {
     if (run.phase === 'book') {
       G.setChip(run, o.chip || 10);
-      if (o.pick === 'value') G.pickValue(run, o.min == null ? 0.05 : o.min); else if (o.pick === 'truth') G.pickBest(run); else G.pickBook(run);
-      if (!G.lock(run)) { run.race.slip = [null, null, null, null]; run.race.dbets = [null, null, null]; G.pickFavorite(run); if (!G.lock(run)) { G.walkOut(run); } }
+      chooseUpset(run, o.pick);
+      if (o.hedge) G.pickFavorite(run);
+      if (!G.lock(run)) { G.walkOut(run); }
     } else if (run.phase === 'race') {
       while (!run.race.done) {
         if (o.rig) rigStep(run, o);
@@ -41,8 +51,8 @@ const EV_SIMS = 220;
 function rigStep(run, opt) {
   const r = run.race;
   if (r.caught) return;
-  const maxHeat = opt.maxHeat == null ? 6 : opt.maxHeat;
-  for (let guard = 0; guard < 3; guard++) {
+  const maxHeat = +(process.env.MAXHEAT || (opt.maxHeat == null ? 6 : opt.maxHeat));
+  for (let guard = 0; guard < 4; guard++) {
     const base = evalFixed(run, r.pk, EV_SIMS);
     let best = null;
     for (const id of G.TOOL_ORDER) {
@@ -56,7 +66,7 @@ function rigStep(run, opt) {
         if (!best || v > best.v) best = { id, a, v };
       }
     }
-    if (!best || best.v < (opt.min2 == null ? 4 : opt.min2)) return;
+    if (!best || best.v < +(process.env.MIN2 || (opt.min2 == null ? 4 : opt.min2))) return;
     G.useTool(run, best.id, best.a);
     if (r.caught) return;
   }
@@ -64,16 +74,17 @@ function rigStep(run, opt) {
 function report(name, runs) {
   const n = runs.length, roi = runs.reduce((a, r) => a + r.over.profit, 0) / n;
   const st = runs.reduce((a, r) => a + r.results.reduce((x, y) => x + y.stakes, 0), 0) / n;
-  const hit = runs.reduce((a, r) => a + r.stats.hits, 0) / n, per = runs.reduce((a, r) => a + r.stats.perfects, 0) / n, cg = runs.reduce((a, r) => a + r.stats.caught, 0) / n, tl = runs.reduce((a, r) => a + r.stats.tools, 0) / n;
-  const rp = runs.reduce((a, r) => a + r.over.rp, 0) / n, ins = runs.reduce((a, r) => a + r.stats.inspections, 0) / n, sh = runs.reduce((a, r) => a + (r.stats.sharp || 0), 0) / n;
+  const races = n * runs[0].races, ups = runs.reduce((a, r) => a + (r.stats.upsets || 0), 0), big = runs.reduce((a, r) => a + (r.stats.bigUpsets || 0), 0);
+  const cg = runs.reduce((a, r) => a + r.stats.caught, 0) / n, tl = runs.reduce((a, r) => a + r.stats.tools, 0) / n, ins = runs.reduce((a, r) => a + r.stats.inspections, 0) / n;
+  const rp = runs.reduce((a, r) => a + r.over.rp, 0) / n, spent = runs.reduce((a, r) => a + r.results.reduce((x, y) => x + y.spent, 0), 0) / n;
   const q = {}; runs.forEach(r => r.results.forEach(x => { const k = x.quirk; q[k] = q[k] || { net: 0, st: 0 }; q[k].net += x.net; q[k].st += x.stakes; }));
-  console.log(name.padEnd(22), 'profit', roi.toFixed(1).padStart(7), 'staked', st.toFixed(0), 'ROI', (roi / st * 100).toFixed(1) + '%', '| hits', hit.toFixed(1), 'perfect', per.toFixed(2), 'sharp', sh.toFixed(2), 'caught', cg.toFixed(2), 'insp', ins.toFixed(2), 'tools', tl.toFixed(1), 'RP', rp.toFixed(0));
-  console.log(' '.repeat(22), 'ROI by quirk', Object.keys(q).sort().map(k => k + ' ' + (q[k].net / Math.max(1, q[k].st) * 100).toFixed(0) + '%').join('  '));
+  const neg = runs.filter(r => r.over.profit < 0).length / n;
+  console.log(name.padEnd(14), 'profit', roi.toFixed(1).padStart(7), 'staked', st.toFixed(0), 'ROI', (roi / st * 100).toFixed(1) + '%', '| upsets', (ups / races * 100).toFixed(0) + '%', 'big', (big / races * 100).toFixed(0) + '%', 'caught', cg.toFixed(2), 'insp', ins.toFixed(2), 'tools', tl.toFixed(1), 'toolcash', spent.toFixed(0), 'RP', rp.toFixed(0), 'losing nights', (neg * 100).toFixed(0) + '%');
+  console.log(' '.repeat(14), 'ROI by quirk', Object.keys(q).sort().map(k => k + ' ' + (q[k].net / Math.max(1, q[k].st) * 100).toFixed(0) + '%').join('  '));
 }
 const arr = (f) => Array.from({ length: N }, (_, i) => f(1000 + i));
-if (process.argv[4]) G.CFG.perfectK = +process.argv[4];
-if (mode === 'auto' || mode === 'all') report('auto (board favorites)', arr(s => playNight(s, { pick: 'book' })));
-if (mode === 'truth' || mode === 'all') report('truth (true modal)', arr(s => playNight(s, { pick: 'truth' })));
-if (mode === 'value' || mode === 'all') { for (const m of [0.0, 0.05, 0.12]) report('value min ' + m, arr(s => playNight(s, { pick: 'value', min: m }))); }
-if (mode === 'valuerig' || mode === 'all') report('value + rig, heat<=6', arr(s => playNight(s, { pick: 'value', min: 0.05, rig: true })));
-if (mode === 'rig') report('truth + rig, heat<=6', arr(s => playNight(s, { pick: 'truth', rig: true })));
+if (mode === 'weak' || mode === 'all') report('weak', arr(s => playNight(s, { pick: 'weak' })));
+if (mode === 'value' || mode === 'all') report('value', arr(s => playNight(s, { pick: 'value' })));
+if (mode === 'weakrig' || mode === 'all') report('weak + rig', arr(s => playNight(s, { pick: 'weak', rig: true })));
+if (mode === 'valuerig' || mode === 'all') report('value + rig', arr(s => playNight(s, { pick: 'value', rig: true })));
+if (mode === 'hedge') report('value+rig+hedge', arr(s => playNight(s, { pick: 'value', rig: true, hedge: true })));

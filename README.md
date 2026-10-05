@@ -1,10 +1,18 @@
 # Suit Derby: Gambler's Night
 
 A browser game. You own no horse: you are a gambler at a card-driven horse race. Four suit horses
-run through one shuffled deck, and **every card drawn is the only way time passes**. For each race you
-call the full finishing order, lock your slip, and then bend the deck and the track with tools
-without letting the stewards catch you. What you hold at the end of the night is your score, and it earns
+run through one shuffled deck, and **every card drawn is the only way time passes**. In each race you
+pick a weak horse to win (the **upset**), lock your slip, and then bend the deck and the track with tools
+to make it happen, without letting the stewards catch you. What you hold at the end of the night is your score, and it earns
 Reputation Points for a permanent skill tree.
+
+### v15: make the weak horse win
+- **The upset is the main bet.** Every race you back one horse to *win*; it cannot be the book's favorite. It pays the book's price for a win (x1.05 to x25), so the weaker it looks the more it pays. On its own a long shot rarely wins; tools are how it does.
+- **Cover bets.** The old order places and head-to-heads are now optional side bets: each starts at the smallest chip, and together they may not exceed the upset stake (`CFG.hedgeShare`). Cover cells wait until an upset is picked; clearing the upset clears them.
+- **Live upset bar** during the race: the true chance of your horse from the cards left, against the price you got. Auto/Fast stop when it moves 15 points. Upset tag on the lane, a banner when it crosses first, an upset card on the result.
+- **Reputation.** +3 RP per upset, +5 more when it paid x6 or more; new node *Longshot Fund* (+10% upset payout per level, three levels). The old autopilot button is gone (`pickFavorite` stays as a bot helper).
+- The Safety Net and Alibi favors cover the upset stake too. Saves from before v15 (no upset) still settle.
+- Balance (`node simg.js weak|value|weakrig|valuerig|hedge [nights]`, env `MAXHEAT`, `MIN2` for greedier rigging): the longest shot without tricks is about -32%, the best-value horse without tricks about +9%, with careful rigging (heat <= 6) about +65% and with greedy rigging (heat <= 9) about +64% to +128% on stakes. Rigging is the skill; how strong it should be is an open tuning question.
 
 ### v14: a book you can beat
 - **The book has a quirk, and says so.** Every race it prices from a flawed view of the deck, announced above the board: *Counts cards, not steps* (underrates suits with extra face cards), *Loves a favorite* (favorites too short, long shots too fat), *Shrugs at the middle* (2nd and 3rd priced too evenly), or now and then *A sharp book* (no mistakes). The board is the book's opinion, the deck sheet is the truth: back the cells the book gets wrong. `quote()` computes both (`P`/`H` truth, `B`/`HB` the book's view); `board()` carries the book's chance and price plus the truth `t` and the mistake `d`.
@@ -49,7 +57,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/fx.js        win effects: coins, confetti, banner, shake
     build.py         inlines everything into dist/suit-derby.html, dist/artifact.html and dist/site/ (offline-installable)
     fonts/ icons/    embedded fonts, app icons (make_icons.py redraws them)
-    simg.js          balance simulation:  node simg.js auto|truth|value|valuerig|rig [nights]
+    simg.js          balance simulation:  node simg.js weak|value|weakrig|valuerig|hedge [nights]
     testg.js         engine tests:        node testg.js
     gplaytest.py     browser test of a full night, Reputation, resume, phone (LANG_ID=tr for Turkish; needs python playwright + chromium)
 

@@ -27,7 +27,10 @@ const Gamble = (() => {
     midFlat: 0.55, stepsBlur: 0.8,         // "shrugs at the middle": 2nd and 3rd are pulled this far towards an even split
     hintMin: [0.08, 0.05],  // Bookie's Tell: how far (in chance) the book must be off before a cell is marked, by level
     duels: 3, duelMin: 1.05, // head-to-head offers per race, and their lowest price
-    sharpOdds: 4, sharpRp: 2 // a place that hits at these odds or longer is a sharp call and pays extra Reputation
+    sharpOdds: 4, sharpRp: 2, // a place that hits at these odds or longer is a sharp call and pays extra Reputation
+    upsetMax: 25,         // the upset call pays the book's price for the horse to WIN, up to this
+    hedgeShare: 1,        // cover bets (places and head-to-heads) may add up to this many times the upset stake
+    upsetRp: 3, bigUpset: 6, bigUpsetRp: 5   // Reputation for pulling an upset off, and extra when it paid this much or more
   };
 
   /* ---------- the book's quirk: every race, the book prices from a flawed view of the deck, and says so ---------- */
@@ -95,7 +98,7 @@ const Gamble = (() => {
 
   /* ---------- effects: the base (Reputation tree) plus favors bought this night ---------- */
   function combine(base, favors) {
-    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0, tell: 0 }, base || {});
+    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0, tell: 0, upsetPlus: 0 }, base || {});
     fx.tools = (fx.tools || []).slice();
     (favors || []).forEach(id => {
       const f = favorById(id); if (!f) return;
@@ -123,7 +126,7 @@ const Gamble = (() => {
     shuffle(deck, rng);
     const quirk = pickQuirk(rng, run.lastQuirk); run.lastQuirk = quirk;
     return {
-      quirk, duels: null, dbets: [null, null, null],
+      quirk, upset: null, duels: null, dbets: [null, null, null],
       deck, comp, prog: [0, 0, 0, 0], reach: [0, 0, 0, 0], finished: [], draws: 0, order: null, done: false,
       lane: [0, 1, 2, 3].map(() => ({ mud: 0, wind: 0, hurdle: false })),
       uses: {}, slip: [null, null, null, null], locked: false, pk: 0, tampered: false, caught: false, confiscated: {},
@@ -255,45 +258,92 @@ const Gamble = (() => {
   /* the most likely complete order right now */
   function bestOrder(run) { const q = quote(run); let b = null, c = -1; for (const k in q.orders) if (q.orders[k] > c) { c = q.orders[k]; b = k.split('').map(Number); } return b; }
 
+  /* ---------- the upset: the call every race is about ---------- */
+  /* the book's favorite to win (among the horses still running): it cannot be the upset */
+  function favoriteOf(run) {
+    const q = quote(run), r = run.race; let best = -1;
+    for (let h = 0; h < 4; h++) if (r.finished.indexOf(h) < 0 && (best < 0 || q.B[h][0] > q.B[best][0])) best = h;
+    return best;
+  }
+  const upsetOdds = (run, p) => Math.round(Math.max(CFG.minOdds, Math.min(CFG.upsetMax, edgeOf(run) / Math.max(p, 0.0005)) * (1 + (run.fx.upsetPlus || 0))) * 100) / 100;
+  /* one row per horse: the book's chance and price for it to win, the truth, whether it is the favorite, and its rank (0 = the longest shot) */
+  function upsetBoard(run) {
+    const q = quote(run), fav = favoriteOf(run);
+    const rows = [0, 1, 2, 3].map(h => ({ h, p: q.B[h][0], odds: upsetOdds(run, q.B[h][0]), t: q.P[h][0], d: q.P[h][0] - q.B[h][0], fav: h === fav, rank: 0 }));
+    rows.slice().sort((a, b) => a.p - b.p || a.h - b.h).forEach((x, i) => { x.rank = i; });
+    return rows;
+  }
+  /* what the upset horse's chance to win is right now (the truth, from the cards still in the deck) and what it was priced at */
+  function upsetNow(run) {
+    const u = run.race.upset; if (!u) return null;
+    const q = quote(run), r = run.race;
+    return { h: u.h, t: r.done && r.order ? (r.order[0] === u.h ? 1 : 0) : q.P[u.h][0], b: q.B[u.h][0] };
+  }
   /* ---------- the slip ---------- */
-  const staked = run => run.race.slip.reduce((a, b) => a + (b ? b.stake : 0), 0) + (run.race.dbets || []).reduce((a, b) => a + (b ? b.stake : 0), 0);
-  /* the chip button sets the stake of every pick on the slip and of every pick you make next; a pick's own stake can then be stepped */
+  const hedgeStaked = run => run.race.slip.reduce((a, b) => a + (b ? b.stake : 0), 0) + (run.race.dbets || []).reduce((a, b) => a + (b ? b.stake : 0), 0);
+  const staked = run => hedgeStaked(run) + (run.race.upset ? run.race.upset.stake : 0);
+  /* cover bets default to the smallest chip and may add up to hedgeShare times the upset stake */
+  const hedgeChip = run => run.fx.chips[0];
+  const hedgeRoom = run => (run.race.upset ? Math.max(0, Math.floor(run.race.upset.stake * CFG.hedgeShare) - hedgeStaked(run)) : 0);
+  const hedgeOk = run => !!run.race.upset && hedgeStaked(run) <= Math.floor(run.race.upset.stake * CFG.hedgeShare);
+  function undoSlip(r, snap) { const o = JSON.parse(snap); o.slip.forEach((s, i) => { r.slip[i] = s; }); o.dbets.forEach((s, i) => { r.dbets[i] = s; }); }
+  const snapSlip = r => JSON.stringify({ slip: r.slip, dbets: r.dbets || [null, null, null] });
+  /* choose the upset horse (not the book's favorite); the same pick again clears it, and the cover bets with it */
+  function pickUpset(run, h) {
+    const r = run.race; if (run.phase !== 'book' || r.locked || !(h >= 0 && h < 4)) return false;
+    if (r.upset && r.upset.h === h) { r.upset = null; r.slip = [null, null, null, null]; r.dbets = [null, null, null]; return true; }
+    if (h === favoriteOf(run)) return false;
+    if (r.upset) { r.upset.h = h; return true; }
+    const ch = run.fx.chips, stake = ch.indexOf(run.chip) >= 0 ? run.chip : ch[0];
+    r.upset = { h, stake, odds: 0 };
+    return true;
+  }
+  /* the chip button sets the stake of the upset */
   function setChip(run, v) {
     if (run.fx.chips.indexOf(v) < 0 || run.race.locked) return false;
-    run.chip = v; run.race.slip.forEach(s => { if (s) s.stake = v; }); (run.race.dbets || []).forEach(s => { if (s) s.stake = v; });
+    const r = run.race;
+    if (r.upset && Math.floor(v * CFG.hedgeShare) < hedgeStaked(run)) return false;
+    run.chip = v; if (r.upset) r.upset.stake = v;
     return true;
   }
-  /* step the stake of one pick up or down the chip list. kind 'p' = a place (idx 0-3), 'd' = a head-to-head (idx = duel) */
+  /* step the stake of one bet up or down the chip list. kind 'u' = the upset, 'p' = a cover place (idx 0-3), 'd' = a head-to-head (idx = duel) */
   function stepStake(run, kind, idx, dir) {
     const r = run.race; if (run.phase !== 'book' || r.locked) return false;
-    const s = kind === 'd' ? (r.dbets || [])[idx] : r.slip[idx]; if (!s) return false;
-    const ch = run.fx.chips, i = ch.indexOf(s.stake), j = Math.max(0, Math.min(ch.length - 1, (i < 0 ? ch.indexOf(run.chip) : i) + dir));
+    const s = kind === 'u' ? r.upset : kind === 'd' ? (r.dbets || [])[idx] : r.slip[idx]; if (!s) return false;
+    const ch = run.fx.chips, i = ch.indexOf(s.stake), j = Math.max(0, Math.min(ch.length - 1, (i < 0 ? 0 : i) + dir));
     if (ch[j] === s.stake) return false;
-    s.stake = ch[j]; return true;
-  }
-  function duelPick(run, i, h) {
-    const r = run.race; if (run.phase !== 'book' || r.locked) return false;
-    const d = duelsOf(run)[i]; if (!d || d.indexOf(h) < 0) return false;
-    if (!r.dbets) r.dbets = [null, null, null];
-    r.dbets[i] = r.dbets[i] && r.dbets[i].h === h ? null : { h, stake: run.chip, odds: 0 };
+    const old = s.stake; s.stake = ch[j];
+    if (!hedgeOk(run)) { s.stake = old; return false; }
+    if (kind === 'u') run.chip = s.stake;
     return true;
   }
-  /* before the lock: choose a horse for a place (a horse can only hold one place); the same pick again clears it */
+  function duelPick(run, i, h) {
+    const r = run.race; if (run.phase !== 'book' || r.locked || !r.upset) return false;
+    const d = duelsOf(run)[i]; if (!d || d.indexOf(h) < 0) return false;
+    if (!r.dbets) r.dbets = [null, null, null];
+    const snap = snapSlip(r);
+    r.dbets[i] = r.dbets[i] && r.dbets[i].h === h ? null : { h, stake: hedgeChip(run), odds: 0 };
+    if (!hedgeOk(run)) { undoSlip(r, snap); return false; }
+    return true;
+  }
+  /* before the lock: a cover bet on a place (a horse can only hold one place); the same pick again clears it */
   function pick(run, pl, h) {
-    const r = run.race; if (run.phase !== 'book' || r.locked) return false;
+    const r = run.race; if (run.phase !== 'book' || r.locked || !r.upset) return false;
     if (r.slip[pl] && r.slip[pl].h === h) { r.slip[pl] = null; return true; }
+    const snap = snapSlip(r);
     for (let i = 0; i < 4; i++) if (r.slip[i] && r.slip[i].h === h) r.slip[i] = null;
-    r.slip[pl] = { h, stake: run.chip, odds: 0 };
+    r.slip[pl] = { h, stake: hedgeChip(run), odds: 0 };
+    if (!hedgeOk(run)) { undoSlip(r, snap); return false; }
     return true;
   }
   /* the true likeliest order: a bot's helper, the screen does not offer it */
-  function pickBest(run) { const o = bestOrder(run); o.forEach((h, pl) => { run.race.slip[pl] = { h, stake: run.chip, odds: 0 }; }); }
-  /* the screen's autopilot: it fills ONE place, with the board's biggest favorite among the places still empty */
+  function pickBest(run) { const o = bestOrder(run); o.forEach((h, pl) => { run.race.slip[pl] = { h, stake: hedgeChip(run), odds: 0 }; }); }
+  /* bot helper: cover one place with the board's biggest favorite among the places still empty (needs an upset first and room) */
   function pickFavorite(run) {
-    const r = run.race; if (run.phase !== 'book' || r.locked) return null;
+    const r = run.race; if (run.phase !== 'book' || r.locked || !r.upset) return null;
     const b = board(run); let best = null;
     for (let pl = 0; pl < 4; pl++) if (!r.slip[pl]) for (let h = 0; h < 4; h++) if (!r.slip.some(s => s && s.h === h) && (!best || b[h][pl].p > best.p)) best = { h, pl, p: b[h][pl].p };
-    if (best) r.slip[best.pl] = { h: best.h, stake: run.chip, odds: 0 };
+    if (best && !pick(run, best.pl, best.h)) return null;
     return best;
   }
   const PERMS = (() => { const out = []; (function go(a, rest) { if (!rest.length) { out.push(a); return; } rest.forEach((h, i) => go(a.concat(h), rest.filter((_, j) => j !== i))); })([], [0, 1, 2, 3]); return out; })();
@@ -301,7 +351,7 @@ const Gamble = (() => {
   function pickBook(run) {
     const q = quote(run); let best = null, bs = -1;
     PERMS.forEach(o => { const s = o.reduce((a, h, pl) => a * Math.max(1e-6, q.B[h][pl]), 1); if (s > bs) { bs = s; best = o; } });
-    best.forEach((h, pl) => { run.race.slip[pl] = { h, stake: run.chip, odds: 0 }; });
+    best.forEach((h, pl) => { run.race.slip[pl] = { h, stake: hedgeChip(run), odds: 0 }; });
   }
   /* bot helper: back the cells and duels whose true value beats the book's price by at least `min` (a share of the stake) */
   function pickValue(run, min) {
@@ -312,19 +362,20 @@ const Gamble = (() => {
       go(pl + 1, used, a.concat(null), v);
       for (let h = 0; h < 4; h++) if (!(used & (1 << h))) { const ev = q.P[h][pl] * b[h][pl].odds - 1; if (ev >= min) go(pl + 1, used | (1 << h), a.concat(h), v + ev); }
     })(0, 0, [], 0);
-    best.a.forEach((h, pl) => { r.slip[pl] = h == null ? null : { h, stake: run.chip, odds: 0 }; });
+    best.a.forEach((h, pl) => { r.slip[pl] = h == null ? null : { h, stake: hedgeChip(run), odds: 0 }; });
     duelsOf(run).forEach(([x, y], i) => {
       const row = duelBoard(run)[i], ea = row.ta * row.oa - 1, eb = row.tb * row.ob - 1;
-      if (Math.max(ea, eb) >= min) r.dbets[i] = { h: ea >= eb ? x : y, stake: run.chip, odds: 0 };
+      if (Math.max(ea, eb) >= min) r.dbets[i] = { h: ea >= eb ? x : y, stake: hedgeChip(run), odds: 0 };
     });
   }
   function canLock(run) {
-    const r = run.race, n = r.slip.filter(Boolean).length + (r.dbets || []).filter(Boolean).length;
-    return run.phase === 'book' && !r.locked && n > 0 && staked(run) <= run.cash;
+    const r = run.race;
+    return run.phase === 'book' && !r.locked && !!r.upset && hedgeOk(run) && staked(run) <= run.cash;
   }
   function lock(run) {
     if (!canLock(run)) return false;
     const r = run.race, b = board(run), db = (r.dbets || []).some(Boolean) ? duelBoard(run) : [];
+    r.upset.odds = upsetBoard(run)[r.upset.h].odds; run.cash -= r.upset.stake;
     r.slip.forEach((s, pl) => { if (s) { s.odds = b[s.h][pl].odds; run.cash -= s.stake; } });
     (r.dbets || []).forEach((d, i) => { if (d) { const row = db[i]; d.odds = d.h === row.a ? row.oa : row.ob; run.cash -= d.stake; } });
     r.pmult = r.slip.every(Boolean) ? perfectMult(run, r.slip.map(s => s.h)) : 0;
@@ -451,7 +502,7 @@ const Gamble = (() => {
       const fine = addFine(run, CFG.dqFine);
       run.heat = Math.floor(heatCap(run) / 2);
       ev.push({ t: 'caught', fine, refund: 0 });
-      if (run.fx.alibi) { let back = 0; r.slip.forEach(s => { if (s) back += Math.round(s.stake * 0.5); }); run.cash += back; r.alibi = back; ev[ev.length - 1].refund = back; }
+      if (run.fx.alibi) { let back = r.upset ? Math.round(r.upset.stake * 0.5) : 0; r.slip.forEach(s => { if (s) back += Math.round(s.stake * 0.5); }); run.cash += back; r.alibi = back; ev[ev.length - 1].refund = back; }
     } else if (T.heat > 0 && run.heat >= CFG.warnHeat && run.rng() < inspectChance(run)) {
       run.stats.inspections++;
       const fine = addFine(run, CFG.fineBase + run.heat * CFG.fineHeat);
@@ -466,7 +517,12 @@ const Gamble = (() => {
     const r = run.race;
     if (!r.done || run.phase !== 'race') return null;
     const bets = [], duels = [];
-    let pay = 0, stakes = 0, placeStakes = 0, hits = 0, sharp = 0, all = true;
+    let pay = 0, stakes = 0, placeStakes = 0, hits = 0, sharp = 0, all = true, up = null;
+    if (r.upset) {
+      const u = r.upset, hit = r.order[0] === u.h, p = hit && !r.caught ? Math.round(u.stake * u.odds) : 0;
+      stakes += u.stake; pay += p;
+      up = { h: u.h, stake: u.stake, odds: u.odds, hit, pay: p, won: r.order[0], big: hit && !r.caught && u.odds >= CFG.bigUpset };
+    }
     for (let pl = 0; pl < 4; pl++) {
       const s = r.slip[pl];
       if (!s) { all = false; continue; }
@@ -485,12 +541,12 @@ const Gamble = (() => {
     });
     const perfect = all && !r.caught && bets.length === 4;
     const bonus = perfect ? Math.round(placeStakes * r.pmult) : 0;
-    const insured = !hits && !r.caught && run.fx.insure ? Math.round(placeStakes * run.fx.insure) : 0;
+    const insured = !hits && !(up && up.hit) && !r.caught && run.fx.insure ? Math.round((placeStakes + (up ? up.stake : 0)) * run.fx.insure) : 0;
     run.cash += pay + bonus + insured;
     const net = pay + bonus + insured - stakes - r.fees - r.spent - r.fines + (r.alibi || 0);
-    const res = { raceNo: run.raceNo, order: r.order.slice(), bets, duels, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, sharp, draws: r.draws, quirk: quirkOf(r) };
+    const res = { raceNo: run.raceNo, order: r.order.slice(), upset: up, bets, duels, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, sharp, draws: r.draws, quirk: quirkOf(r) };
     run.result = res; run.results.push(res);
-    run.stats.races++; run.stats.hits += hits; run.stats.sharp = (run.stats.sharp || 0) + sharp; if (perfect) run.stats.perfects++; run.stats.bestNet = Math.max(run.stats.bestNet, net);
+    run.stats.races++; if (up && up.hit && !r.caught) { run.stats.upsets = (run.stats.upsets || 0) + 1; if (up.big) run.stats.bigUpsets = (run.stats.bigUpsets || 0) + 1; } run.stats.hits += hits; run.stats.sharp = (run.stats.sharp || 0) + sharp; if (perfect) run.stats.perfects++; run.stats.bestNet = Math.max(run.stats.bestNet, net);
     run.phase = 'result';
     return res;
   }
@@ -533,8 +589,9 @@ const Gamble = (() => {
   function finish(run) {
     const final = run.cash - run.debt, profit = final - run.startCash;
     const sharp = run.stats.sharp || 0;
-    const rp = Math.max(0, Math.round(profit / 10)) + run.stats.hits + run.stats.perfects * 6 + sharp * CFG.sharpRp + (profit > 0 ? 5 : 0);
-    run.over = { final, profit, rp, hits: run.stats.hits, perfects: run.stats.perfects, caught: run.stats.caught, sharp };
+    const ups = run.stats.upsets || 0, big = run.stats.bigUpsets || 0;
+    const rp = Math.max(0, Math.round(profit / 10)) + run.stats.hits + run.stats.perfects * 6 + sharp * CFG.sharpRp + ups * CFG.upsetRp + big * CFG.bigUpsetRp + (profit > 0 ? 5 : 0);
+    run.over = { final, profit, rp, hits: run.stats.hits, perfects: run.stats.perfects, caught: run.stats.caught, sharp, upsets: ups, bigUpsets: big };
     run.phase = 'over';
     return true;
   }
@@ -543,6 +600,7 @@ const Gamble = (() => {
   /* a bot-friendly helper: expected payout of the locked slip in the current state (uses the quote's sims) */
   function expected(run) {
     const q = quote(run), r = run.race; let e = 0;
+    if (r.upset) e += q.P[r.upset.h][0] * r.upset.stake * r.upset.odds;
     r.slip.forEach((s, pl) => { if (s) e += q.P[s.h][pl] * s.stake * s.odds; });
     return e;
   }
@@ -582,6 +640,7 @@ const Gamble = (() => {
       N('e_net', 'eye', 'Backroom Network', 'One more favor on offer in the backroom.', [20, 35], ['e_view'], 196, 2),
       N('e_calls', 'eye', 'Late Money', 'Re-calls cost 25% less.', [25, 40], ['e_perf', 'e_net'], 180, 3),
       N('e_tip', 'eye', 'Tip-off', 'The top card of every deck is shown before you call.', [40], ['e_calls'], 180, 4),
+      N('e_under', 'eye', 'Longshot Fund', 'Your upset pays 10% more.', [25, 40, 55], ['e_net'], 212, 3),
       N('e_tell', 'eye', 'Bookie’s Tell', 'The board marks the cells where the book is wrong: ▲ it undersells, ▼ it oversells. A second level catches smaller mistakes.', [30, 50], ['e_perf'], 150, 3)
     ];
     const ROOT = { id: 'root', name: 'The Book', costs: [], parents: [] };
@@ -603,7 +662,7 @@ const Gamble = (() => {
         startCash: CFG.startCash + 30 * L('p_deep'), disc: 0.05 * L('p_haggle'), cool: 0.25 * L('n_cool'), heatCap: L('n_skin'), watch: 0.15 * L('n_watch'),
         fineMul: -0.2 * L('n_law'), greased: L('n_palm') ? 1 : 0, alibi: L('n_alibi') ? 1 : 0, loanOwe: CFG.loanOwe - 10 * L('p_shark'), insure: 0.15 * L('p_safe'),
         edge: 0.01 * L('e_sharp'), peekN: 1 + L('e_view'), perfectPlus: 0.5 * L('e_perf'), offers: CFG.favorOffers + L('e_net'), recallMul: 1 - 0.25 * L('e_calls'), tip: L('e_tip') ? 1 : 0,
-        extraUse: L('t_belt'), tell: L('e_tell')
+        extraUse: L('t_belt'), tell: L('e_tell'), upsetPlus: 0.1 * L('e_under')
       };
     }
     function record(st, over) { st.sp += over.rp; st.nights++; st.best = Math.max(st.best, Math.round(over.profit)); }
@@ -618,6 +677,7 @@ const Gamble = (() => {
 
   return { Meta, SUITS, CFG, TOOLS, TOOL_ORDER, FAVORS, favorById, newNight, pack, unpack, mulberry32, combine, makeRace,
     QUIRKS, quirkOf, tellMark, duelsOf, duelBoard, stepStake, duelPick, pickFavorite, pickBook, pickValue,
+    favoriteOf, upsetBoard, upsetNow, upsetOdds, pickUpset, hedgeStaked, hedgeRoom, hedgeChip,
     quote, board, orderChance, perfectMult, bestOrder, oddsFor, staked, setChip, pick, pickBest, canLock, lock, recallFee, canRecall, recall, draw,
     toolState, toolCost, toolMax, heatCap, inspectChance, useTool, settle, toBackroom, buyFavor, coolOff, takeLoan, canLoan, nextRace, finish,
     expected, walkOut, stepOf, label, favorPrice, edgeOf, simulate, remainingCodes };
