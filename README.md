@@ -6,6 +6,18 @@ pick a weak horse to win (the **upset**), lock your slip, and then bend the deck
 to make it happen, without letting the stewards catch you. What you hold at the end of the night is your score, and it earns
 Reputation Points for a permanent skill tree.
 
+### v16: the Dark Horse kit
+
+The weak horse can now be built to win. Before each race you draft traits for your upset pick and wear them in the race.
+
+- 13 traits in 5 tags (Comeback, Front-runner, Luck, Dirty, Steady). Most fire once a race: Closer, Kick, Slipstream, Second Wind, Quick Start, Front Runner, Lucky Seven, Hand-in-Hand, Overdue, Wild Card, Spoiler, Bump, Groomed.
+- 9 combos. Wear a pair together and it changes how the traits work: Comeback (closer+kick), Wire to Wire (quick+front), Loaded Dice (due+wild), Streak (hot+hand), Tailgate (slip+bump), Hit Squad (spoil+bump), Dirt Track (groomed+kick), Overdue Payout (rally+due), Slick (groomed+spoil).
+- 2 slots at the start. Each night opens with 2 drafts, +1 per race (max 3 waiting), 1 reroll. Offers lean toward combo partners and shared tags. When the kit is full you pick which trait to replace.
+- The price follows the kit: a better kit shortens the odds (`CFG.kitFollow`, 0.6). Only the two weakest horses can be the upset (`CFG.upsetPool`).
+- New Reputation branch Dark Horse: Trainer (more drafts), Second Opinion (rerolls), Bigger Kit (slots), Matchmaker (combo-leaning offers).
+- Engine: `stepCard` is the one shared card stepper used by `draw()` and the Monte Carlo `simulate()`, so quotes and races agree.
+- Balance (`node simg.js nokit|weak|value|weakrig|valuerig|hedge [nights]`): with no kit the best-value pick is about +20%; with the kit and the price following it, weak and value are both about +48%, about 35-37% upsets, 33-37% losing nights; adding careful rigging gives about +63%. Open question: how strong the kit plus rigging should be.
+
 ### v15: make the weak horse win
 - **The upset is the main bet.** Every race you back one horse to *win*; it cannot be the book's favorite. It pays the book's price for a win (x1.05 to x25), so the weaker it looks the more it pays. On its own a long shot rarely wins; tools are how it does.
 - **Cover bets.** The old order places and head-to-heads are now optional side bets: each starts at the smallest chip, and together they may not exceed the upset stake (`CFG.hedgeShare`). Cover cells wait until an upset is picked; clearing the upset clears them.
@@ -57,7 +69,7 @@ Open `dist/suit-derby.html` in a browser. It is one self-contained file
     src/fx.js        win effects: coins, confetti, banner, shake
     build.py         inlines everything into dist/suit-derby.html, dist/artifact.html and dist/site/ (offline-installable)
     fonts/ icons/    embedded fonts, app icons (make_icons.py redraws them)
-    simg.js          balance simulation:  node simg.js weak|value|weakrig|valuerig|hedge [nights]
+    simg.js          balance simulation:  node simg.js nokit|weak|value|weakrig|valuerig|hedge [nights]
     testg.js         engine tests:        node testg.js
     gplaytest.py     browser test of a full night, Reputation, resume, phone (LANG_ID=tr for Turkish; needs python playwright + chromium)
 

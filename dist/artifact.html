@@ -483,6 +483,35 @@ h1, h2, h3, p { margin: 0; }
 .gupres b { font: 800 18px/1.15 var(--f-display); text-transform: uppercase; letter-spacing: .03em; display: inline-flex; align-items: center; gap: 6px; }
 .gupres p { margin-top: 4px; color: var(--ink-dim); font-size: 14px; }
 @media (max-width: 420px) { .gups { grid-template-columns: 1fr; } }
+/* v16: the Dark Horse kit */
+.tg-closer { --tg: #7fb2f0; } .tg-front { --tg: #e9cf73; } .tg-luck { --tg: #c79bf0; } .tg-dirty { --tg: #ee8b6b; } .tg-steady { --tg: #5fd0a0; }
+.gkit { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin-bottom: 8px; }
+.gtr { display: grid; gap: 4px; align-content: start; text-align: left; padding: 9px 11px; border-radius: 12px; border: 1px solid var(--line); border-left: 4px solid var(--tg, var(--line)); background: var(--track); min-width: 0; }
+.gtr .gtn { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.gtr .gtn i { font-style: normal; font-size: 16px; }
+.gtr .gtn b { font: 800 16px var(--f-display); text-transform: uppercase; letter-spacing: .03em; }
+.gtr .gtn em { margin-left: auto; font: 600 10px var(--f-mono); font-style: normal; color: var(--tg, var(--ink-dim)); }
+.gtr .gtb { font-size: 13px; color: var(--ink-dim); line-height: 1.35; }
+.gtr.empty { border-style: dashed; border-left-style: dashed; opacity: .7; }
+.gtr .gtcombo { font: 700 12px var(--f-mono); color: var(--gold); }
+.gtr-slot { padding: 14px 10px; border-radius: 12px; border: 1px dashed var(--tg); background: var(--track); font: 700 14px var(--f-body); }
+.gcombos { display: grid; gap: 6px; margin: 0 0 10px; }
+.gcombo { display: grid; gap: 2px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--gold); background: color-mix(in srgb, var(--gold) 9%, var(--track)); }
+.gcombo b { font: 800 15px var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: var(--gold); }
+.gcombo span { font-size: 13px; color: var(--ink-dim); }
+.gdraft { margin: 6px 0 14px; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--track) 55%, transparent); }
+.gdh { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.gdh .lbl { margin: 0; }
+.goffer { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.gtr.offer { cursor: pointer; }
+.gtr.offer.on { background: color-mix(in srgb, var(--tg) 22%, var(--track)); border-color: var(--tg); }
+.gkitrow { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.gtchip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 14px; border: 1px solid var(--tg, var(--line)); font: 700 12px var(--f-body); background: var(--track); }
+.gtchip i { font-style: normal; }
+.gtchip.combo { border-color: var(--gold); color: var(--gold); }
+.gupres .gkitrow { margin: 8px 0 0; }
+.gup { grid-template-areas: "n o" "p p"; row-gap: 4px; }
+.gup small { text-align: left; }
 
 </style>
 
@@ -954,7 +983,6 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "The upset": "Sürpriz",
     "Cover bets": "Yan bahisler",
     "You own no horse. Tonight you are a gambler: a night is a few races, and in each one you pick a weak horse, back it to win, and then make it happen with the deck and the track as you run the race card by card. You start with {m}. What you hold when the night ends, minus any debt, is your score, and it earns Reputation Points.": "Hiç atın yok. Bu gece bir kumarbazsın: bir gece birkaç yarıştan oluşur ve her yarışta zayıf bir at seçip kazanması için oynarsın, sonra yarışı kart kart koşarken desteyi ve pisti kullanarak bunu gerçekleştirirsin. {m} ile başlarsın. Gece bittiğinde elindeki para, borcun düşülmüş hâliyle, puanındır ve İtibar Puanı kazandırır.",
-    "The upset is the heart of every race: you back one horse to <b>win</b>, and it cannot be the book’s favorite. It pays the book’s price, which is its chance minus the book’s cut of about {cut}%, so the longer the shot, the bigger the prize (up to ×{max}). On its own a long shot rarely wins. Your tools are how it does: pull its cards to the top, hold the favorites back in the mud, and watch the upset bar. Chips: {c}; the chip you pick is your upset stake.": "Sürpriz her yarışın kalbidir: bir atın <b>kazanması</b> için oynarsın ve bu at bahisçinin favorisi olamaz. Bahisçinin fiyatını öder: bu, şansının bahisçinin yaklaşık %{cut} payı düşülmüş hâlidir, yani at ne kadar uzun şanssa ödül o kadar büyüktür (×{max}’e kadar). Uzun şans kendi başına nadiren kazanır. Kazanmasını araçların sağlar: kartlarını desteye üste çek, favorileri çamurda tut ve sürpriz çubuğunu izle. Fişler: {c}; seçtiğin fiş sürpriz bahsindir.",
     "Optionally cover the upset with small bets on who finishes in each place. Every cell on the board is the book’s chance and its price. All your cover bets together may not exceed your upset stake, and each one starts at the smallest chip; step it up with + and −. Back all four places and get them all right and a <b>perfect order</b> bonus is paid on top: the longer the shot, the bigger it is.": "İstersen sürprizi, her sırayı kimin bitireceğine küçük bahislerle destekleyebilirsin. Panodaki her hücre bahisçinin şansı ve fiyatıdır. Yan bahislerin toplamı sürpriz bahsini geçemez ve her biri en küçük fişle başlar; + ve − ile artır. Dört sırayı da oynayıp hepsini bilirsen üstüne <b>kusursuz sıralama</b> bonusu ödenir: şans ne kadar uzunsa o kadar büyük.",
     "Every race the book also offers three duels: which of two horses finishes ahead. Pick one side of any duel you like as a cover bet. Duels are priced by the same book, quirk and all, and are decided by the final order. They do not count towards a perfect order.": "Bahisçi her yarışta üç düello de sunar: iki attan hangisi önde bitirir. İstediğin düelloda bir tarafı yan bahis olarak seç. Düellolar aynı bahisçi tarafından, tuhaflığıyla birlikte fiyatlanır ve son sıralamaya göre sonuçlanır. Kusursuz sıralamaya sayılmazlar.",
     "Lock your slip before the first card: the stakes are paid and the odds are fixed. Your upset horse is set for good. You can still change a cover place while the race runs, but every re-call costs {f}% of that bet’s stake and is priced at the odds of that moment. A place that is already decided cannot be changed.": "Kuponunu ilk karttan önce kilitle: bahisler ödenir ve oranlar sabitlenir. Sürpriz atın kesinleşir. Yarış sürerken bir yan sırayı değiştirebilirsin ama her değişiklik o bahsin %{f}’ine mal olur ve o anki orandan fiyatlanır. Belli olmuş bir sıra değiştirilemez.",
@@ -965,10 +993,8 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "UPSET": "SÜRPRİZ",
     "{s} to win": "{s} kazanır",
     "Pick your upset": "Sürprizini seç",
-    "Back a horse the book does not favor to WIN. It pays the book’s price, and the longer the shot, the bigger the prize. Then make it happen.": "Bahisçinin favori görmediği bir atın KAZANMASI için oyna. Bahisçinin fiyatını öder; şans ne kadar uzunsa ödül o kadar büyük. Sonra gerçekleştir.",
     "Favorite": "Favori",
     "Longest shot": "En uzun şans",
-    "The favorite cannot be your upset.": "Favori sürprizin olamaz.",
     "{p} to win": "{p} kazanır",
     "Cover the order": "Sıralamayı destekle",
     "Pick the horse you will make win. That is the whole game.": "Kazandıracağın atı seç. Oyunun tamamı bu.",
@@ -992,7 +1018,89 @@ if (typeof module !== 'undefined') module.exports = I18n;
     "Upset": "Sürpriz",
     "Upsets pulled off": "Başarılan sürprizler",
     "Cover places called right": "Doğru bilinen yan sıralar",
-    "Four suits race through one deck. Back the weak horse, rig the race, keep your nerve.": "Dört renk tek bir desteyle yarışır. Zayıf ata oyna, yarışı ayarla, soğukkanlılığını koru."
+    "Four suits race through one deck. Back the weak horse, rig the race, keep your nerve.": "Dört renk tek bir desteyle yarışır. Zayıf ata oyna, yarışı ayarla, soğukkanlılığını koru.",
+    "Closer": "Finişçi",
+    "Once a race, a card of yours gives +1 step while you are 4 or more steps behind the leader.": "Yarışta bir kez, lidere 4 veya daha fazla adım gerideyken bir kartın +1 adım verir.",
+    "Kick": "Son Sprint",
+    "Once a race, the first card of yours after you reach 8 steps gives +1 step.": "Yarışta bir kez, 8 adıma ulaştıktan sonraki ilk kartın +1 adım verir.",
+    "Slipstream": "Peşine Takıl",
+    "Once a race, when the horse 1 step ahead of you moves, you move 1 step too.": "Yarışta bir kez, 1 adım önündeki at ilerlediğinde sen de 1 adım ilerlersin.",
+    "Second Wind": "İkinci Nefes",
+    "Once a race, when you are last and 5 cards are gone, your next card counts double.": "Yarışta bir kez, sonuncuyken ve 5 kart çekildikten sonra sıradaki kartın çift sayılır.",
+    "Quick Start": "Hızlı Çıkış",
+    "Your first card gives +1 step, if it comes in the first 3 draws.": "İlk kartın +1 adım verir, ilk 3 çekişte gelirse.",
+    "Front Runner": "Lider At",
+    "Once a race, a card of yours gives +1 step while you lead.": "Yarışta bir kez, öndeyken bir kartın +1 adım verir.",
+    "Lucky Seven": "Şanslı Yedili",
+    "Once a race, a 7 of your suit counts as a face card: 2 steps.": "Yarışta bir kez, renginin bir 7’si resimli kart sayılır: 2 adım.",
+    "Hot Hand": "Sıcak El",
+    "Once a race, a card of yours drawn right after another card of yours gives +1 step.": "Yarışta bir kez, senin bir kartından hemen sonra gelen bir kartın +1 adım verir.",
+    "Due": "Vakti Geldi",
+    "Once a race, when 6 cards in a row have missed your suit, your next card gives +1 step (+2 after 12).": "Yarışta bir kez, art arda 6 kart rengini ıskalarsa sıradaki kartın +1 adım verir (12’den sonra +2).",
+    "Wild Card": "Joker",
+    "Each of your cards has a 1-in-6 chance of +2 steps and a 1-in-3 chance of −1 step.": "Her kartının 6’da 1 ihtimalle +2 adım, 3’te 1 ihtimalle −1 adım şansı vardır.",
+    "Spoiler": "Bozguncu",
+    "The leader’s next 2 moves each lose 1 step.": "Liderin sonraki 2 hamlesi 1’er adım kaybeder.",
+    "Bump": "Çarpış",
+    "When you pass a horse, it loses 1 step (once per horse).": "Bir atı geçtiğinde o at 1 adım kaybeder (her ata bir kez).",
+    "Groomed": "Bakımlı",
+    "Your Tailwind and the Mud you put on rivals last 2 cards longer.": "Arkadan Rüzgârın ve rakiplere koyduğun Çamur 2 kart daha uzun sürer.",
+    "Comeback Kid": "Geri Dönen Çocuk",
+    "Closer works twice a race instead of once.": "Finişçi yarışta bir değil iki kez çalışır.",
+    "Wire to Wire": "Baştan Sona",
+    "Front Runner works twice a race instead of once.": "Lider At yarışta bir değil iki kez çalışır.",
+    "Loaded Dice": "Hileli Zar",
+    "Wild Card’s −1 step only comes 1 time in 10.": "Joker’in −1 adımı sadece 10’da 1 gelir.",
+    "Streak": "Seri",
+    "Hot Hand and Lucky Seven each work twice a race instead of once.": "Sıcak El ve Şanslı Yedili yarışta bir değil iki kez çalışır.",
+    "Tailgate": "Kuyruğa Takıl",
+    "Slipstream works twice a race instead of once.": "Peşine Takıl yarışta bir değil iki kez çalışır.",
+    "Hit Squad": "Vurucu Ekip",
+    "Spoiler hits the leader 4 times instead of 2.": "Bozguncu lidere 2 değil 4 kez vurur.",
+    "Dirt Track": "Toprak Pist",
+    "Kick starts at 7 steps instead of 8.": "Son Sprint 8 değil 7 adımda başlar.",
+    "Overdue": "Gecikmiş",
+    "Second Wind comes after 3 cards, not 5.": "İkinci Nefes 5 değil 3 karttan sonra gelir.",
+    "Slick Track": "Kaygan Pist",
+    "Spoiler also hits the next card of the horse that is second.": "Bozguncu, ikinci olan atın sıradaki kartına da vurur.",
+    "Comeback": "Geri dönüş",
+    "Front-runner": "Önden gidiş",
+    "Luck": "Şans",
+    "Dirty": "Kirli iş",
+    "Steady": "Sağlam",
+    "Trainer": "Antrenör",
+    "One more trait draft at the start of every night.": "Her gecenin başında bir özellik seçimi daha.",
+    "Second Opinion": "İkinci Görüş",
+    "One more reroll of a trait offer every night.": "Her gece özellik teklifini bir kez daha yenileme hakkı.",
+    "Bigger Kit": "Büyük Çanta",
+    "One more trait slot in your Dark Horse kit.": "Kara At çantana bir özellik yuvası daha.",
+    "Matchmaker": "Çöpçatan",
+    "Trait offers lean harder towards partners of the traits you already wear.": "Özellik teklifleri, taktığın özelliklerin eşlerine daha çok yönelir.",
+    "Dark Horse": "Kara At",
+    "Build a dark horse": "Bir kara at yarat",
+    "Draft traits into your kit: a Closer, a Kick, a Lucky Seven, a Spoiler. They stay with you all night and are worn by whichever horse is your upset.": "Çantana özellikler seç: bir Finişçi, bir Son Sprint, bir Şanslı Yedili, bir Bozguncu. Bütün gece seninle kalırlar ve sürprizin hangi atsa o taşır.",
+    "Some pairs make a named combo that is stronger than both alone. Aim for a build, then fit it to the deck.": "Bazı çiftler, ikisinden de güçlü adlı bir kombo yapar. Bir kurulum hedefle, sonra desteye uydur.",
+    "The Dark Horse kit": "Kara At çantası",
+    "The upset is the heart of every race: you back one horse to <b>win</b>, and it has to be one of the two weakest. It pays the book’s price, which is its chance minus the book’s cut of about {cut}%, so the longer the shot, the bigger the prize (up to ×{max}). On its own a long shot rarely wins. Your tools are how it does: pull its cards to the top, hold the favorites back in the mud, and watch the upset bar. Chips: {c}; the chip you pick is your upset stake.": "Sürpriz her yarışın kalbidir: bir atın <b>kazanması</b> için oynarsın ve bu at en zayıf iki attan biri olmalıdır. Bahisçinin fiyatını öder: bu, şansının bahisçinin yaklaşık %{cut} payı düşülmüş hâlidir, yani at ne kadar uzun şanssa ödül o kadar büyüktür (×{max}’e kadar). Uzun şans kendi başına nadiren kazanır. Kazanmasını araçların sağlar: kartlarını desteye üste çek, favorileri çamurda tut ve sürpriz çubuğunu izle. Fişler: {c}; seçtiğin fiş sürpriz bahsindir.",
+    "Your kit is a few trait slots you fill by drafting: you start the night with {f} drafts and earn one more after every race (never more than {m} waiting). Each draft deals three traits and you keep one; a reroll deals three new ones. A full kit makes you replace a trait to take a new one. Traits are free: no cash, no Heat.": "Çantan, seçerek doldurduğun birkaç özellik yuvasıdır: geceye {f} seçimle başlarsın ve her yarıştan sonra bir tane daha kazanırsın (en fazla {m} bekleyebilir). Her seçimde üç özellik gelir ve birini alırsın; yenileme üç yenisini getirir. Çanta doluysa yenisini almak için birini değiştirirsin. Özellikler bedavadır: ne para, ne Şüphe.",
+    "The kit is worn by whichever horse is your upset, and every trait works once or twice a race, so the cards still decide. <b>Combos:</b> certain pairs, like Closer + Kick, do more together than apart, and the draft leans towards partners of the traits you already wear. The board shows your horse’s real chance with your kit. The crowd follows your kit, so the better it is, the shorter your price. Only the two weakest horses can be your upset.": "Çantayı sürprizin hangi atsa o taşır ve her özellik yarışta bir veya iki kez çalışır, yani kararı yine kartlar verir. <b>Komboler:</b> Finişçi + Son Sprint gibi bazı çiftler birlikte ayrı ayrıdan fazlasını yapar ve seçimler taktığın özelliklerin eşlerine yönelir. Pano, çantanla atının gerçek şansını gösterir. Kalabalık çantanı takip eder: ne kadar iyiyse fiyatın o kadar kısalır. Sürprizin yalnızca en zayıf iki attan biri olabilir.",
+    "Your Dark Horse kit": "Kara At çantan",
+    "Traits stay with you all night and are worn by whichever horse is your upset. Draft them to build around the deck, and pair the right ones for a combo.": "Özellikler bütün gece seninle kalır ve sürprizin hangi atsa o taşır. Desteye göre kur, doğru çiftleri bir kombo için eşleştir.",
+    "Replace {t}": "{t} yerine koy",
+    "Empty slot": "Boş yuva",
+    "Draft a trait below.": "Aşağıdan bir özellik seç.",
+    "Reroll · {n}": "Yenile · {n}",
+    "Pick the slot to replace, or tap the trait again to cancel.": "Yerine koyacağın yuvayı seç ya da vazgeçmek için özelliğe tekrar dokun.",
+    "Your kit is full: taking a trait replaces one of yours.": "Çantan dolu: yeni özellik almak seninkilerden birinin yerine geçer.",
+    "Back one of the two weakest horses to WIN. It pays the book’s price, and the longer the shot, the bigger the prize. Your kit makes it likelier, and the crowd follows your kit, so the price shortens as it gets better.": "En zayıf iki attan birinin KAZANMASI için oyna. Bahisçinin fiyatını öder; şans ne kadar uzunsa ödül o kadar büyük. Çantan onu olası kılar, kalabalık da çantanı takip eder; çanta güçlendikçe fiyat kısalır.",
+    "Too strong": "Fazla güçlü",
+    "{p} book · {k} with your kit": "bahisçi {p} · çantanla {k}",
+    "Too strong to be an underdog.": "Düşük şanslı olamayacak kadar güçlü.",
+    "{t}: {s} {d}": "{t}: {s} {d}",
+    "Draft a trait · {n} draft left": "Özellik seç · {n} seçim hakkı kaldı",
+    "Draft a trait · {n} drafts left": "Özellik seç · {n} seçim hakkı kaldı",
+    "{n} step": "{n} adım",
+    "{n} steps": "{n} adım"
   });
 })();
 
@@ -1542,9 +1650,12 @@ const Gamble = (() => {
     hintMin: [0.08, 0.05],  // Bookie's Tell: how far (in chance) the book must be off before a cell is marked, by level
     duels: 3, duelMin: 1.05, // head-to-head offers per race, and their lowest price
     sharpOdds: 4, sharpRp: 2, // a place that hits at these odds or longer is a sharp call and pays extra Reputation
+    upsetPool: 2,         // only the two weakest horses can be your upset
+    kitFollow: 0.6,       // the crowd follows your kit: the price moves this share of the way from the book's chance to your horse's real chance
     upsetMax: 25,         // the upset call pays the book's price for the horse to WIN, up to this
     hedgeShare: 1,        // cover bets (places and head-to-heads) may add up to this many times the upset stake
-    upsetRp: 3, bigUpset: 6, bigUpsetRp: 5   // Reputation for pulling an upset off, and extra when it paid this much or more
+    upsetRp: 3, bigUpset: 6, bigUpsetRp: 5,  // Reputation for pulling an upset off, and extra when it paid this much or more
+    kitSlots: 2, kitFirst: 2, kitMaxDrafts: 3, kitRerolls: 1   // the Dark Horse kit: slots, drafts at the start of a night, most unspent drafts, rerolls a night
   };
 
   /* ---------- the book's quirk: every race, the book prices from a flawed view of the deck, and says so ---------- */
@@ -1562,6 +1673,58 @@ const Gamble = (() => {
     return pool[0];
   }
   const quirkOf = race => race.quirk || 'sharp';
+
+  /* ---------- Dark Horse traits: a kit you draft for the night, worn by whichever horse is your upset ---------- */
+  const TRAITS = {
+    closer: { name: 'Closer',       tag: 'closer', blurb: 'Once a race, a card of yours gives +1 step while you are 4 or more steps behind the leader.' },
+    kick:   { name: 'Kick',         tag: 'closer', blurb: 'Once a race, the first card of yours after you reach 8 steps gives +1 step.' },
+    slip:   { name: 'Slipstream',   tag: 'closer', blurb: 'Once a race, when the horse 1 step ahead of you moves, you move 1 step too.' },
+    rally:  { name: 'Second Wind',  tag: 'closer', blurb: 'Once a race, when you are last and 5 cards are gone, your next card counts double.' },
+    quick:  { name: 'Quick Start',  tag: 'front',  blurb: 'Your first card gives +1 step, if it comes in the first 3 draws.' },
+    front:  { name: 'Front Runner', tag: 'front',  blurb: 'Once a race, a card of yours gives +1 step while you lead.' },
+    hot:    { name: 'Lucky Seven',  tag: 'luck',   blurb: 'Once a race, a 7 of your suit counts as a face card: 2 steps.' },
+    hand:   { name: 'Hot Hand',     tag: 'luck',   blurb: 'Once a race, a card of yours drawn right after another card of yours gives +1 step.' },
+    due:    { name: 'Due',          tag: 'luck',   blurb: 'Once a race, when 6 cards in a row have missed your suit, your next card gives +1 step (+2 after 12).' },
+    wild:   { name: 'Wild Card',    tag: 'luck',   blurb: 'Each of your cards has a 1-in-6 chance of +2 steps and a 1-in-3 chance of −1 step.' },
+    spoil:  { name: 'Spoiler',      tag: 'dirty',  blurb: 'The leader’s next 2 moves each lose 1 step.' },
+    bump:   { name: 'Bump',         tag: 'dirty',  blurb: 'When you pass a horse, it loses 1 step (once per horse).' },
+    groomed: { name: 'Groomed',     tag: 'steady', blurb: 'Your Tailwind and the Mud you put on rivals last 2 cards longer.' }
+  };
+  const TRAIT_ORDER = ['closer', 'kick', 'slip', 'rally', 'quick', 'front', 'hot', 'hand', 'due', 'wild', 'spoil', 'bump', 'groomed'];
+  const TAGS = { closer: 'Comeback', front: 'Front-runner', luck: 'Luck', dirty: 'Dirty', steady: 'Steady' };
+  /* a pair of traits worn together does something neither does alone */
+  const COMBOS = [
+    { id: 'comeback', name: 'Comeback Kid', a: 'closer', b: 'kick',    blurb: 'Closer works twice a race instead of once.' },
+    { id: 'wire',     name: 'Wire to Wire', a: 'quick',  b: 'front',   blurb: 'Front Runner works twice a race instead of once.' },
+    { id: 'loaded',   name: 'Loaded Dice',  a: 'due',    b: 'wild',    blurb: 'Wild Card’s −1 step only comes 1 time in 10.' },
+    { id: 'streak',   name: 'Streak',       a: 'hot',    b: 'hand',    blurb: 'Hot Hand and Lucky Seven each work twice a race instead of once.' },
+    { id: 'tailgate', name: 'Tailgate',     a: 'slip',   b: 'bump',    blurb: 'Slipstream works twice a race instead of once.' },
+    { id: 'hitsquad', name: 'Hit Squad',    a: 'spoil',  b: 'bump',    blurb: 'Spoiler hits the leader 4 times instead of 2.' },
+    { id: 'dirt',     name: 'Dirt Track',   a: 'groomed', b: 'kick',   blurb: 'Kick starts at 7 steps instead of 8.' },
+    { id: 'overdue',  name: 'Overdue',      a: 'rally',  b: 'due',     blurb: 'Second Wind comes after 3 cards, not 5.' },
+    { id: 'slick',    name: 'Slick Track',  a: 'groomed', b: 'spoil',  blurb: 'Spoiler also hits the next card of the horse that is second.' }
+  ];
+  const comboOn = (ids, c) => ids.indexOf(c.a) >= 0 && ids.indexOf(c.b) >= 0;
+  const kitCombos = ids => COMBOS.filter(c => comboOn(ids || [], c));
+  /* the numbers a kit adds up to (combos are applied on top) */
+  function kitParams(ids) {
+    const h = id => ids.indexOf(id) >= 0, c = id => COMBOS.some(x => x.id === id && comboOn(ids, x)), K = { gap: 1 };
+    if (h('closer')) { K.closer = 1; K.closerMax = c('comeback') ? 2 : 1; }
+    if (h('kick')) { K.kick = 1; K.kickMax = 1; K.kickAt = c('dirt') ? 7 : 8; }
+    if (h('slip')) K.slip = c('tailgate') ? 2 : 1;
+    if (h('rally')) { K.rally = 1; K.rallyAt = c('overdue') ? 3 : 5; }
+    if (h('quick')) K.quick = 1;
+    if (h('front')) { K.front = 1; K.frontMax = c('wire') ? 2 : 1; }
+    if (h('hot')) { K.hot = 1; K.hotMax = c('streak') ? 2 : 1; }
+    if (h('hand')) { K.hand = 1; K.handMax = c('streak') ? 2 : 1; }
+    if (h('due')) { K.due = 1; K.dueNeed = 6; K.dueMax = 1; }
+    if (h('wild')) { K.wildUp = 1 / 6; K.wildDown = c('loaded') ? 0.1 : 1 / 3; }
+    if (h('spoil')) { K.spoil = c('hitsquad') ? 4 : 2; K.spoilSecond = c('slick') ? 1 : 0; }
+    if (h('bump')) K.bump = 1;
+    if (h('groomed')) K.groomed = 1;
+    return K;
+  }
+  const kitStart = K => ({ n: 0, miss: 0, cl: 0, kk: 0, fr: 0, ho: 0, ha: 0, du: 0, slipLeft: K.slip || 0, wind: 0, spoilLeft: K.spoil || 0, last: -1, bumped: 0 });
 
   /* ---------- tools ---------- */
   const TOOLS = {
@@ -1612,7 +1775,7 @@ const Gamble = (() => {
 
   /* ---------- effects: the base (Reputation tree) plus favors bought this night ---------- */
   function combine(base, favors) {
-    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0, tell: 0, upsetPlus: 0 }, base || {});
+    const fx = Object.assign({ disc: 0, cool: 0, watch: 0, peekN: 1, edge: 0, perfectPlus: 0, recallMul: 1, extraUse: 0, greased: 0, tip: 0, insure: 0, fineMul: 0, heatCap: 0, tools: ['peek', 'burn', 'stack', 'mud'], chips: [5, 10, 25, 50], startCash: CFG.startCash, loanOwe: CFG.loanOwe, offers: CFG.favorOffers, alibi: 0, tell: 0, upsetPlus: 0, kitSlots: 0, kitDrafts: 0, kitRerolls: 0, match: 0 }, base || {});
     fx.tools = (fx.tools || []).slice();
     (favors || []).forEach(id => {
       const f = favorById(id); if (!f) return;
@@ -1640,7 +1803,7 @@ const Gamble = (() => {
     shuffle(deck, rng);
     const quirk = pickQuirk(rng, run.lastQuirk); run.lastQuirk = quirk;
     return {
-      quirk, upset: null, duels: null, dbets: [null, null, null],
+      quirk, upset: null, kit: null, duels: null, dbets: [null, null, null],
       deck, comp, prog: [0, 0, 0, 0], reach: [0, 0, 0, 0], finished: [], draws: 0, order: null, done: false,
       lane: [0, 1, 2, 3].map(() => ({ mud: 0, wind: 0, hurdle: false })),
       uses: {}, slip: [null, null, null, null], locked: false, pk: 0, tampered: false, caught: false, confiscated: {},
@@ -1654,36 +1817,89 @@ const Gamble = (() => {
     const run = {
       v: 1, seed, rng: mulberry32(seed), base, favors: [], fx: null, phase: 'book', races: o.races || CFG.night, raceNo: 1,
       cash: 0, debt: 0, startCash: 0, heat: 0, chip: 10, race: null, nightUses: {}, back: null, loans: 0,
-      stats: { hits: 0, perfects: 0, races: 0, tools: 0, caught: 0, inspections: 0, bestNet: 0, spent: 0 }, results: [], result: null, over: null
+      stats: { hits: 0, perfects: 0, races: 0, tools: 0, caught: 0, inspections: 0, bestNet: 0, spent: 0 }, results: [], result: null, over: null, kit: emptyKit()
     };
     run.fx = combine(base, run.favors);
+    run.kit.drafts = CFG.kitFirst + (run.fx.kitDrafts | 0); run.kit.rerolls = CFG.kitRerolls + (run.fx.kitRerolls | 0);
     run.cash = run.startCash = run.fx.startCash;
     run.chip = run.fx.chips.indexOf(10) >= 0 ? 10 : run.fx.chips[0];
     run.race = makeRace(run);
     if (run.fx.tip) run.race.pk = 1;
+    ensureOffer(run);
     return run;
   }
-  function pack(run) { const o = JSON.parse(JSON.stringify(run, (k, v) => (k === '_q' ? undefined : v))); o.rngState = run.rng.state(); return o; }
-  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); if (run.race && !run.race.dbets) run.race.dbets = [null, null, null]; return run; }
+  function pack(run) { const o = JSON.parse(JSON.stringify(run, (k, v) => (k === '_q' || k === '_k' ? undefined : v))); o.rngState = run.rng.state(); return o; }
+  function unpack(o) { const run = JSON.parse(JSON.stringify(o)); run.rng = mulberry32(o.rngState); if (run.race && !run.race.dbets) run.race.dbets = [null, null, null]; if (!run.kit) run.kit = emptyKit(); return run; }
 
   /* ---------- odds: the book simulates the rest of the deck in random order ---------- */
-  function remainingCodes(race) { return race.deck.map(c => c.s * 2 + (stepOf(c) - 1)); }
-  function simulate(prog, lane, codes, track, rng, finished, top) {
-    const p = prog.slice(), mud = lane.map(l => l.mud), wind = lane.map(l => l.wind), hur = lane.map(l => l.hurdle);
-    const fin = finished.slice(), seen = [false, false, false, false];
-    fin.forEach(h => { seen[h] = true; });
+  /* a card in a simulation is one number: suit * 4 + (1 if a face card) + (2 if a plain 7) */
+  const codeOf = c => c.s * 4 + (c.r >= 11 ? 1 : 0) + (c.r === 7 ? 2 : 0);
+  function remainingCodes(race) { return race.deck.map(codeOf); }
+
+  /* ---------- one card: the same rules for the real race and for every simulated one ---------- */
+  /* S: { p, mud, wind, hur, fin, seen, draws, track, kit: {U, K, ks} | null, fx: [] | null }.
+     s = the horse of the card, face = a face card, hot = 2 for a plain 7. Returns { st, note }. */
+  function stepCard(S, s, face, hot, rng) {
+    const p = S.p, kit = S.kit, U = kit ? kit.U : -1, K = kit ? kit.K : null, ks = kit ? kit.ks : null, fx = S.fx;
+    const old = p.slice();
+    let st = face ? 2 : 1, note = null;
+    const mine = s === U;
+    if (mine && K.hot && hot && ks.ho < K.hotMax) { st = 2; ks.ho++; if (fx) fx.push({ t: 'hot', n: 1 }); }
+    if (S.hur[s]) { S.hur[s] = false; st = 0; note = 'hurdle'; }
+    else {
+      if (S.mud[s] > 0) { st = Math.max(0, st - 1); S.mud[s]--; note = 'mud'; }
+      if (S.wind[s] > 0) { st++; S.wind[s]--; note = note ? 'both' : 'wind'; }
+    }
+    if (kit) {
+      if (mine) {
+        const others = [0, 1, 2, 3].filter(h => h !== U), lead = Math.max.apply(null, others.map(h => old[h])), low = Math.min.apply(null, others.map(h => old[h]));
+        const behind = lead - old[U]; let add = 0; const log = (t, n) => { add += n; if (fx && n) fx.push({ t, n }); };
+        ks.n++;
+        if (K.closer && behind >= 4 && ks.cl < K.closerMax) { ks.cl++; log('closer', K.closer); }
+        if (K.front && old[U] >= lead && ks.fr < K.frontMax) { ks.fr++; log('front', K.front); }
+        if (K.quick && ks.n === 1 && S.draws < 3) log('quick', 1);
+        if (K.kick && old[U] >= K.kickAt && ks.kk < K.kickMax) { ks.kk++; log('kick', K.kick); }
+        if (K.hand && ks.last === U && ks.ha < K.handMax) { ks.ha++; log('hand', K.hand); }
+        if (K.due) { if (ks.miss >= K.dueNeed && ks.du < K.dueMax) { ks.du++; log('due', ks.miss >= 2 * K.dueNeed ? 2 : 1); } ks.miss = 0; }
+        if (K.rally && !ks.wind && old[U] < low && S.draws >= K.rallyAt) { ks.wind = 1; log('rally', Math.max(1, st + add)); }
+        if (K.wildUp) { const x = rng(); if (x < K.wildUp) log('wild', 2); else if (x < K.wildUp + K.wildDown) log('wild', -1); }
+        st = Math.max(0, st + add);
+      } else {
+        if (K.due) ks.miss++;
+        if (K.spoil && ks.spoilLeft > 0 && st > 0) {
+          const rv = [0, 1, 2, 3].filter(h => h !== U).map(h => old[h]).sort((x, y) => y - x);
+          if (old[s] >= Math.max(old[U], rv[0]) || (K.spoilSecond && old[s] >= rv[1])) { st--; ks.spoilLeft--; if (fx) fx.push({ t: 'spoil', n: -1, h: s }); }
+        }
+      }
+    }
+    p[s] += st;
+    const cross = h => { if (!S.seen[h] && p[h] >= S.track) { S.seen[h] = true; S.fin.push(h); } };
+    cross(s);
+    if (kit) {
+      if (!mine && K.slip && ks.slipLeft > 0 && !S.seen[U] && old[s] > old[U] && old[s] - old[U] <= K.gap && st > 0) {
+        ks.slipLeft--; p[U] += 1; if (fx) fx.push({ t: 'slip', n: 1 }); cross(U);
+      }
+      if (mine && K.bump) {
+        for (let h = 0; h < 4; h++) if (h !== U && !S.seen[h] && !(ks.bumped & (1 << h)) && old[U] <= p[h] && p[U] > p[h]) { p[h] = Math.max(0, p[h] - K.bump); ks.bumped |= 1 << h; if (fx) fx.push({ t: 'bump', n: -K.bump, h }); }
+      }
+      ks.last = s;
+    }
+    S.draws++;
+    return { st, note };
+  }
+
+  /* kit: { U, K, ks, draws } makes the horse U wear a kit in the simulation (ks is copied, draws = cards already drawn) */
+  function simulate(prog, lane, codes, track, rng, finished, top, kit) {
+    const S = { p: prog.slice(), mud: lane.map(l => l.mud), wind: lane.map(l => l.wind), hur: lane.map(l => l.hurdle), fin: finished.slice(), seen: [false, false, false, false], draws: kit ? kit.draws : 0, track, fx: null,
+      kit: kit ? { U: kit.U, K: kit.K, ks: Object.assign({}, kit.ks) } : null };
+    S.fin.forEach(h => { S.seen[h] = true; });
     let d = codes.slice();
     for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = d[i]; d[i] = d[j]; d[j] = t; }
     if (top && top.length) d = top.concat(d);
     const n = d.length;
-    for (let i = 0; i < n && fin.length < 3; i++) {
-      const s = d[i] >> 1; let st = (d[i] & 1) + 1;
-      if (hur[s]) { st = 0; hur[s] = false; } else { if (mud[s] > 0) { st = Math.max(0, st - 1); mud[s]--; } if (wind[s] > 0) { st++; wind[s]--; } }
-      p[s] += st;
-      if (!seen[s] && p[s] >= track) { seen[s] = true; fin.push(s); }
-    }
-    const rest = [0, 1, 2, 3].filter(h => !seen[h]).sort((a, b) => p[b] - p[a] || a - b);
-    return fin.concat(rest);
+    for (let i = 0; i < n && S.fin.length < 3; i++) stepCard(S, d[i] >> 2, d[i] & 1, d[i] & 2, rng);
+    const rest = [0, 1, 2, 3].filter(h => !S.seen[h]).sort((a, b) => S.p[b] - S.p[a] || a - b);
+    return S.fin.concat(rest);
   }
   /* returns { P[h][pl], orders: Map(code -> count), n } for the current state of the race */
   const zeros = () => [0, 1, 2, 3].map(() => [0, 0, 0, 0]);
@@ -1694,7 +1910,7 @@ const Gamble = (() => {
     const share = race.deck.length ? faces / race.deck.length : 0, codes = [];
     for (let s = 0; s < 4; s++) {
       const f = Math.min(cnt[s], Math.round(CFG.stepsBlur * cnt[s] * share + (1 - CFG.stepsBlur) * fc[s]));
-      for (let k = 0; k < cnt[s]; k++) codes.push(s * 2 + (k < f ? 1 : 0));
+      for (let k = 0; k < cnt[s]; k++) codes.push(s * 4 + (k < f ? 1 : 0));
     }
     return codes;
   }
@@ -1772,6 +1988,68 @@ const Gamble = (() => {
   /* the most likely complete order right now */
   function bestOrder(run) { const q = quote(run); let b = null, c = -1; for (const k in q.orders) if (q.orders[k] > c) { c = q.orders[k]; b = k.split('').map(Number); } return b; }
 
+
+  /* ---------- the kit: drafting traits and what they do to your upset's chance ---------- */
+  const kitSlots = run => CFG.kitSlots + (run.fx.kitSlots | 0);
+  const emptyKit = () => ({ ids: [], drafts: 0, rerolls: 0, offer: null });
+  function kitOf(run) { if (!run.kit) run.kit = emptyKit(); return run.kit; }
+  /* three traits you do not have, weighted towards the partners of traits you do have and the builds you are on */
+  function dealOffer(run, avoid) {
+    const kit = kitOf(run), have = kit.ids, tags = {}; have.forEach(id => { tags[TRAITS[id].tag] = (tags[TRAITS[id].tag] || 0) + 1; });
+    let pool = TRAIT_ORDER.filter(id => have.indexOf(id) < 0 && !(avoid && avoid.indexOf(id) >= 0));
+    if (pool.length < 3) pool = TRAIT_ORDER.filter(id => have.indexOf(id) < 0);
+    const match = 1 + (run.fx.match | 0), out = [];
+    const weight = id => {
+      let w = 1 + 0.35 * (tags[TRAITS[id].tag] || 0);
+      COMBOS.forEach(c => { if ((c.a === id && have.indexOf(c.b) >= 0) || (c.b === id && have.indexOf(c.a) >= 0)) w += 1.4 * match; });
+      return w;
+    };
+    while (out.length < 3 && pool.length) {
+      let x = run.rng() * pool.reduce((a, id) => a + weight(id), 0), k = 0;
+      for (; k < pool.length - 1; k++) { x -= weight(pool[k]); if (x < 0) break; }
+      out.push(pool.splice(k, 1)[0]);
+    }
+    return out;
+  }
+  /* make sure an offer is on the table whenever a draft is owed (cheap to call over and over) */
+  function ensureOffer(run) {
+    const kit = kitOf(run);
+    if (kit.drafts > 0 && !kit.offer && kit.ids.length < TRAIT_ORDER.length) kit.offer = dealOffer(run);
+    return kit.offer;
+  }
+  /* take a trait from the offer. If the kit is full, say which slot it replaces */
+  function takeTrait(run, id, slot) {
+    const kit = kitOf(run), r = run.race;
+    if (run.phase !== 'book' || r.locked || !kit.offer || kit.offer.indexOf(id) < 0 || kit.drafts <= 0) return false;
+    if (kit.ids.length < kitSlots(run)) kit.ids.push(id);
+    else if (slot >= 0 && slot < kit.ids.length) kit.ids[slot] = id;
+    else return false;
+    kit.drafts--; kit.offer = null; ensureOffer(run);
+    return true;
+  }
+  function rerollOffer(run) {
+    const kit = kitOf(run);
+    if (run.phase !== 'book' || run.race.locked || !kit.offer || kit.rerolls <= 0) return false;
+    kit.rerolls--; kit.offer = dealOffer(run, kit.offer);
+    return true;
+  }
+  /* the chance that horse h wins, if it wore `ids` from the state the race is in now (a locked race uses its own kit and its own progress) */
+  function kitWin(run, h, ids) {
+    const r = run.race;
+    if (r.finished.length && r.finished[0] === h) return 1;
+    if (r.finished.length && r.finished.indexOf(h) < 0 && r.finished.length >= 1) return 0;
+    const live = !!r.kit && r.kit.U === h, use = live ? r.kit.ids : ids, K = kitParams(use);
+    const ks = live ? r.kit.ks : kitStart(K);
+    const key = h + '|' + use.join('.') + '|' + r.prog.join(',') + '|' + r.lane.map(l => l.mud + ':' + l.wind + ':' + (l.hurdle ? 1 : 0)).join(',') + '|' + r.deck.length + '|' + remainingCodes(r).reduce((a, c) => a + c, 0) + '|' + r.finished.join('') + '|' + JSON.stringify(ks);
+    run._k = run._k || {};
+    if (run._k[key] != null) return run._k[key];
+    const rng = mulberry32((run.seed ^ Math.imul(run.raceNo, 2654435761) ^ Math.imul(r.draws + 7, 40503) ^ (r.deck.length * 977) ^ (h * 7919)) >>> 0), codes = remainingCodes(r), N = CFG.mc;
+    let w = 0;
+    for (let i = 0; i < N; i++) if (simulate(r.prog, r.lane, codes, CFG.track, rng, r.finished, null, { U: h, K, ks, draws: r.draws })[0] === h) w++;
+    if (Object.keys(run._k).length > 200) run._k = {};
+    return (run._k[key] = w / N);
+  }
+
   /* ---------- the upset: the call every race is about ---------- */
   /* the book's favorite to win (among the horses still running): it cannot be the upset */
   function favoriteOf(run) {
@@ -1779,19 +2057,22 @@ const Gamble = (() => {
     for (let h = 0; h < 4; h++) if (r.finished.indexOf(h) < 0 && (best < 0 || q.B[h][0] > q.B[best][0])) best = h;
     return best;
   }
-  const upsetOdds = (run, p) => Math.round(Math.max(CFG.minOdds, Math.min(CFG.upsetMax, edgeOf(run) / Math.max(p, 0.0005)) * (1 + (run.fx.upsetPlus || 0))) * 100) / 100;
+  /* the price of a win: the book's chance, pulled towards the real chance (kitP) by CFG.kitFollow when your kit has lifted it */
+  const upsetOdds = (run, p, kitP) => { const pb = kitP != null && kitP > p ? p + CFG.kitFollow * (kitP - p) : p; return Math.round(Math.max(CFG.minOdds, Math.min(CFG.upsetMax, edgeOf(run) / Math.max(pb, 0.0005)) * (1 + (run.fx.upsetPlus || 0))) * 100) / 100; };
   /* one row per horse: the book's chance and price for it to win, the truth, whether it is the favorite, and its rank (0 = the longest shot) */
   function upsetBoard(run) {
     const q = quote(run), fav = favoriteOf(run);
-    const rows = [0, 1, 2, 3].map(h => ({ h, p: q.B[h][0], odds: upsetOdds(run, q.B[h][0]), t: q.P[h][0], d: q.P[h][0] - q.B[h][0], fav: h === fav, rank: 0 }));
-    rows.slice().sort((a, b) => a.p - b.p || a.h - b.h).forEach((x, i) => { x.rank = i; });
+    const ids = kitOf(run).ids;
+    const rows = [0, 1, 2, 3].map(h => ({ h, p: q.B[h][0], t: q.P[h][0], d: q.P[h][0] - q.B[h][0], fav: h === fav, rank: 0 }));
+    rows.slice().sort((a, b) => a.p - b.p || a.h - b.h).forEach((x, i) => { x.rank = i; x.open = i < CFG.upsetPool; });
+    rows.forEach(x => { x.kit = ids.length && x.open ? kitWin(run, x.h, ids) : x.t; x.odds = upsetOdds(run, x.p, ids.length && x.open ? x.kit : null); x.plain = upsetOdds(run, x.p); });
     return rows;
   }
   /* what the upset horse's chance to win is right now (the truth, from the cards still in the deck) and what it was priced at */
   function upsetNow(run) {
     const u = run.race.upset; if (!u) return null;
     const q = quote(run), r = run.race;
-    return { h: u.h, t: r.done && r.order ? (r.order[0] === u.h ? 1 : 0) : q.P[u.h][0], b: q.B[u.h][0] };
+    return { h: u.h, t: r.done && r.order ? (r.order[0] === u.h ? 1 : 0) : (r.kit ? kitWin(run, u.h, r.kit.ids) : q.P[u.h][0]), b: q.B[u.h][0], base: q.P[u.h][0] };
   }
   /* ---------- the slip ---------- */
   const hedgeStaked = run => run.race.slip.reduce((a, b) => a + (b ? b.stake : 0), 0) + (run.race.dbets || []).reduce((a, b) => a + (b ? b.stake : 0), 0);
@@ -1806,7 +2087,7 @@ const Gamble = (() => {
   function pickUpset(run, h) {
     const r = run.race; if (run.phase !== 'book' || r.locked || !(h >= 0 && h < 4)) return false;
     if (r.upset && r.upset.h === h) { r.upset = null; r.slip = [null, null, null, null]; r.dbets = [null, null, null]; return true; }
-    if (h === favoriteOf(run)) return false;
+    if (!upsetBoard(run)[h].open) return false;
     if (r.upset) { r.upset.h = h; return true; }
     const ch = run.fx.chips, stake = ch.indexOf(run.chip) >= 0 ? run.chip : ch[0];
     r.upset = { h, stake, odds: 0 };
@@ -1890,6 +2171,7 @@ const Gamble = (() => {
     if (!canLock(run)) return false;
     const r = run.race, b = board(run), db = (r.dbets || []).some(Boolean) ? duelBoard(run) : [];
     r.upset.odds = upsetBoard(run)[r.upset.h].odds; run.cash -= r.upset.stake;
+    const ids = kitOf(run).ids; r.kit = ids.length ? { U: r.upset.h, ids: ids.slice(), ks: kitStart(kitParams(ids)) } : null;
     r.slip.forEach((s, pl) => { if (s) { s.odds = b[s.h][pl].odds; run.cash -= s.stake; } });
     (r.dbets || []).forEach((d, i) => { if (d) { const row = db[i]; d.odds = d.h === row.a ? row.oa : row.ob; run.cash -= d.stake; } });
     r.pmult = r.slip.every(Boolean) ? perfectMult(run, r.slip.map(s => s.h)) : 0;
@@ -1928,20 +2210,16 @@ const Gamble = (() => {
   function draw(run) {
     const r = run.race;
     if (run.phase !== 'race' || r.done) return null;
-    const card = r.deck.shift(), s = card.s, ln = r.lane[s];
-    let st = stepOf(card), note = null;
-    if (ln.hurdle) { st = 0; ln.hurdle = false; note = 'hurdle'; }
-    else {
-      if (ln.mud > 0) { st = Math.max(0, st - 1); ln.mud--; note = 'mud'; }
-      if (ln.wind > 0) { st++; ln.wind--; note = note ? 'both' : 'wind'; }
-    }
+    const card = r.deck.shift(), s = card.s, before = r.prog[s], nfin = r.finished.length, prog0 = r.prog.slice();
+    const S = { p: r.prog, mud: r.lane.map(l => l.mud), wind: r.lane.map(l => l.wind), hur: r.lane.map(l => l.hurdle), fin: r.finished, seen: [0, 1, 2, 3].map(h => r.finished.indexOf(h) >= 0), draws: r.draws, track: CFG.track, fx: [],
+      kit: r.kit ? { U: r.kit.U, K: kitParams(r.kit.ids), ks: r.kit.ks } : null };
+    const { st, note } = stepCard(S, s, card.r >= 11, card.r === 7 ? 2 : 0, run.rng);
+    r.lane.forEach((l, h) => { l.mud = S.mud[h]; l.wind = S.wind[h]; l.hurdle = S.hur[h]; });
     r.draws++;
     r.pk = Math.max(0, r.pk - 1);
-    const before = r.prog[s];
-    r.prog[s] += st;
-    const ev = { card, horse: s, steps: st, note, from: before, to: r.prog[s], place: null, done: false, cooled: 0 };
-    if (r.finished.indexOf(s) < 0 && r.prog[s] >= CFG.track) { r.finished.push(s); ev.place = r.finished.length; }
-    if (st > 0) r.reach[s] = r.draws;
+    const ev = { card, horse: s, steps: st, note, from: before, to: r.prog[s], place: null, done: false, cooled: 0, fx: S.fx, crossed: r.finished.slice(nfin) };
+    if (r.finished.indexOf(s) >= 0 && r.finished.indexOf(s) >= nfin) ev.place = r.finished.indexOf(s) + 1;
+    for (let h = 0; h < 4; h++) if (r.prog[h] > prog0[h]) r.reach[h] = r.draws;
     if (!r.tampered) { const c = CFG.coolDraw * (1 + run.fx.cool); const h0 = run.heat; run.heat = Math.max(0, run.heat - c); ev.cooled = h0 - run.heat; }
     r.tampered = false; r._recalled = false;
     r.last = { s, st, r: card.r };
@@ -1994,8 +2272,8 @@ const Gamble = (() => {
     else if (id === 'stack') { const i = r.deck.findIndex(c => c.s === arg); if (i < 0) return { ok: false, why: 'none', events: ev }; if (i === 0) return { ok: false, why: 'top', events: ev }; const c = r.deck.splice(i, 1)[0]; r.deck.unshift(c); r.pk = 0; }
     else if (id === 'shave') { if (r.deck.length <= 2) return { ok: false, why: 'empty', events: ev }; const idx = []; r.deck.forEach((c, i) => { if (c.s === arg && c.r < 11) idx.push(i); }); if (!idx.length) return { ok: false, why: 'none', events: ev }; r.deck.splice(idx[Math.floor(run.rng() * idx.length)], 1); r.pk = 0; r.shaved = (r.shaved || 0) + 1; r.comp[arg].n--; }
     else if (id === 'riffle') { shuffle(r.deck, run.rng); r.pk = 0; }
-    else if (id === 'mud') { r.lane[arg].mud += CFG.effectLen; }
-    else if (id === 'wind') { r.lane[arg].wind += CFG.effectLen; }
+    else if (id === 'mud') { r.lane[arg].mud += CFG.effectLen + (r.kit && r.kit.ids.indexOf('groomed') >= 0 && arg !== r.kit.U ? 2 : 0); }
+    else if (id === 'wind') { r.lane[arg].wind += CFG.effectLen + (r.kit && r.kit.ids.indexOf('groomed') >= 0 && arg === r.kit.U ? 2 : 0); }
     else if (id === 'hurdle') { if (r.finished.indexOf(arg) >= 0) return { ok: false, why: 'finished', events: ev }; r.lane[arg].hurdle = true; }
     else if (id === 'lane') {
       if (r.finished.indexOf(arg) >= 0) return { ok: false, why: 'finished', events: ev };
@@ -2058,7 +2336,7 @@ const Gamble = (() => {
     const insured = !hits && !(up && up.hit) && !r.caught && run.fx.insure ? Math.round((placeStakes + (up ? up.stake : 0)) * run.fx.insure) : 0;
     run.cash += pay + bonus + insured;
     const net = pay + bonus + insured - stakes - r.fees - r.spent - r.fines + (r.alibi || 0);
-    const res = { raceNo: run.raceNo, order: r.order.slice(), upset: up, bets, duels, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, sharp, draws: r.draws, quirk: quirkOf(r) };
+    const res = { raceNo: run.raceNo, order: r.order.slice(), kit: r.kit ? r.kit.ids.slice() : [], upset: up, bets, duels, pay, bonus, insured, stakes, fees: r.fees, spent: r.spent, fines: r.fines, alibi: r.alibi || 0, net, perfect, caught: r.caught, hits, sharp, draws: r.draws, quirk: quirkOf(r) };
     run.result = res; run.results.push(res);
     run.stats.races++; if (up && up.hit && !r.caught) { run.stats.upsets = (run.stats.upsets || 0) + 1; if (up.big) run.stats.bigUpsets = (run.stats.bigUpsets || 0) + 1; } run.stats.hits += hits; run.stats.sharp = (run.stats.sharp || 0) + sharp; if (perfect) run.stats.perfects++; run.stats.bestNet = Math.max(run.stats.bestNet, net);
     run.phase = 'result';
@@ -2098,6 +2376,7 @@ const Gamble = (() => {
     run.raceNo++; run.heat = Math.max(0, run.heat - CFG.coolRace * (1 + run.fx.cool));
     run.race = makeRace(run); run.back = null; run.result = null; run.phase = 'book';
     if (run.fx.tip) run.race.pk = 1;
+    const kit = kitOf(run); kit.drafts = Math.min(CFG.kitMaxDrafts, kit.drafts + 1); ensureOffer(run);
     return true;
   }
   function finish(run) {
@@ -2125,7 +2404,8 @@ const Gamble = (() => {
       { id: 'tools', name: 'Toolbox', a: -90, color: '#8fb8ee' },
       { id: 'nerve', name: 'Nerve', a: 0, color: '#ee8b6b' },
       { id: 'purse', name: 'Bankroll', a: 90, color: '#e9cf73' },
-      { id: 'eye', name: 'The Book', a: 180, color: '#c79bf0' }
+      { id: 'eye', name: 'The Book', a: 180, color: '#c79bf0' },
+      { id: 'kit', name: 'Dark Horse', a: 45, color: '#f08fb3' }
     ];
     const N = (id, br, name, blurb, costs, parents, a, r, extra) => Object.assign({ id, br, name, blurb, costs, parents, a, r }, extra || {});
     const NODES = [
@@ -2154,6 +2434,10 @@ const Gamble = (() => {
       N('e_net', 'eye', 'Backroom Network', 'One more favor on offer in the backroom.', [20, 35], ['e_view'], 196, 2),
       N('e_calls', 'eye', 'Late Money', 'Re-calls cost 25% less.', [25, 40], ['e_perf', 'e_net'], 180, 3),
       N('e_tip', 'eye', 'Tip-off', 'The top card of every deck is shown before you call.', [40], ['e_calls'], 180, 4),
+      N('k_draft', 'kit', 'Trainer', 'One more trait draft at the start of every night.', [14, 26], ['root'], 45, 1),
+      N('k_reroll', 'kit', 'Second Opinion', 'One more reroll of a trait offer every night.', [16, 28], ['k_draft'], 36, 2),
+      N('k_slot', 'kit', 'Bigger Kit', 'One more trait slot in your Dark Horse kit.', [40, 65], ['k_draft'], 54, 2),
+      N('k_match', 'kit', 'Matchmaker', 'Trait offers lean harder towards partners of the traits you already wear.', [30], ['k_reroll', 'k_slot'], 45, 3),
       N('e_under', 'eye', 'Longshot Fund', 'Your upset pays 10% more.', [25, 40, 55], ['e_net'], 212, 3),
       N('e_tell', 'eye', 'Bookie’s Tell', 'The board marks the cells where the book is wrong: ▲ it undersells, ▼ it oversells. A second level catches smaller mistakes.', [30, 50], ['e_perf'], 150, 3)
     ];
@@ -2176,7 +2460,7 @@ const Gamble = (() => {
         startCash: CFG.startCash + 30 * L('p_deep'), disc: 0.05 * L('p_haggle'), cool: 0.25 * L('n_cool'), heatCap: L('n_skin'), watch: 0.15 * L('n_watch'),
         fineMul: -0.2 * L('n_law'), greased: L('n_palm') ? 1 : 0, alibi: L('n_alibi') ? 1 : 0, loanOwe: CFG.loanOwe - 10 * L('p_shark'), insure: 0.15 * L('p_safe'),
         edge: 0.01 * L('e_sharp'), peekN: 1 + L('e_view'), perfectPlus: 0.5 * L('e_perf'), offers: CFG.favorOffers + L('e_net'), recallMul: 1 - 0.25 * L('e_calls'), tip: L('e_tip') ? 1 : 0,
-        extraUse: L('t_belt'), tell: L('e_tell'), upsetPlus: 0.1 * L('e_under')
+        extraUse: L('t_belt'), tell: L('e_tell'), upsetPlus: 0.1 * L('e_under'), kitDrafts: L('k_draft'), kitRerolls: L('k_reroll'), kitSlots: L('k_slot'), match: L('k_match')
       };
     }
     function record(st, over) { st.sp += over.rp; st.nights++; st.best = Math.max(st.best, Math.round(over.profit)); }
@@ -2192,6 +2476,7 @@ const Gamble = (() => {
   return { Meta, SUITS, CFG, TOOLS, TOOL_ORDER, FAVORS, favorById, newNight, pack, unpack, mulberry32, combine, makeRace,
     QUIRKS, quirkOf, tellMark, duelsOf, duelBoard, stepStake, duelPick, pickFavorite, pickBook, pickValue,
     favoriteOf, upsetBoard, upsetNow, upsetOdds, pickUpset, hedgeStaked, hedgeRoom, hedgeChip,
+    TRAITS, TRAIT_ORDER, TAGS, COMBOS, kitCombos, kitParams, kitSlots, kitOf, ensureOffer, takeTrait, rerollOffer, kitWin, stepCard,
     quote, board, orderChance, perfectMult, bestOrder, oddsFor, staked, setChip, pick, pickBest, canLock, lock, recallFee, canRecall, recall, draw,
     toolState, toolCost, toolMax, heatCap, inspectChance, useTool, settle, toBackroom, buyFavor, coolOff, takeLoan, canLoan, nextRace, finish,
     expected, walkOut, stepOf, label, favorPrice, edgeOf, simulate, remainingCodes };
@@ -2451,6 +2736,7 @@ const FX = (() => {
   var GUIDE = [
     { h: 'One deck, four horses', g: '♥ ♦ ♣ ♠', p: ['You own no horse tonight. Four horses, one per suit, race through one shuffled deck. Every card drawn moves the horse of that suit one step, or two on a face card.', 'There is no clock. Time only moves when a card is drawn.'] },
     { h: 'Pick the upset', g: '🎯 ♠', p: ['Every race, choose a horse the book does not favor and back it to win. The weaker it looks, the more it pays. The book prices every race from a flawed view of the deck and tells you which flaw, so compare the board with the deck sheet.', 'Lock your slip and the odds are fixed. Small cover bets on places and head-to-heads can soften a miss.'] },
+    { h: 'Build a dark horse', g: '🧢 ★', p: ['Draft traits into your kit: a Closer, a Kick, a Lucky Seven, a Spoiler. They stay with you all night and are worn by whichever horse is your upset.', 'Some pairs make a named combo that is stronger than both alone. Aim for a build, then fit it to the deck.'] },
     { h: 'Make it win', g: '🃏 🤫', p: ['While the cards fall you can spend cash on tools: peek at the next card, burn it, stack the deck, soak the favorites’ lanes in mud, give your horse a tailwind.', 'Every trick costs money, and most of them cost Heat. Watch the upset bar climb.'] },
     { h: 'Mind the Heat', g: '🔥 👮', p: ['Heat cools a little with every clean card. Past the warning mark, each trick can bring a steward inspection: a fine, and the tool is taken.', 'Reach the cap and you are caught: that race’s slip is void.'] },
     { h: 'Back room, back home', g: '$ → RP', p: ['Between races you can buy a favor, cool off or borrow. What you hold when the night ends is your score.', 'Every night earns Reputation Points for permanent upgrades. Your night is saved after every move.'] }
@@ -2481,9 +2767,10 @@ const FX = (() => {
     }).join('') + '</ul>';
     $('#rules').innerHTML =
       sec('A night', [T('You own no horse. Tonight you are a gambler: a night is a few races, and in each one you pick a weak horse, back it to win, and then make it happen with the deck and the track as you run the race card by card. You start with {m}. What you hold when the night ends, minus any debt, is your score, and it earns Reputation Points.', { m: money(C.startCash) })]) +
-      sec('The upset', [T('The upset is the heart of every race: you back one horse to <b>win</b>, and it cannot be the book’s favorite. It pays the book’s price, which is its chance minus the book’s cut of about {cut}%, so the longer the shot, the bigger the prize (up to ×{max}). On its own a long shot rarely wins. Your tools are how it does: pull its cards to the top, hold the favorites back in the mud, and watch the upset bar. Chips: {c}; the chip you pick is your upset stake.', { c: chips, cut: Math.round((1 - C.edge) * 100), max: C.upsetMax })]) +
+      sec('The upset', [T('The upset is the heart of every race: you back one horse to <b>win</b>, and it has to be one of the two weakest. It pays the book’s price, which is its chance minus the book’s cut of about {cut}%, so the longer the shot, the bigger the prize (up to ×{max}). On its own a long shot rarely wins. Your tools are how it does: pull its cards to the top, hold the favorites back in the mud, and watch the upset bar. Chips: {c}; the chip you pick is your upset stake.', { c: chips, cut: Math.round((1 - C.edge) * 100), max: C.upsetMax })]) +
       sec('Cards are time', [T('There is no clock. Time only moves when a card is drawn: the horse of that suit steps forward once, or twice on a face card (J, Q, K). The track is {t} steps long and the race is over when three horses have crossed the line; the fourth is placed by how far it got.', { t: C.track })]) +
       sec('The deck', [T('Every race has its own shuffled deck, and drawn cards are never put back. Each suit holds 8 to 11 plain cards and up to 3 face cards, so some decks are very lopsided. The deck sheet on the call screen shows what is left, and the steps count tells you which horses the deck favors.')]) +
+      sec('The Dark Horse kit', [T('Your kit is a few trait slots you fill by drafting: you start the night with {f} drafts and earn one more after every race (never more than {m} waiting). Each draft deals three traits and you keep one; a reroll deals three new ones. A full kit makes you replace a trait to take a new one. Traits are free: no cash, no Heat.', { f: C.kitFirst, m: C.kitMaxDrafts }), T('The kit is worn by whichever horse is your upset, and every trait works once or twice a race, so the cards still decide. <b>Combos:</b> certain pairs, like Closer + Kick, do more together than apart, and the draft leans towards partners of the traits you already wear. The board shows your horse’s real chance with your kit. The crowd follows your kit, so the better it is, the shorter your price. Only the two weakest horses can be your upset.')]) +
       sec('Cover bets', [T('Optionally cover the upset with small bets on who finishes in each place. Every cell on the board is the book’s chance and its price. All your cover bets together may not exceed your upset stake, and each one starts at the smallest chip; step it up with + and −. Back all four places and get them all right and a <b>perfect order</b> bonus is paid on top: the longer the shot, the bigger it is.')]) +
       sec('The book’s quirk', [T('The book does not read the deck perfectly, and every race it tells you how it errs. <b>Counts cards, not steps:</b> it underrates suits with extra face cards. <b>Loves a favorite:</b> favorites are priced too short and long shots too fat. <b>Shrugs at the middle:</b> 2nd and 3rd are priced too evenly. Now and then it is <b>a sharp book</b> and makes no mistakes. The deck sheet shows the truth, so compare it with the board and back the cells the book gets wrong.')]) +
       sec('Head to head', [T('Every race the book also offers three duels: which of two horses finishes ahead. Pick one side of any duel you like as a cover bet. Duels are priced by the same book, quirk and all, and are decided by the final order. They do not count towards a perfect order.')]) +
@@ -2511,7 +2798,7 @@ const FX = (() => {
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var money = U.money, ord = U.ord, go = U.go, onEnter = U.onEnter;
 
-  var GS = { meta: GM.load(), cover: false, run: null, len: 5, tool: null, recall: null, auto: 0, timer: null, log: [], prevP: null, last: null, tree: { sel: null, seen: null }, recorded: false, doneShown: false, resetArm: 0 };
+  var GS = { meta: GM.load(), cover: false, pend: null, run: null, len: 5, tool: null, recall: null, auto: 0, timer: null, log: [], prevP: null, last: null, tree: { sel: null, seen: null }, recorded: false, doneShown: false, resetArm: 0 };
   var KEY = 'suitderby.grun', SV = 1;
 
   /* ---------- save and resume ---------- */
@@ -2663,18 +2950,50 @@ const FX = (() => {
       return '<div class="gduel">' + btn(d.a, d.b, d.oa, d.pa, d.ta) + '<span class="gvs mono">' + T('vs') + '</span>' + btn(d.b, d.a, d.ob, d.pb, d.tb) + '</div>';
     }).join('') + '</div>';
   }
+  /* ---------- the Dark Horse kit ---------- */
+  var TICON = { closer: '⏩', kick: '🦵', slip: '🌬️', rally: '💨', quick: '⚡', front: '🥇', hot: '7️⃣', hand: '🔥', due: '⏳', wild: '🃏', spoil: '🧨', bump: '💥', groomed: '🧼' };
+  function traitName(id) { return T(G.TRAITS[id].name); }
+  function comboFor(id, ids) {   // the combos this trait would start or finish next to the traits in `ids`
+    return G.COMBOS.filter(function (c) { return (c.a === id && ids.indexOf(c.b) >= 0) || (c.b === id && ids.indexOf(c.a) >= 0); });
+  }
+  function traitCard(id, cls, extra) {
+    var t = G.TRAITS[id];
+    return '<span class="gtr tg-' + t.tag + (cls ? ' ' + cls : '') + '"><span class="gtn"><i aria-hidden="true">' + (TICON[id] || '•') + '</i><b>' + traitName(id) + '</b><em>' + T(G.TAGS[t.tag]) + '</em></span><span class="gtb">' + T(t.blurb) + '</span>' + (extra || '') + '</span>';
+  }
+  function kitHTML(R) {
+    var kit = G.kitOf(R), slots = G.kitSlots(R), ids = kit.ids, locked = R.race.locked, pend = GS.pend && kit.offer && kit.offer.indexOf(GS.pend) >= 0 ? GS.pend : null;
+    var html = '<h3 class="lbl">' + T('Your Dark Horse kit') + '</h3><p class="note gupnote">' + T('Traits stay with you all night and are worn by whichever horse is your upset. Draft them to build around the deck, and pair the right ones for a combo.') + '</p><div class="gkit">';
+    for (var i = 0; i < slots; i++) {
+      if (ids[i]) html += pend ? '<button type="button" class="gtr-slot swap tg-' + G.TRAITS[ids[i]].tag + '" data-gslot="' + i + '">' + T('Replace {t}', { t: traitName(ids[i]) }) + '</button>' : traitCard(ids[i]);
+      else html += '<span class="gtr empty"><span class="gtn"><b>' + T('Empty slot') + '</b></span><span class="gtb">' + T('Draft a trait below.') + '</span></span>';
+    }
+    html += '</div>';
+    var cs = G.kitCombos(ids);
+    if (cs.length) html += '<div class="gcombos">' + cs.map(function (c) { return '<div class="gcombo"><b>★ ' + T(c.name) + '</b><span>' + traitName(c.a) + ' + ' + traitName(c.b) + ': ' + T(c.blurb) + '</span></div>'; }).join('') + '</div>';
+    if (kit.offer && kit.drafts > 0 && !locked) {
+      var full = ids.length >= slots;
+      html += '<div class="gdraft"><div class="gdh"><span class="lbl">' + TP(kit.drafts, 'Draft a trait · {n} draft left', 'Draft a trait · {n} drafts left') + '</span><button type="button" class="btn small" data-greroll' + (kit.rerolls > 0 ? '' : ' disabled') + '>' + T('Reroll · {n}', { n: kit.rerolls }) + '</button></div>' +
+        (pend ? '<p class="note warn">' + T('Pick the slot to replace, or tap the trait again to cancel.') + '</p>' : full ? '<p class="note">' + T('Your kit is full: taking a trait replaces one of yours.') + '</p>' : '') +
+        '<div class="goffer">' + kit.offer.map(function (id) {
+          var cb = comboFor(id, ids), hint = cb.length ? '<span class="gtcombo">★ ' + cb.map(function (c) { return T(c.name); }).join(', ') + '</span>' : '';
+          return '<button type="button" class="gtr offer tg-' + G.TRAITS[id].tag + (pend === id ? ' on' : '') + '" data-gtake="' + id + '" aria-pressed="' + (pend === id) + '"><span class="gtn"><i aria-hidden="true">' + (TICON[id] || '•') + '</i><b>' + traitName(id) + '</b><em>' + T(G.TAGS[G.TRAITS[id].tag]) + '</em></span><span class="gtb">' + T(G.TRAITS[id].blurb) + '</span>' + hint + '</button>';
+        }).join('') + '</div></div>';
+    }
+    return html;
+  }
   /* the four horses as upset candidates: the book's price for each to WIN */
   function upsetHTML(R) {
-    var r = R.race, ub = G.upsetBoard(R);
-    return '<h3 class="lbl">' + T('Pick your upset') + '</h3><p class="note gupnote">' + T('Back a horse the book does not favor to WIN. It pays the book’s price, and the longer the shot, the bigger the prize. Then make it happen.') + '</p>' +
+    var r = R.race, ub = G.upsetBoard(R), hasKit = G.kitOf(R).ids.length > 0;
+    return '<h3 class="lbl">' + T('Pick your upset') + '</h3><p class="note gupnote">' + T('Back one of the two weakest horses to WIN. It pays the book’s price, and the longer the shot, the bigger the prize. Your kit makes it likelier, and the crowd follows your kit, so the price shortens as it gets better.') + '</p>' +
       '<div class="gups" role="group" aria-label="' + T('Pick your upset') + '">' + ub.map(function (u) {
-        var on = r.upset && r.upset.h === u.h, tag = u.fav ? T('Favorite') : u.rank === 0 ? T('Longest shot') : '';
-        return '<button type="button" class="gup s' + u.h + (on ? ' on' : '') + (u.fav ? ' fav' : '') + '" data-gup="' + u.h + '" aria-pressed="' + !!on + '"' + (u.fav ? ' disabled title="' + T('The favorite cannot be your upset.') + '"' : '') + '>' +
-          '<span class="gupn">' + gl(u.h) + ' <b>' + sn(u.h) + '</b>' + (tag ? '<em>' + tag + '</em>' : '') + '</span><b class="mono gupo">' + oddsTxt(u.odds) + '</b><small class="mono">' + T('{p} to win', { p: pct(u.p) }) + '</small>' + tellHTML(R, u) + '</button>';
+        var on = r.upset && r.upset.h === u.h, tag = u.fav ? T('Favorite') : !u.open ? T('Too strong') : u.rank === 0 ? T('Longest shot') : '';
+        var sub = u.open && hasKit ? T('{p} book · {k} with your kit', { p: pct(u.p), k: pct(u.kit) }) : T('{p} to win', { p: pct(u.p) });
+        return '<button type="button" class="gup s' + u.h + (on ? ' on' : '') + (u.open ? '' : ' fav') + '" data-gup="' + u.h + '" aria-pressed="' + !!on + '"' + (u.open ? '' : ' disabled title="' + T('Too strong to be an underdog.') + '"') + '>' +
+          '<span class="gupn">' + gl(u.h) + ' <b>' + sn(u.h) + '</b>' + (tag ? '<em>' + tag + '</em>' : '') + '</span><b class="mono gupo">' + oddsTxt(u.odds) + '</b><small class="mono">' + sub + '</small>' + tellHTML(R, u) + '</button>';
       }).join('') + '</div>';
   }
   function renderBook() {
-    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length, nd = r.dbets.filter(Boolean).length;
+    var R = GS.run; if (!R) return; G.ensureOffer(R); var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length, nd = r.dbets.filter(Boolean).length;
     var full = n === 4, order = full ? r.slip.map(function (s) { return s.h; }) : null, up = r.upset;
     var hedge = G.hedgeStaked(R), total = G.staked(R), room = G.hedgeRoom(R);
     var pm = full ? G.perfectMult(R, order) : 0, pc = full ? G.orderChance(R, order) : 0;
@@ -2700,7 +3019,7 @@ const FX = (() => {
       '<div class="gcols"><div><h3 class="lbl">' + T('The deck') + '</h3><div class="dsheet">' + deckSheet(R) + '</div>' +
       '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' +
       '<p class="note">' + T('The board is the book’s opinion. The deck sheet is the truth. Compare them.') + '</p>' + topHTML(R) + '</div>' +
-      '<div>' + quirkHTML(r) + upsetHTML(R) +
+      '<div>' + quirkHTML(r) + kitHTML(R) + upsetHTML(R) +
       '<details class="gcover"' + (GS.cover ? ' open' : '') + '><summary>' + T('Cover bets (optional)') + '<small class="mono">' + (up ? T('{m} room', { m: money(room) }) : T('pick an upset first')) + '</small></summary>' +
       '<p class="note">' + T('Small side bets to soften a miss. They may add up to no more than your upset stake.') + '</p>' + rows + duelsHTML(R) + '</details>' +
       '<div class="gslipbar"><span class="lbl">' + T('Upset stake') + '</span><div class="gchips">' + chips + '</div></div>' + pickLines(R) +
@@ -2719,6 +3038,14 @@ const FX = (() => {
     var R = GS.run; if (!R) return; var t = e.target;
     var c = t.closest('[data-gcell]');
     if (c) { var p = c.dataset.gcell.split(','); if (G.pick(R, +p[0], +p[1])) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
+    c = t.closest('[data-gtake]'); if (c) {
+      var kit = G.kitOf(R), id = c.dataset.gtake;
+      if (kit.ids.length < G.kitSlots(R)) { if (G.takeTrait(R, id, -1)) { Sfx.buy(); GS.pend = null; saveRun(); renderBook(); } else Sfx.deny(); }
+      else { GS.pend = GS.pend === id ? null : id; Sfx.pick(); renderBook(); }
+      return;
+    }
+    c = t.closest('[data-gslot]'); if (c) { if (GS.pend && G.takeTrait(R, GS.pend, +c.dataset.gslot)) { Sfx.buy(); GS.pend = null; saveRun(); renderBook(); } else Sfx.deny(); return; }
+    if (t.closest('[data-greroll]')) { if (G.rerollOffer(R)) { Sfx.shuffle(); GS.pend = null; saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gup]'); if (c) { if (G.pickUpset(R, +c.dataset.gup)) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gduel]'); if (c) { var d = c.dataset.gduel.split(','); if (G.duelPick(R, +d[0], +d[1])) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gstep]'); if (c) { var q = c.dataset.gstep.split(','); if (G.stepStake(R, q[0], +q[1], +q[2])) { Sfx.chip(); saveRun(); renderBook(); } else Sfx.deny(); return; }
@@ -2806,7 +3133,8 @@ const FX = (() => {
       if (r.done && r.order) ures = '<span class="gres ' + (won && !r.caught ? 'pos' : 'neg') + '">' + (r.caught ? T('void') : won ? '✓ ' + money(Math.round(u.stake * u.odds), true) : '✗ ' + gl(r.order[0])) + '</span>';
       else ures = '<span class="glive mono">' + T('{p} true chance', { p: pct(nw.t) }) + '</span>';
       html += '<div class="gsl gupr s' + u.h + '"><b class="mono">🎯</b>' + gl(u.h) + '<span class="gsn">' + T('{s} to win', { s: sn(u.h) }) + '</span><span class="mono dim">' + oddsTxt(u.odds) + ' · ' + money(u.stake) + '</span>' + ures + '<span></span></div>';
-      if (!r.done) html += '<div class="gupmeter" role="img" aria-label="' + T('Upset chance {p}, priced at {b}', { p: pct(nw.t), b: pct(nw.b) }) + '"><div class="gupbar"><i style="width:' + Math.round(nw.t * 100) + '%"></i><u style="left:' + Math.round(nw.b * 100) + '%"></u></div><small class="mono">' + T('Priced at {b}. Every trick should push the bar up.', { b: pct(nw.b) }) + '</small></div>';
+      if (r.kit) html += '<div class="gkitrow">' + r.kit.ids.map(function (id) { return '<span class="gtchip tg-' + G.TRAITS[id].tag + '" title="' + T(G.TRAITS[id].blurb) + '"><i aria-hidden="true">' + (TICON[id] || '•') + '</i>' + traitName(id) + '</span>'; }).join('') + G.kitCombos(r.kit.ids).map(function (c) { return '<span class="gtchip combo" title="' + T(c.blurb) + '">★ ' + T(c.name) + '</span>'; }).join('') + '</div>';
+      if (!r.done) html += '<div class="gupmeter" role="img" aria-label="' + T('Upset chance {p}, priced at {b}', { p: pct(nw.t), b: pct(Math.min(1, G.edgeOf(R) / u.odds)) }) + '"><div class="gupbar"><i style="width:' + Math.round(nw.t * 100) + '%"></i><u style="left:' + Math.round(Math.min(1, G.edgeOf(R) / u.odds) * 100) + '%"></u></div><small class="mono">' + T('Priced at {b}. Every trick should push the bar up.', { b: pct(Math.min(1, G.edgeOf(R) / u.odds)) }) + '</small></div>';
     }
     for (var pl = 0; pl < 4; pl++) {
       var s = r.slip[pl], settled = r.finished.length > pl || (r.done && r.order);
@@ -2898,6 +3226,12 @@ const FX = (() => {
     GS.last = ev;
     Sfx.draw(ev.horse, !!mine[ev.horse], ev.card.r);
     var stop = false, why = null, r = R.race;
+    (ev.fx || []).forEach(function (f) {
+      var name = traitName(f.t === 'mudder' ? 'groomed' : f.t), who = f.h != null ? sn(f.h) : r.kit ? sn(r.kit.U) : '', n = Math.abs(f.n);
+      if (!f.n) return;
+      log(T('{t}: {s} {d}', { t: name, s: who, d: (f.n > 0 ? '+' : '−') + TP(n, '{n} step', '{n} steps') })); stop = true; why = why || 'trait'; if ((f.n > 0) === (f.h == null)) Sfx.hit(1); else Sfx.miss();
+    });
+    (ev.crossed || []).forEach(function (h) { if (h !== ev.horse) log(T('{s} crosses the line: {p}.', { s: sn(h), p: ord(r.finished.indexOf(h) + 1) })); });
     if (ev.note === 'hurdle') log(T('{s} wastes a card on the hurdle.', { s: sn(ev.horse) }));
     if (ev.place) {
       var picked = !!mine[ev.horse];
@@ -2963,7 +3297,7 @@ const FX = (() => {
     var html = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Race {n} of {m}', { n: res.raceNo, m: R.races }) + ' · ' + T('Result') + '</h2>' + bankHTML(R) + '</header>';
     if (res.caught) html += '<div class="gbanner bad">' + T('Caught and disqualified: your slip was void.') + '</div>';
     var ur = res.upset;
-    html += '<div class="gcols"><div>' + (ur ? '<div class="gupres ' + (ur.hit && !res.caught ? 'win' : 'lose') + '"><span class="lbl">' + T('Your upset') + '</span><b>' + gl(ur.h) + ' ' + T('{s} to win', { s: sn(ur.h) }) + ' · ' + oddsTxt(ur.odds) + '</b><p>' + (res.caught ? T('Void: you were caught.') : ur.hit ? T('It won. You collect {m}.', { m: money(ur.pay) }) + (ur.big ? ' ★ ' + T('A big upset: bonus Reputation tonight.') : '') : T('{s} won instead. The stake is gone.', { s: sn(ur.won) })) + '</p></div>' : '') + '<h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
+    html += '<div class="gcols"><div>' + (ur ? '<div class="gupres ' + (ur.hit && !res.caught ? 'win' : 'lose') + '"><span class="lbl">' + T('Your upset') + '</span><b>' + gl(ur.h) + ' ' + T('{s} to win', { s: sn(ur.h) }) + ' · ' + oddsTxt(ur.odds) + '</b><p>' + (res.caught ? T('Void: you were caught.') : ur.hit ? T('It won. You collect {m}.', { m: money(ur.pay) }) + (ur.big ? ' ★ ' + T('A big upset: bonus Reputation tonight.') : '') : T('{s} won instead. The stake is gone.', { s: sn(ur.won) })) + '</p>' + (res.kit && res.kit.length ? '<div class="gkitrow">' + res.kit.map(function (id) { return '<span class="gtchip tg-' + G.TRAITS[id].tag + '"><i aria-hidden="true">' + (TICON[id] || '•') + '</i>' + traitName(id) + '</span>'; }).join('') + G.kitCombos(res.kit).map(function (c) { return '<span class="gtchip combo">★ ' + T(c.name) + '</span>'; }).join('') + '</div>' : '') + '</div>' : '') + '<h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
       var b = res.bets.filter(function (x) { return x.pl === pl; })[0];
       return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.sharp ? '★ ' : '') + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
     }).join('') + '</div>' + (res.sharp ? '<p class="note gold">' + TP(res.sharp, '★ Sharp call: a long shot landed. Bonus Reputation tonight.', '★ Sharp calls: long shots landed. Bonus Reputation tonight.') + '</p>' : '') +
@@ -3037,7 +3371,7 @@ const FX = (() => {
   };
 
   /* ---------- Reputation: the skill tree ---------- */
-  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡', e_tell: '👁️', e_under: '🐴' };
+  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡', e_tell: '👁️', e_under: '🐴', k_draft: '📋', k_reroll: '🔄', k_slot: '🧳', k_match: '💞' };
   var NS = 'http://www.w3.org/2000/svg';
   function npos(n) { var a = n.a * Math.PI / 180, r = [0, 135, 245, 345, 440][n.r]; return { x: 500 + r * Math.cos(a), y: 500 + r * Math.sin(a) }; }
   function brOf(n) { return GM.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }

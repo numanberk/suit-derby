@@ -6,7 +6,7 @@
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var money = U.money, ord = U.ord, go = U.go, onEnter = U.onEnter;
 
-  var GS = { meta: GM.load(), cover: false, run: null, len: 5, tool: null, recall: null, auto: 0, timer: null, log: [], prevP: null, last: null, tree: { sel: null, seen: null }, recorded: false, doneShown: false, resetArm: 0 };
+  var GS = { meta: GM.load(), cover: false, pend: null, run: null, len: 5, tool: null, recall: null, auto: 0, timer: null, log: [], prevP: null, last: null, tree: { sel: null, seen: null }, recorded: false, doneShown: false, resetArm: 0 };
   var KEY = 'suitderby.grun', SV = 1;
 
   /* ---------- save and resume ---------- */
@@ -158,18 +158,50 @@
       return '<div class="gduel">' + btn(d.a, d.b, d.oa, d.pa, d.ta) + '<span class="gvs mono">' + T('vs') + '</span>' + btn(d.b, d.a, d.ob, d.pb, d.tb) + '</div>';
     }).join('') + '</div>';
   }
+  /* ---------- the Dark Horse kit ---------- */
+  var TICON = { closer: '⏩', kick: '🦵', slip: '🌬️', rally: '💨', quick: '⚡', front: '🥇', hot: '7️⃣', hand: '🔥', due: '⏳', wild: '🃏', spoil: '🧨', bump: '💥', groomed: '🧼' };
+  function traitName(id) { return T(G.TRAITS[id].name); }
+  function comboFor(id, ids) {   // the combos this trait would start or finish next to the traits in `ids`
+    return G.COMBOS.filter(function (c) { return (c.a === id && ids.indexOf(c.b) >= 0) || (c.b === id && ids.indexOf(c.a) >= 0); });
+  }
+  function traitCard(id, cls, extra) {
+    var t = G.TRAITS[id];
+    return '<span class="gtr tg-' + t.tag + (cls ? ' ' + cls : '') + '"><span class="gtn"><i aria-hidden="true">' + (TICON[id] || '•') + '</i><b>' + traitName(id) + '</b><em>' + T(G.TAGS[t.tag]) + '</em></span><span class="gtb">' + T(t.blurb) + '</span>' + (extra || '') + '</span>';
+  }
+  function kitHTML(R) {
+    var kit = G.kitOf(R), slots = G.kitSlots(R), ids = kit.ids, locked = R.race.locked, pend = GS.pend && kit.offer && kit.offer.indexOf(GS.pend) >= 0 ? GS.pend : null;
+    var html = '<h3 class="lbl">' + T('Your Dark Horse kit') + '</h3><p class="note gupnote">' + T('Traits stay with you all night and are worn by whichever horse is your upset. Draft them to build around the deck, and pair the right ones for a combo.') + '</p><div class="gkit">';
+    for (var i = 0; i < slots; i++) {
+      if (ids[i]) html += pend ? '<button type="button" class="gtr-slot swap tg-' + G.TRAITS[ids[i]].tag + '" data-gslot="' + i + '">' + T('Replace {t}', { t: traitName(ids[i]) }) + '</button>' : traitCard(ids[i]);
+      else html += '<span class="gtr empty"><span class="gtn"><b>' + T('Empty slot') + '</b></span><span class="gtb">' + T('Draft a trait below.') + '</span></span>';
+    }
+    html += '</div>';
+    var cs = G.kitCombos(ids);
+    if (cs.length) html += '<div class="gcombos">' + cs.map(function (c) { return '<div class="gcombo"><b>★ ' + T(c.name) + '</b><span>' + traitName(c.a) + ' + ' + traitName(c.b) + ': ' + T(c.blurb) + '</span></div>'; }).join('') + '</div>';
+    if (kit.offer && kit.drafts > 0 && !locked) {
+      var full = ids.length >= slots;
+      html += '<div class="gdraft"><div class="gdh"><span class="lbl">' + TP(kit.drafts, 'Draft a trait · {n} draft left', 'Draft a trait · {n} drafts left') + '</span><button type="button" class="btn small" data-greroll' + (kit.rerolls > 0 ? '' : ' disabled') + '>' + T('Reroll · {n}', { n: kit.rerolls }) + '</button></div>' +
+        (pend ? '<p class="note warn">' + T('Pick the slot to replace, or tap the trait again to cancel.') + '</p>' : full ? '<p class="note">' + T('Your kit is full: taking a trait replaces one of yours.') + '</p>' : '') +
+        '<div class="goffer">' + kit.offer.map(function (id) {
+          var cb = comboFor(id, ids), hint = cb.length ? '<span class="gtcombo">★ ' + cb.map(function (c) { return T(c.name); }).join(', ') + '</span>' : '';
+          return '<button type="button" class="gtr offer tg-' + G.TRAITS[id].tag + (pend === id ? ' on' : '') + '" data-gtake="' + id + '" aria-pressed="' + (pend === id) + '"><span class="gtn"><i aria-hidden="true">' + (TICON[id] || '•') + '</i><b>' + traitName(id) + '</b><em>' + T(G.TAGS[G.TRAITS[id].tag]) + '</em></span><span class="gtb">' + T(G.TRAITS[id].blurb) + '</span>' + hint + '</button>';
+        }).join('') + '</div></div>';
+    }
+    return html;
+  }
   /* the four horses as upset candidates: the book's price for each to WIN */
   function upsetHTML(R) {
-    var r = R.race, ub = G.upsetBoard(R);
-    return '<h3 class="lbl">' + T('Pick your upset') + '</h3><p class="note gupnote">' + T('Back a horse the book does not favor to WIN. It pays the book’s price, and the longer the shot, the bigger the prize. Then make it happen.') + '</p>' +
+    var r = R.race, ub = G.upsetBoard(R), hasKit = G.kitOf(R).ids.length > 0;
+    return '<h3 class="lbl">' + T('Pick your upset') + '</h3><p class="note gupnote">' + T('Back one of the two weakest horses to WIN. It pays the book’s price, and the longer the shot, the bigger the prize. Your kit makes it likelier, and the crowd follows your kit, so the price shortens as it gets better.') + '</p>' +
       '<div class="gups" role="group" aria-label="' + T('Pick your upset') + '">' + ub.map(function (u) {
-        var on = r.upset && r.upset.h === u.h, tag = u.fav ? T('Favorite') : u.rank === 0 ? T('Longest shot') : '';
-        return '<button type="button" class="gup s' + u.h + (on ? ' on' : '') + (u.fav ? ' fav' : '') + '" data-gup="' + u.h + '" aria-pressed="' + !!on + '"' + (u.fav ? ' disabled title="' + T('The favorite cannot be your upset.') + '"' : '') + '>' +
-          '<span class="gupn">' + gl(u.h) + ' <b>' + sn(u.h) + '</b>' + (tag ? '<em>' + tag + '</em>' : '') + '</span><b class="mono gupo">' + oddsTxt(u.odds) + '</b><small class="mono">' + T('{p} to win', { p: pct(u.p) }) + '</small>' + tellHTML(R, u) + '</button>';
+        var on = r.upset && r.upset.h === u.h, tag = u.fav ? T('Favorite') : !u.open ? T('Too strong') : u.rank === 0 ? T('Longest shot') : '';
+        var sub = u.open && hasKit ? T('{p} book · {k} with your kit', { p: pct(u.p), k: pct(u.kit) }) : T('{p} to win', { p: pct(u.p) });
+        return '<button type="button" class="gup s' + u.h + (on ? ' on' : '') + (u.open ? '' : ' fav') + '" data-gup="' + u.h + '" aria-pressed="' + !!on + '"' + (u.open ? '' : ' disabled title="' + T('Too strong to be an underdog.') + '"') + '>' +
+          '<span class="gupn">' + gl(u.h) + ' <b>' + sn(u.h) + '</b>' + (tag ? '<em>' + tag + '</em>' : '') + '</span><b class="mono gupo">' + oddsTxt(u.odds) + '</b><small class="mono">' + sub + '</small>' + tellHTML(R, u) + '</button>';
       }).join('') + '</div>';
   }
   function renderBook() {
-    var R = GS.run; if (!R) return; var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length, nd = r.dbets.filter(Boolean).length;
+    var R = GS.run; if (!R) return; G.ensureOffer(R); var r = R.race, el = $('#s-gbook'), b = G.board(R), n = r.slip.filter(Boolean).length, nd = r.dbets.filter(Boolean).length;
     var full = n === 4, order = full ? r.slip.map(function (s) { return s.h; }) : null, up = r.upset;
     var hedge = G.hedgeStaked(R), total = G.staked(R), room = G.hedgeRoom(R);
     var pm = full ? G.perfectMult(R, order) : 0, pc = full ? G.orderChance(R, order) : 0;
@@ -195,7 +227,7 @@
       '<div class="gcols"><div><h3 class="lbl">' + T('The deck') + '</h3><div class="dsheet">' + deckSheet(R) + '</div>' +
       '<p class="note">' + T('First to {n} steps crosses the line. A plain card moves its horse 1 step, a face card 2. The race ends when 3 horses have crossed. The order of the cards is the only secret.', { n: CFG.track }) + '</p>' +
       '<p class="note">' + T('The board is the book’s opinion. The deck sheet is the truth. Compare them.') + '</p>' + topHTML(R) + '</div>' +
-      '<div>' + quirkHTML(r) + upsetHTML(R) +
+      '<div>' + quirkHTML(r) + kitHTML(R) + upsetHTML(R) +
       '<details class="gcover"' + (GS.cover ? ' open' : '') + '><summary>' + T('Cover bets (optional)') + '<small class="mono">' + (up ? T('{m} room', { m: money(room) }) : T('pick an upset first')) + '</small></summary>' +
       '<p class="note">' + T('Small side bets to soften a miss. They may add up to no more than your upset stake.') + '</p>' + rows + duelsHTML(R) + '</details>' +
       '<div class="gslipbar"><span class="lbl">' + T('Upset stake') + '</span><div class="gchips">' + chips + '</div></div>' + pickLines(R) +
@@ -214,6 +246,14 @@
     var R = GS.run; if (!R) return; var t = e.target;
     var c = t.closest('[data-gcell]');
     if (c) { var p = c.dataset.gcell.split(','); if (G.pick(R, +p[0], +p[1])) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
+    c = t.closest('[data-gtake]'); if (c) {
+      var kit = G.kitOf(R), id = c.dataset.gtake;
+      if (kit.ids.length < G.kitSlots(R)) { if (G.takeTrait(R, id, -1)) { Sfx.buy(); GS.pend = null; saveRun(); renderBook(); } else Sfx.deny(); }
+      else { GS.pend = GS.pend === id ? null : id; Sfx.pick(); renderBook(); }
+      return;
+    }
+    c = t.closest('[data-gslot]'); if (c) { if (GS.pend && G.takeTrait(R, GS.pend, +c.dataset.gslot)) { Sfx.buy(); GS.pend = null; saveRun(); renderBook(); } else Sfx.deny(); return; }
+    if (t.closest('[data-greroll]')) { if (G.rerollOffer(R)) { Sfx.shuffle(); GS.pend = null; saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gup]'); if (c) { if (G.pickUpset(R, +c.dataset.gup)) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gduel]'); if (c) { var d = c.dataset.gduel.split(','); if (G.duelPick(R, +d[0], +d[1])) { Sfx.pick(); saveRun(); renderBook(); } else Sfx.deny(); return; }
     c = t.closest('[data-gstep]'); if (c) { var q = c.dataset.gstep.split(','); if (G.stepStake(R, q[0], +q[1], +q[2])) { Sfx.chip(); saveRun(); renderBook(); } else Sfx.deny(); return; }
@@ -301,7 +341,8 @@
       if (r.done && r.order) ures = '<span class="gres ' + (won && !r.caught ? 'pos' : 'neg') + '">' + (r.caught ? T('void') : won ? '✓ ' + money(Math.round(u.stake * u.odds), true) : '✗ ' + gl(r.order[0])) + '</span>';
       else ures = '<span class="glive mono">' + T('{p} true chance', { p: pct(nw.t) }) + '</span>';
       html += '<div class="gsl gupr s' + u.h + '"><b class="mono">🎯</b>' + gl(u.h) + '<span class="gsn">' + T('{s} to win', { s: sn(u.h) }) + '</span><span class="mono dim">' + oddsTxt(u.odds) + ' · ' + money(u.stake) + '</span>' + ures + '<span></span></div>';
-      if (!r.done) html += '<div class="gupmeter" role="img" aria-label="' + T('Upset chance {p}, priced at {b}', { p: pct(nw.t), b: pct(nw.b) }) + '"><div class="gupbar"><i style="width:' + Math.round(nw.t * 100) + '%"></i><u style="left:' + Math.round(nw.b * 100) + '%"></u></div><small class="mono">' + T('Priced at {b}. Every trick should push the bar up.', { b: pct(nw.b) }) + '</small></div>';
+      if (r.kit) html += '<div class="gkitrow">' + r.kit.ids.map(function (id) { return '<span class="gtchip tg-' + G.TRAITS[id].tag + '" title="' + T(G.TRAITS[id].blurb) + '"><i aria-hidden="true">' + (TICON[id] || '•') + '</i>' + traitName(id) + '</span>'; }).join('') + G.kitCombos(r.kit.ids).map(function (c) { return '<span class="gtchip combo" title="' + T(c.blurb) + '">★ ' + T(c.name) + '</span>'; }).join('') + '</div>';
+      if (!r.done) html += '<div class="gupmeter" role="img" aria-label="' + T('Upset chance {p}, priced at {b}', { p: pct(nw.t), b: pct(Math.min(1, G.edgeOf(R) / u.odds)) }) + '"><div class="gupbar"><i style="width:' + Math.round(nw.t * 100) + '%"></i><u style="left:' + Math.round(Math.min(1, G.edgeOf(R) / u.odds) * 100) + '%"></u></div><small class="mono">' + T('Priced at {b}. Every trick should push the bar up.', { b: pct(Math.min(1, G.edgeOf(R) / u.odds)) }) + '</small></div>';
     }
     for (var pl = 0; pl < 4; pl++) {
       var s = r.slip[pl], settled = r.finished.length > pl || (r.done && r.order);
@@ -393,6 +434,12 @@
     GS.last = ev;
     Sfx.draw(ev.horse, !!mine[ev.horse], ev.card.r);
     var stop = false, why = null, r = R.race;
+    (ev.fx || []).forEach(function (f) {
+      var name = traitName(f.t === 'mudder' ? 'groomed' : f.t), who = f.h != null ? sn(f.h) : r.kit ? sn(r.kit.U) : '', n = Math.abs(f.n);
+      if (!f.n) return;
+      log(T('{t}: {s} {d}', { t: name, s: who, d: (f.n > 0 ? '+' : '−') + TP(n, '{n} step', '{n} steps') })); stop = true; why = why || 'trait'; if ((f.n > 0) === (f.h == null)) Sfx.hit(1); else Sfx.miss();
+    });
+    (ev.crossed || []).forEach(function (h) { if (h !== ev.horse) log(T('{s} crosses the line: {p}.', { s: sn(h), p: ord(r.finished.indexOf(h) + 1) })); });
     if (ev.note === 'hurdle') log(T('{s} wastes a card on the hurdle.', { s: sn(ev.horse) }));
     if (ev.place) {
       var picked = !!mine[ev.horse];
@@ -458,7 +505,7 @@
     var html = '<header class="bar gbar"><button type="button" class="backbtn" data-gquit>&larr; <span>' + T('Menu') + '</span></button><h2>' + T('Race {n} of {m}', { n: res.raceNo, m: R.races }) + ' · ' + T('Result') + '</h2>' + bankHTML(R) + '</header>';
     if (res.caught) html += '<div class="gbanner bad">' + T('Caught and disqualified: your slip was void.') + '</div>';
     var ur = res.upset;
-    html += '<div class="gcols"><div>' + (ur ? '<div class="gupres ' + (ur.hit && !res.caught ? 'win' : 'lose') + '"><span class="lbl">' + T('Your upset') + '</span><b>' + gl(ur.h) + ' ' + T('{s} to win', { s: sn(ur.h) }) + ' · ' + oddsTxt(ur.odds) + '</b><p>' + (res.caught ? T('Void: you were caught.') : ur.hit ? T('It won. You collect {m}.', { m: money(ur.pay) }) + (ur.big ? ' ★ ' + T('A big upset: bonus Reputation tonight.') : '') : T('{s} won instead. The stake is gone.', { s: sn(ur.won) })) + '</p></div>' : '') + '<h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
+    html += '<div class="gcols"><div>' + (ur ? '<div class="gupres ' + (ur.hit && !res.caught ? 'win' : 'lose') + '"><span class="lbl">' + T('Your upset') + '</span><b>' + gl(ur.h) + ' ' + T('{s} to win', { s: sn(ur.h) }) + ' · ' + oddsTxt(ur.odds) + '</b><p>' + (res.caught ? T('Void: you were caught.') : ur.hit ? T('It won. You collect {m}.', { m: money(ur.pay) }) + (ur.big ? ' ★ ' + T('A big upset: bonus Reputation tonight.') : '') : T('{s} won instead. The stake is gone.', { s: sn(ur.won) })) + '</p>' + (res.kit && res.kit.length ? '<div class="gkitrow">' + res.kit.map(function (id) { return '<span class="gtchip tg-' + G.TRAITS[id].tag + '"><i aria-hidden="true">' + (TICON[id] || '•') + '</i>' + traitName(id) + '</span>'; }).join('') + G.kitCombos(res.kit).map(function (c) { return '<span class="gtchip combo">★ ' + T(c.name) + '</span>'; }).join('') + '</div>' : '') + '</div>' : '') + '<h3 class="lbl">' + T('Finishing order') + '</h3><div class="gfinal">' + res.order.map(function (h, pl) {
       var b = res.bets.filter(function (x) { return x.pl === pl; })[0];
       return '<div class="gfr s' + h + '"><b class="mono">' + placeName(pl) + '</b>' + gl(h) + '<span class="gsn">' + sn(h) + '</span>' + (b ? '<span class="mono ' + (b.hit && !res.caught ? 'pos' : 'dim') + '">' + (b.sharp ? '★ ' : '') + (b.hit && !res.caught ? T('called ×{o}', { o: I.n(b.odds.toFixed(2)) }) : T('you had {s}', { s: sn(b.h) })) + '</span><span class="mono ' + (b.pay ? 'pos' : 'neg') + '">' + (b.pay ? money(b.pay, true) : '−' + money(b.stake)) + '</span>' : '<span class="dim">' + T('no bet') + '</span><span></span>') + '</div>';
     }).join('') + '</div>' + (res.sharp ? '<p class="note gold">' + TP(res.sharp, '★ Sharp call: a long shot landed. Bonus Reputation tonight.', '★ Sharp calls: long shots landed. Bonus Reputation tonight.') + '</p>' : '') +
@@ -532,7 +579,7 @@
   };
 
   /* ---------- Reputation: the skill tree ---------- */
-  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡', e_tell: '👁️', e_under: '🐴' };
+  var ICONS = { t_swap: '🔀', t_wind: '💨', t_shave: '🪒', t_hurdle: '🚧', t_riffle: '🂠', t_lane: '🌀', t_belt: '🧰', n_cool: '🧊', n_skin: '🦏', n_watch: '👀', n_law: '⚖️', n_palm: '🤝', n_alibi: '🕵️', p_deep: '👛', p_chips: '🎰', p_haggle: '🏷️', p_night: '🌙', p_shark: '🦈', p_safe: '🛟', e_sharp: '🎯', e_view: '🔭', e_perf: '🏆', e_net: '📇', e_calls: '☎️', e_tip: '💡', e_tell: '👁️', e_under: '🐴', k_draft: '📋', k_reroll: '🔄', k_slot: '🧳', k_match: '💞' };
   var NS = 'http://www.w3.org/2000/svg';
   function npos(n) { var a = n.a * Math.PI / 180, r = [0, 135, 245, 345, 440][n.r]; return { x: 500 + r * Math.cos(a), y: 500 + r * Math.sin(a) }; }
   function brOf(n) { return GM.BRANCHES.filter(function (b) { return b.id === n.br; })[0]; }

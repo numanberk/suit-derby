@@ -13,18 +13,38 @@ function evalFixed(run, fixed, sims) {
   const all = G.remainingCodes(r), top = all.slice(0, fixed), rest = all.slice(fixed);
   const P = [0, 1, 2, 3].map(() => [0, 0, 0, 0]);
   for (let i = 0; i < sims; i++) {
-    const o = G.simulate(r.prog, r.lane, rest, G.CFG.track, rng, r.finished, top);
+    const o = G.simulate(r.prog, r.lane, rest, G.CFG.track, rng, r.finished, top, r.kit ? { U: r.kit.U, K: G.kitParams(r.kit.ids), ks: r.kit.ks, draws: r.draws } : null);
     for (let pl = 0; pl < 4; pl++) P[o[pl]][pl]++;
   }
   let e = r.upset ? P[r.upset.h][0] / sims * r.upset.stake * r.upset.odds : 0;
   r.slip.forEach((s, pl) => { if (s) e += P[s.h][pl] / sims * s.stake * s.odds; });
   return e;
 }
+/* draft: take the offered trait (and slot) that lifts the best candidate's chance of winning the most; 'none' skips the kit */
+function draftKit(run, o) {
+  if (o.nokit) return;
+  const kit = G.kitOf(run);
+  for (let guard = 0; guard < 4 && kit.drafts > 0; guard++) {
+    G.ensureOffer(run); if (!kit.offer) return;
+    const cand = G.upsetBoard(run).filter(x => x.open).map(x => x.h);
+    const score = ids => Math.max.apply(null, cand.map(h => { const row = G.upsetBoard(run)[h]; return G.kitWin(run, h, ids) * row.odds; }));
+    let best = null;
+    for (const id of kit.offer) {
+      const slots = G.kitSlots(run);
+      if (kit.ids.length < slots) { const v = score(kit.ids.concat(id)); if (!best || v > best.v) best = { id, slot: -1, v }; }
+      else for (let s = 0; s < kit.ids.length; s++) { const ids = kit.ids.slice(); ids[s] = id; const v = score(ids); if (!best || v > best.v) best = { id, slot: s, v }; }
+    }
+    const cur = kit.ids.length ? score(kit.ids) : 0;
+    if (kit.rerolls > 0 && best.v < cur * 1.15 && G.rerollOffer(run)) continue;
+    if (kit.ids.length >= G.kitSlots(run) && best.v <= cur) { kit.drafts--; kit.offer = null; G.ensureOffer(run); continue; }
+    G.takeTrait(run, best.id, best.slot);
+  }
+}
 function chooseUpset(run, how) {
-  const rows = G.upsetBoard(run).filter(x => !x.fav);
+  const rows = G.upsetBoard(run).filter(x => x.open);
   let pick;
   if (how === 'weak') pick = rows.slice().sort((a, b) => a.p - b.p)[0];
-  else pick = rows.slice().sort((a, b) => (b.t * b.odds) - (a.t * a.odds))[0];
+  else pick = rows.slice().sort((a, b) => (b.kit * b.odds) - (a.kit * a.odds))[0];
   return G.pickUpset(run, pick.h);
 }
 function playNight(seed, o) {
@@ -33,6 +53,7 @@ function playNight(seed, o) {
   while (run.phase !== 'over') {
     if (run.phase === 'book') {
       G.setChip(run, o.chip || 10);
+      draftKit(run, o);
       chooseUpset(run, o.pick);
       if (o.hedge) G.pickFavorite(run);
       if (!G.lock(run)) { G.walkOut(run); }
@@ -83,6 +104,7 @@ function report(name, runs) {
   console.log(' '.repeat(14), 'ROI by quirk', Object.keys(q).sort().map(k => k + ' ' + (q[k].net / Math.max(1, q[k].st) * 100).toFixed(0) + '%').join('  '));
 }
 const arr = (f) => Array.from({ length: N }, (_, i) => f(1000 + i));
+if (mode === 'nokit' || mode === 'all') report('value, no kit', arr(s => playNight(s, { pick: 'value', nokit: true })));
 if (mode === 'weak' || mode === 'all') report('weak', arr(s => playNight(s, { pick: 'weak' })));
 if (mode === 'value' || mode === 'all') report('value', arr(s => playNight(s, { pick: 'value' })));
 if (mode === 'weakrig' || mode === 'all') report('weak + rig', arr(s => playNight(s, { pick: 'weak', rig: true })));

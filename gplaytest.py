@@ -22,13 +22,13 @@ async def main():
         txt = await pg.evaluate("document.querySelector('#s-menu').innerText"); print('menu text:', txt.replace('\n', ' | ')[:300])
         # rules page: ten sections, ten tools listed
         await pg.click('#s-menu [data-go="rules"]'); await leak(pg, 'rules'); await pg.screenshot(path=shot('rules.png'), full_page=True)
-        assert await pg.locator('#rules section').count() == 13 and await pg.locator('#rules .toolrules li').count() == 10, 'rules content'
+        assert await pg.locator('#rules section').count() == 14 and await pg.locator('#rules .toolrules li').count() == 10, 'rules content'
         await pg.click('#s-rules [data-go="menu"]')
         # the first-run guide opens once, on the first visit to Gambler's Night
         await pg.click('#s-menu [data-go="gsetup"]')
         assert await pg.locator('#guide:not([hidden])').count() == 1, 'guide opens on first visit'
         await leak(pg, 'guide'); await pg.screenshot(path=shot('guide.png'))
-        for i in range(5): await pg.click('#gnext')
+        for i in range(6): await pg.click('#gnext')
         assert await pg.locator('#guide[hidden]').count() == 1, 'guide closes'
         await leak(pg, 'setup'); await pg.screenshot(path=shot('setup.png'), full_page=True)
         await pg.click('#gStart'); await leak(pg, 'book'); await pg.screenshot(path=shot('book.png'), full_page=True)
@@ -37,7 +37,24 @@ async def main():
             assert await screen(pg) == 's-gbook', 'book screen ' + str(race)
             assert await pg.locator('.gqk').count() == 1, 'quirk banner'
             if race == 0: print('quirk:', (await pg.locator('.gqk b').inner_text()), '| duels', await pg.locator('[data-gduel]').count(), '| tell marks', await pg.locator('.gtell').count())
-            assert await pg.locator('.gup').count() == 4 and await pg.locator('.gup.fav[disabled]').count() == 1, 'four upset candidates, the favorite is locked out'
+            assert await pg.locator('.gup').count() == 4 and await pg.locator('.gup[disabled]').count() == 2, 'four upset candidates, only the two weakest are open'
+            if race == 0:
+                assert await pg.locator('.gkit .gtr').count() == 2 and await pg.locator('.gkit .gtr.empty').count() == 2, 'an empty kit of two slots'
+                assert await pg.locator('[data-gtake]').count() == 3, 'three traits on offer'
+                await pg.screenshot(path=shot('book-kit.png'), full_page=True)
+                await pg.click('[data-greroll]'); await pg.wait_for_timeout(100)
+                assert await pg.locator('[data-greroll][disabled]').count() == 1, 'one reroll a night'
+                await pg.locator('[data-gtake]').first.click(); await pg.wait_for_timeout(100)
+                assert await pg.locator('.gkit .gtr:not(.empty)').count() == 1 and await pg.locator('[data-gtake]').count() == 3, 'first trait taken, next offer dealt'
+                await pg.locator('[data-gtake]').first.click(); await pg.wait_for_timeout(100)
+                assert await pg.locator('.gkit .gtr:not(.empty)').count() == 2 and await pg.locator('[data-gtake]').count() == 0, 'kit full, drafts used'
+                await pg.screenshot(path=shot('book-kit2.png'), full_page=True)
+            elif await pg.locator('[data-gtake]').count():
+                await pg.locator('[data-gtake]').first.click(); await pg.wait_for_timeout(100)
+                assert await pg.locator('[data-gslot]').count() == 2, 'a full kit asks which slot to replace'
+                if race == 1: await pg.screenshot(path=shot('book-replace.png'), full_page=True)
+                await pg.locator('[data-gslot]').first.click(); await pg.wait_for_timeout(100)
+                assert await pg.locator('[data-gslot]').count() == 0 and await pg.locator('[data-gtake]').count() == 0, 'replaced'
             assert await pg.locator('[data-glock][disabled]').count() == 1, 'cannot lock without an upset'
             assert await pg.locator('.gcell[disabled]').count() >= 16, 'cover cells wait for an upset'
             await pg.locator('.gup:not([disabled])').last.click()
@@ -61,7 +78,7 @@ async def main():
                 await pg.click('[data-gtool="peek"]'); await pg.wait_for_timeout(100)
             await pg.click('[data-glock]'); await pg.wait_for_timeout(300)
             assert await screen(pg) == 's-grace'
-            assert await pg.locator('.gupmeter').count() == 1 and await pg.locator('.gtag.up').count() == 1, 'upset meter and lane tag'
+            assert await pg.locator('.gupmeter').count() == 1 and await pg.locator('.gtag.up').count() == 1 and await pg.locator('.gkitrow .gtchip').count() >= 2, 'upset meter, lane tag and kit chips'
             if race == 0: await leak(pg, 'race')
             # a few manual draws, tools, a recall, then auto and fast
             for i in range(4): await pg.click('[data-gdraw]'); await pg.wait_for_timeout(60)
@@ -102,7 +119,7 @@ async def main():
         print('tree nodes', n0, '->', await pg.locator('#gtree .nd').count())
         await pg.screenshot(path=shot('rep1.png'))
         # resume: start a night, leave mid-race, continue from the menu
-        await pg.click('#s-grep [data-go="gsetup"]'); await pg.click('#gStart'); await pg.locator('.gup:not([disabled])').first.click(); await pg.evaluate("document.querySelector('.gcover').open = true"); await pg.click('[data-gduel]'); await pg.click('[data-glock]'); await pg.wait_for_timeout(200)
+        await pg.click('#s-grep [data-go="gsetup"]'); await pg.click('#gStart'); await pg.locator('[data-gtake]').first.click(); await pg.locator('.gup:not([disabled])').first.click(); await pg.evaluate("document.querySelector('.gcover').open = true"); await pg.click('[data-gduel]'); await pg.click('[data-glock]'); await pg.wait_for_timeout(200)
         for i in range(5): await pg.click('[data-gdraw]'); await pg.wait_for_timeout(60)
         d0 = await pg.evaluate('__gamble.GS.run.race.draws'); await pg.locator('[data-gquit]:visible').first.click(); await pg.wait_for_timeout(200)
         assert await pg.locator('#gResume:not([hidden])').count() == 1, 'resume button'
